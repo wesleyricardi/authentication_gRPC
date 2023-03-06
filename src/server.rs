@@ -1,5 +1,7 @@
 use tonic::{transport::Server};
+
 mod rpc;
+mod controller;
  
 use crate::rpc::authentication::{AuthenticationService, authentication::authentication_server::{AuthenticationServer}};
 
