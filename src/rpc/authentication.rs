@@ -5,7 +5,7 @@ use authentication::authentication_server::{Authentication};
 use authentication::{ReqRegister, ResRegister};
 use tonic::{ Request, Response, Status};
 
-use crate::controllers::user_controller::{UserControllerImpl, UserController};
+use crate::controllers::user_controller::{ UserController, get_default_user_controller};
 
 
 #[derive(Debug, Default)]
@@ -19,7 +19,7 @@ impl Authentication for AuthenticationService {
     ) -> Result<Response<ResRegister>, Status> {
         let req = request.into_inner();
 
-        let controller = UserControllerImpl;
+        let controller = get_default_user_controller();
         controller.register(req)
     }
 }
