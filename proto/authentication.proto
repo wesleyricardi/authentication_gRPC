@@ -1,0 +1,23 @@
+syntax = "proto3";
+package authentication;
+
+service Authentication {
+    rpc Register (ReqRegister) returns (ResRegister);
+}
+
+message User {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+}
+
+message ReqRegister {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message ResRegister {
+    User user = 1;
+    string token = 2;
+}
