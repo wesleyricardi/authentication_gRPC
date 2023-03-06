@@ -1,5 +1,8 @@
 use tonic::{Response, Status};
-use crate::{rpc::authentication::authentication::{ReqRegister, ResRegister, User as UserResponse}, model::user_model::{UserModelImpl, UserModel, InsertUser}};
+use crate::{
+    rpc::authentication::authentication::{ReqRegister, ResRegister, User as UserResponse}, 
+    models::user_model::{UserModelImpl, UserModel, InsertUser}
+};
 
 pub trait UserController {
     fn register(&self, req: ReqRegister) -> Result<Response<ResRegister>, Status>;
