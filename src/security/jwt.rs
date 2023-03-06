@@ -48,3 +48,37 @@ pub const JWT_DECODE: JwtDecode = |token| {
             },
         };
 };
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encode() {
+        let user = UserToken {
+            id: "uuidv4".to_string(),
+            username: "username".to_string(),
+            email: "email".to_string(),
+        };
+
+        let user_token = JWT_ENCODE(user).unwrap();
+
+        assert!(!user_token.is_empty())
+    }
+
+    #[test]
+    fn test_decode() {
+        let user = UserToken {
+            id: "uuidv4".to_string(),
+            username: "username".to_string(),
+            email: "email".to_string(),
+        };
+
+        let jwt_token = JWT_ENCODE(user).unwrap();
+        let JWTAuthenticateToken {user, sub: _, exp: _} = JWT_DECODE(&jwt_token).unwrap();
+
+        assert_eq!("uuidv4".to_string(), user.id);
+        assert_eq!("username".to_string(), user.username);
+        assert_eq!("email".to_string(), user.email);
+    }
+}
