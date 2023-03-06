@@ -4,6 +4,7 @@ mod rpc;
 mod controllers;
 mod models;
 mod views;
+mod security;
  
 use crate::rpc::authentication::{AuthenticationService, authentication::authentication_server::{AuthenticationServer}};
 
