@@ -24,3 +24,17 @@ impl UserView for UserViewImpl {
         })
     }
 }
+
+pub struct UserViewMock;
+impl UserView for UserViewMock {
+    fn render_res_register(&self, user: UserViewArg, token: String) -> Response<ResRegister> {
+       Response::new(ResRegister {
+            user: Some(UserResponse {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+            }),
+            token,
+        })
+    }
+}
