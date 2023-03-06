@@ -1,7 +1,8 @@
 use tonic::{Response, Status};
 use crate::{
-    rpc::authentication::authentication::{ReqRegister, ResRegister, User as UserResponse}, 
-    models::user_model::{UserModelImpl, UserModel, InsertUser}
+    rpc::authentication::authentication::{ReqRegister, ResRegister}, 
+    models::user_model::{UserModelImpl, UserModel, InsertUser},
+    views::user_view::{UserViewImpl, UserView, UserViewArg}
 };
 
 pub trait UserController {
@@ -26,13 +27,15 @@ impl UserController for UserControllerImpl {
     
         let token = "lshfncyqpo548sh6xkf4hwçlfh3xm9itkd8lw0hs".to_string(); //random token
 
-        Ok(Response::new(ResRegister {
-            user: Some(UserResponse {
+
+        let user_view = UserViewImpl;
+        Ok(user_view.render_res_register(
+            UserViewArg {
                 id: user.id,
                 username: user.username,
                 email: user.email
-            }),
-            token,
-        }))
+            },
+            token
+        ))
     }
 }
