@@ -27,8 +27,7 @@ pub fn get_default_user_controller() -> DefaultUserController {
 
 impl <M: UserModel, V: UserView> UserController for UserControllerImpl<M, V> {
     fn register(&self, req: ReqRegister) -> Result<Response<ResRegister>, Status> {
-        let user_model = UserModelImpl;
-        let user = match user_model.insert(InsertUser {
+        let user = match self.model.insert(InsertUser {
             username: req.username,
             email: req.email,
             password: req.password
@@ -43,8 +42,7 @@ impl <M: UserModel, V: UserView> UserController for UserControllerImpl<M, V> {
             email: user.email.clone()
         })?;
 
-        let user_view = UserViewImpl;
-        Ok(user_view.render_res_register(
+        Ok(self.view.render_res_register(
             UserViewArg {
                 id: user.id,
                 username: user.username,
