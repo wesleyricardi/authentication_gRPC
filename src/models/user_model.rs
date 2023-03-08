@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::utils::hash::password::{PasswordHasher, PASSWORD_HASHER};
 pub trait UserModel {
-    fn insert(&self, user: InsertUser) -> Result<UserModelInsertReturn, Status>;
+    fn create(&self, user: InsertUser) -> Result<UserModelInsertReturn, Status>;
 }
 
 pub struct UserModelInsertReturn {
@@ -30,7 +30,7 @@ pub fn get_default_user_model() -> UserModelImpl {
 }
 
 impl UserModel for UserModelImpl {
-    fn insert(&self, user: InsertUser) -> Result<UserModelInsertReturn, Status> {
+    fn create(&self, user: InsertUser) -> Result<UserModelInsertReturn, Status> {
         let id = Uuid::new_v4().to_string();
         let hashed_password = (self.password_hasher)(user.password)?;
 
@@ -45,7 +45,7 @@ impl UserModel for UserModelImpl {
 
 pub struct UserModelMock;
 impl UserModel for UserModelMock {
-    fn insert(&self, user: InsertUser) -> Result<UserModelInsertReturn, Status> {
+    fn create(&self, user: InsertUser) -> Result<UserModelInsertReturn, Status> {
         assert!(!user.username.is_empty());
         assert!(!user.email.is_empty());
         assert!(!user.password.is_empty());
@@ -74,7 +74,7 @@ mod tests {
         };
 
         let response = model
-            .insert(InsertUser {
+            .create(InsertUser {
                 username: "username".to_string(),
                 email: "email".to_string(),
                 password: "password".to_string(),

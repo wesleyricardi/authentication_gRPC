@@ -42,7 +42,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             password: req.password,
         })?;
 
-        let user = match self.model.insert(InsertUser {
+        let user = match self.model.create(InsertUser {
             username: req_sanitized.username,
             email: req_sanitized.email,
             password: req_sanitized.password,
