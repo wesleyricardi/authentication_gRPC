@@ -61,7 +61,7 @@ pub const JWT_DECODE: JwtDecode = |token| {
     };
 };
 
-pub const JWT_ENCODE_STUB: JwtEncode = |user| Ok("json.web.token".to_string());
+pub const JWT_ENCODE_STUB: JwtEncode = |_| Ok("json.web.token".to_string());
 
 #[cfg(test)]
 mod tests {
