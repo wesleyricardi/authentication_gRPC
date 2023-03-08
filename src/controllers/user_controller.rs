@@ -1,5 +1,7 @@
 use crate::{
-    models::user_model::{get_default_user_model, DefaultUserModel, InsertUser, UserModel},
+    models::user_model::{
+        get_default_user_model, DefaultUserModel, UserModel, UserModelCreateParams,
+    },
     rpc::authentication::authentication::ReqRegister,
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
     services::sanitizer::user_input::{RegisterInputDirty, SanitizeUser, SanitizeUserImpl},
@@ -42,7 +44,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             password: req.password,
         })?;
 
-        let user = match self.model.create(InsertUser {
+        let user = match self.model.create(UserModelCreateParams {
             username: req_sanitized.username,
             email: req_sanitized.email,
             password: req_sanitized.password,
