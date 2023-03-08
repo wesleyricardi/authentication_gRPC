@@ -20,7 +20,7 @@ pub struct UserModelImpl;
 
 impl UserModel for UserModelImpl {
     fn insert(&self, user: InsertUser) -> Result<User, Status> {
-        let  id =  Uuid::new_v4().to_string();
+        let id = Uuid::new_v4().to_string();
 
         let user = User {
             id,
@@ -28,38 +28,42 @@ impl UserModel for UserModelImpl {
             email: user.email,
         };
         Ok(user)
-    }  
+    }
 }
 
+pub struct UserModelMock;
+impl UserModel for UserModelMock {
+    fn insert(&self, user: InsertUser) -> Result<User, Status> {
+        assert!(!user.username.is_empty());
+        assert!(!user.email.is_empty());
+        assert!(!user.password.is_empty());
 
-pub struct UserModelMock; 
-    impl UserModel for UserModelMock {
-        fn insert(&self, user: InsertUser) -> Result<User, Status> {
-            let  id =  "UUIDV4".to_string();
+        let id = "UUIDV4".to_string();
 
-            let user = User {
-                id,
-                username: user.username,
-                email: user.email,
-            };
-            Ok(user)
-        }
+        let user = User {
+            id,
+            username: user.username,
+            email: user.email,
+        };
+        Ok(user)
     }
-
+}
 
 #[cfg(test)]
 mod tests {
-    use super::*; 
+    use super::*;
 
     #[test]
     fn test_insert() {
         let model = UserModelImpl;
 
-        let response = model.insert(InsertUser {
-            username: "username".to_string(),
-            email: "email".to_string(),
-            password: "password".to_string(),
-        }).unwrap();
+        let response = model
+            .insert(InsertUser {
+                username: "username".to_string(),
+                email: "email".to_string(),
+                password: "password".to_string(),
+            })
+            .unwrap();
 
         assert_eq!(response.id.is_empty(), false);
         assert_eq!(response.username, "username".to_string());
