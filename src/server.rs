@@ -5,6 +5,7 @@ mod models;
 mod rpc;
 mod security;
 mod services;
+mod utils;
 mod views;
 
 use crate::rpc::authentication::{

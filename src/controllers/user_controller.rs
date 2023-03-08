@@ -1,5 +1,5 @@
 use crate::{
-    models::user_model::{InsertUser, UserModel, UserModelImpl},
+    models::user_model::{get_default_user_model, DefaultUserModel, InsertUser, UserModel},
     rpc::authentication::authentication::ReqRegister,
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
     services::sanitizer::user_input::{RegisterInputDirty, SanitizeUser, SanitizeUserImpl},
@@ -21,10 +21,10 @@ pub struct UserControllerImpl<M, S> {
     jwt_encode: JwtEncode,
 }
 
-pub type DefaultUserController = UserControllerImpl<UserModelImpl, SanitizeUserImpl>;
+pub type DefaultUserController = UserControllerImpl<DefaultUserModel, SanitizeUserImpl>;
 pub fn get_default_user_controller() -> DefaultUserController {
     UserControllerImpl {
-        model: UserModelImpl,
+        model: get_default_user_model(),
         sanitize_user: SanitizeUserImpl,
         jwt_encode: JWT_ENCODE,
     }

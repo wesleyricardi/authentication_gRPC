@@ -1,5 +1,7 @@
 use tonic::Status;
 use uuid::Uuid;
+
+use crate::utils::hash::password::{PasswordHasher, PASSWORD_HASHER};
 pub trait UserModel {
     fn insert(&self, user: InsertUser) -> Result<User, Status>;
 }
@@ -16,11 +18,21 @@ pub struct InsertUser {
     pub password: String,
 }
 
-pub struct UserModelImpl;
+pub struct UserModelImpl {
+    password_hasher: PasswordHasher,
+}
+
+pub type DefaultUserModel = UserModelImpl;
+pub fn get_default_user_model() -> UserModelImpl {
+    UserModelImpl {
+        password_hasher: PASSWORD_HASHER,
+    }
+}
 
 impl UserModel for UserModelImpl {
     fn insert(&self, user: InsertUser) -> Result<User, Status> {
         let id = Uuid::new_v4().to_string();
+        let hashed_password = (self.password_hasher)(user.password)?;
 
         let user = User {
             id,
@@ -51,11 +63,15 @@ impl UserModel for UserModelMock {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::hash::password::PASSWORD_HASHER_STUP;
+
     use super::*;
 
     #[test]
     fn test_insert() {
-        let model = UserModelImpl;
+        let model = UserModelImpl {
+            password_hasher: PASSWORD_HASHER_STUP,
+        };
 
         let response = model
             .insert(InsertUser {
