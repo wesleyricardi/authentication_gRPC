@@ -1,13 +1,15 @@
-use tonic::{transport::Server};
+use tonic::transport::Server;
 
-mod rpc;
 mod controllers;
 mod models;
-mod views;
+mod rpc;
 mod security;
- 
-use crate::rpc::authentication::{AuthenticationService, authentication::authentication_server::{AuthenticationServer}};
+mod services;
+mod views;
 
+use crate::rpc::authentication::{
+    authentication::authentication_server::AuthenticationServer, AuthenticationService,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,6 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(AuthenticationServer::new(authentication_service))
-        .serve(addr).await?;
+        .serve(addr)
+        .await?;
     Ok(())
 }

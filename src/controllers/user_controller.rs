@@ -2,6 +2,7 @@ use crate::{
     models::user_model::{InsertUser, UserModel, UserModelImpl},
     rpc::authentication::authentication::ReqRegister,
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
+    services::sanitizer::user_input::{RegisterInputDirty, SanitizeUser, SanitizeUserImpl},
     views::user_view::UserViewArg,
 };
 use tonic::Status;
@@ -14,29 +15,37 @@ pub trait UserController {
     ) -> Result<T, Status>;
 }
 
-pub struct UserControllerImpl<M> {
+pub struct UserControllerImpl<M, S> {
     model: M,
+    sanitize_user: S,
     jwt_encode: JwtEncode,
 }
 
-pub type DefaultUserController = UserControllerImpl<UserModelImpl>;
+pub type DefaultUserController = UserControllerImpl<UserModelImpl, SanitizeUserImpl>;
 pub fn get_default_user_controller() -> DefaultUserController {
     UserControllerImpl {
         model: UserModelImpl,
+        sanitize_user: SanitizeUserImpl,
         jwt_encode: JWT_ENCODE,
     }
 }
 
-impl<M: UserModel> UserController for UserControllerImpl<M> {
+impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> {
     fn register<T>(
         &self,
         req: ReqRegister,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status> {
-        let user = match self.model.insert(InsertUser {
+        let req_sanitized = self.sanitize_user.register_sanitize(RegisterInputDirty {
             username: req.username,
             email: req.email,
             password: req.password,
+        })?;
+
+        let user = match self.model.insert(InsertUser {
+            username: req_sanitized.username,
+            email: req_sanitized.email,
+            password: req_sanitized.password,
         }) {
             Ok(user) => user,
             Err(error) => return Err(error),
@@ -61,13 +70,17 @@ impl<M: UserModel> UserController for UserControllerImpl<M> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{models::user_model::UserModelMock, security::jwt::JWT_ENCODE_STUB};
+    use crate::{
+        models::user_model::UserModelMock, security::jwt::JWT_ENCODE_STUB,
+        services::sanitizer::user_input::SanitizeUserMock,
+    };
 
     use super::*;
 
-    fn get_controller_with_mocks_arg() -> UserControllerImpl<UserModelMock> {
+    fn get_controller_with_mocks_arg() -> UserControllerImpl<UserModelMock, SanitizeUserMock> {
         UserControllerImpl {
             model: UserModelMock,
+            sanitize_user: SanitizeUserMock,
             jwt_encode: JWT_ENCODE_STUB,
         }
     }
