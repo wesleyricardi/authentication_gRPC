@@ -2,6 +2,7 @@ use tonic::transport::Server;
 
 mod controllers;
 mod models;
+mod repositories;
 mod rpc;
 mod security;
 mod services;
