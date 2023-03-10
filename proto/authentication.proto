@@ -3,6 +3,7 @@ package authentication;
 
 service Authentication {
     rpc Register (ReqRegister) returns (ResRegister);
+    rpc Login (ReqLogin) returns (ResLogin);
 }
 
 message User {
@@ -18,6 +19,16 @@ message ReqRegister {
 }
 
 message ResRegister {
+    User user = 1;
+    string token = 2;
+}
+
+message ReqLogin {
+    string username = 1;
+    string password = 2;
+}
+
+message ResLogin {
     User user = 1;
     string token = 2;
 }

@@ -17,11 +17,29 @@ pub struct RegisterInputSanitized {
     pub password: String,
 }
 
+pub struct LoginInputDirty {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Sanitize, Debug)]
+pub struct LoginInputSanitized {
+    #[sanitize(trim, alphanumeric)]
+    pub username: String,
+    #[sanitize(trim)]
+    pub password: String,
+}
+
 pub trait SanitizeUser {
     fn register_sanitize(
         &self,
         user_input: RegisterInputDirty,
     ) -> Result<RegisterInputSanitized, Status>;
+    fn login_sanitize(
+        &self,
+        username: String,
+        password: String,
+    ) -> Result<LoginInputSanitized, Status>;
 }
 
 pub struct SanitizeUserImpl;
@@ -42,9 +60,9 @@ impl SanitizeUser for SanitizeUserImpl {
         };
 
         let mut instance = RegisterInputSanitized {
-            username: user_input.username.clone(),
-            email: user_input.email.clone(),
-            password: user_input.password.clone(),
+            username: user_input.username,
+            email: user_input.email,
+            password: user_input.password,
         };
         instance.sanitize();
 
@@ -58,6 +76,38 @@ impl SanitizeUser for SanitizeUserImpl {
             return Err(Status::new(
                 tonic::Code::Internal,
                 "Email is empty after sanitize",
+            ));
+        };
+        if instance.password.is_empty() {
+            return Err(Status::new(
+                tonic::Code::Internal,
+                "Password is empty after sanitize",
+            ));
+        };
+
+        return Ok(instance);
+    }
+
+    fn login_sanitize(
+        &self,
+        username: String,
+        password: String,
+    ) -> Result<LoginInputSanitized, Status> {
+        if username.is_empty() {
+            return Err(Status::new(tonic::Code::Internal, "Username is empty"));
+        };
+
+        if password.is_empty() {
+            return Err(Status::new(tonic::Code::Internal, "Password is empty"));
+        };
+
+        let mut instance = LoginInputSanitized { username, password };
+        instance.sanitize();
+
+        if instance.username.is_empty() {
+            return Err(Status::new(
+                tonic::Code::Internal,
+                "Username is empty after sanitize",
             ));
         };
         if instance.password.is_empty() {
@@ -83,10 +133,21 @@ impl SanitizeUser for SanitizeUserMock {
         assert!(!user_input.password.is_empty());
 
         Ok(RegisterInputSanitized {
-            username: user_input.username.clone(),
-            email: user_input.email.clone(),
-            password: user_input.password.clone(),
+            username: user_input.username,
+            email: user_input.email,
+            password: user_input.password,
         })
+    }
+
+    fn login_sanitize(
+        &self,
+        username: String,
+        password: String,
+    ) -> Result<LoginInputSanitized, Status> {
+        assert!(!username.is_empty());
+        assert!(!password.is_empty());
+
+        Ok(LoginInputSanitized { username, password })
     }
 }
 
@@ -168,6 +229,44 @@ mod tests {
             email: "test@email.com".to_string(),
             password: "   ".to_string(),
         }) {
+            Ok(_) => panic!("Should have failed"),
+            Err(error) => assert_eq!(error.message(), "Password is empty after sanitize"),
+        }
+    }
+
+    #[test]
+    fn test_login_sanitize() {
+        let sanitize = SanitizeUserImpl;
+        let username = "user@$#@name".to_string();
+        let password = "  password  ".to_string();
+
+        let LoginInputSanitized { username, password } =
+            sanitize.login_sanitize(username, password).unwrap();
+
+        assert_eq!(username, "username");
+        assert_eq!(password, "password");
+    }
+
+    #[test]
+    fn test_login_sanitize_error() {
+        let sanitize = SanitizeUserImpl;
+
+        match sanitize.login_sanitize("".to_string(), "password".to_string()) {
+            Ok(_) => panic!("Should have failed"),
+            Err(error) => assert_eq!(error.message(), "Username is empty"),
+        }
+
+        match sanitize.login_sanitize("username".to_string(), "".to_string()) {
+            Ok(_) => panic!("Should have failed"),
+            Err(error) => assert_eq!(error.message(), "Password is empty"),
+        }
+
+        match sanitize.login_sanitize("@#$%".to_string(), "password".to_string()) {
+            Ok(_) => panic!("Should have failed"),
+            Err(error) => assert_eq!(error.message(), "Username is empty after sanitize"),
+        }
+
+        match sanitize.login_sanitize("username".to_string(), "   ".to_string()) {
             Ok(_) => panic!("Should have failed"),
             Err(error) => assert_eq!(error.message(), "Password is empty after sanitize"),
         }

@@ -2,7 +2,7 @@ use crate::{
     models::user_model::{
         get_default_user_model, DefaultUserModel, UserModel, UserModelCreateParams,
     },
-    rpc::authentication::authentication::ReqRegister,
+    rpc::authentication::authentication::{ReqLogin, ReqRegister},
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
     services::sanitizer::user_input::{RegisterInputDirty, SanitizeUser, SanitizeUserImpl},
     views::user_view::UserViewArg,
@@ -13,6 +13,11 @@ pub trait UserController {
     fn register<T>(
         &self,
         req: ReqRegister,
+        view: fn(user: UserViewArg, token: String) -> T,
+    ) -> Result<T, Status>;
+    fn login<T>(
+        &self,
+        req: ReqLogin,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status>;
 }
@@ -68,6 +73,39 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             token,
         ))
     }
+
+    fn login<T>(
+        &self,
+        req: ReqLogin,
+        view: fn(user: UserViewArg, token: String) -> T,
+    ) -> Result<T, Status> {
+        let req_sanitized = self
+            .sanitize_user
+            .login_sanitize(req.username, req.password)?;
+
+        let user = match self
+            .model
+            .login_verification(req_sanitized.username, req_sanitized.password)
+        {
+            Ok(user) => user,
+            Err(error) => return Err(error),
+        };
+
+        let token = (self.jwt_encode)(UserToken {
+            id: user.id.clone(),
+            username: user.username.clone(),
+            email: user.email.clone(),
+        })?;
+
+        Ok(view(
+            UserViewArg {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+            },
+            token,
+        ))
+    }
 }
 
 #[cfg(test)]
@@ -87,6 +125,15 @@ mod tests {
         }
     }
 
+    struct ViewStupReturn {
+        user: UserViewArg,
+        token: String,
+    }
+
+    fn view_stup(user: UserViewArg, token: String) -> ViewStupReturn {
+        ViewStupReturn { user, token }
+    }
+
     #[test]
     fn test_register() {
         let req = ReqRegister {
@@ -95,15 +142,6 @@ mod tests {
             password: "password".to_string(),
         };
 
-        struct ViewStupReturn {
-            user: UserViewArg,
-            token: String,
-        }
-
-        fn view_stup(user: UserViewArg, token: String) -> ViewStupReturn {
-            ViewStupReturn { user, token }
-        }
-
         let controller = get_controller_with_mocks_arg();
         let ViewStupReturn { user, token } = controller.register(req, view_stup).unwrap();
 
@@ -111,5 +149,29 @@ mod tests {
         assert_eq!(user.username, "username".to_string());
         assert_eq!(user.email, "test@email.com".to_string());
         assert_eq!(token.is_empty(), false);
+    }
+
+    #[test]
+    fn test_login() {
+        let req = ReqRegister {
+            username: "username2".to_string(),
+            email: "test2@email.com".to_string(),
+            password: "password".to_string(),
+        };
+
+        let controller = get_controller_with_mocks_arg();
+        let ViewStupReturn { user, token: _ } = controller.register(req, view_stup).unwrap();
+
+        let req: ReqLogin = ReqLogin {
+            username: user.username.clone(),
+            password: "password".to_string(),
+        };
+
+        let response = controller.login(req, view_stup).unwrap();
+
+        assert_eq!(response.user.id, user.id);
+        assert_eq!(response.user.username, user.username);
+        assert_eq!(response.user.email, user.email);
+        assert_eq!(response.token.is_empty(), false);
     }
 }
