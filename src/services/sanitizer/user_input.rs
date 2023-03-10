@@ -17,11 +17,6 @@ pub struct RegisterInputSanitized {
     pub password: String,
 }
 
-pub struct LoginInputDirty {
-    pub username: String,
-    pub password: String,
-}
-
 #[derive(Sanitize, Debug)]
 pub struct LoginInputSanitized {
     #[sanitize(trim, alphanumeric)]
