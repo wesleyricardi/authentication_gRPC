@@ -15,12 +15,15 @@ impl UserRepository for UserRepositoryMock {
         unsafe {
             STORE.push(UserStored {
                 id: user.id,
-                username: user.username,
+                username: user.username.clone(),
                 email: user.email,
                 password: user.password,
             });
 
-            let result = STORE.get(0).unwrap();
+            let result = STORE
+                .iter()
+                .find(|result| result.username == user.username)
+                .unwrap();
 
             UserRepositoryStoreReturn {
                 id: result.id.clone(),
