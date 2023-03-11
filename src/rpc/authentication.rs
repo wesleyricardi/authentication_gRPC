@@ -5,7 +5,7 @@ use authentication::authentication_server::Authentication;
 use authentication::{ReqLogin, ReqRegister, ResLogin, ResRegister};
 use tonic::{Request, Response, Status};
 
-use crate::controllers::user_controller::{get_default_user_controller, UserController};
+use crate::controllers::default_controllers::{get_default_user_controller, UserController};
 use crate::views::rpc;
 
 #[derive(Debug, Default)]
