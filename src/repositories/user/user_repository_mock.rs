@@ -7,20 +7,20 @@ pub struct UserStored {
     pub password: String,
 }
 type UsersStored = Vec<UserStored>;
-static mut STORE: UsersStored = Vec::new();
+static mut STORED_USERS: UsersStored = Vec::new();
 pub struct UserRepositoryMock;
 
 impl UserRepository for UserRepositoryMock {
     fn store(&self, user: UserRepositoryStoreParams) -> UserRepositoryStoreReturn {
         unsafe {
-            STORE.push(UserStored {
+            STORED_USERS.push(UserStored {
                 id: user.id,
                 username: user.username.clone(),
                 email: user.email,
                 password: user.password,
             });
 
-            let result = STORE
+            let result = STORED_USERS
                 .iter()
                 .find(|result| result.username == user.username)
                 .unwrap();
@@ -34,7 +34,7 @@ impl UserRepository for UserRepositoryMock {
     }
 
     fn consult_by_username(&self, username: String) -> Result<UserRepositoryConsultReturn, Status> {
-        let result = match unsafe { STORE.iter().find(|user| user.username == username) } {
+        let result = match unsafe { STORED_USERS.iter().find(|user| user.username == username) } {
             Some(user) => user,
             None => return Err(Status::not_found("User not found")),
         };
