@@ -50,4 +50,43 @@ impl UserRepository for UserRepositoryMock {
             password: result.password.clone(),
         })
     }
+
+    fn store_update(
+        &self,
+        id: String,
+        user_to_be_updated: UserRepositoryUpdateParams,
+    ) -> Result<UserRepositoryUpdateReturn, Status> {
+        let stored_user = unsafe { &mut STORED_USERS.lock().unwrap() };
+
+        let user = match stored_user.iter().find(|user| user.id == id) {
+            Some(user) => user,
+            None => return Err(Status::not_found("User not found")),
+        };
+
+        let user_prepared_to_be_updated = UserStored {
+            id: user.id.clone(),
+            username: user_to_be_updated
+                .username
+                .unwrap_or_else(|| user.username.clone()),
+            email: user_to_be_updated
+                .email
+                .unwrap_or_else(|| user.email.clone()),
+            password: user_to_be_updated
+                .password
+                .unwrap_or_else(|| user.password.clone()),
+        };
+
+        for user in stored_user.iter_mut() {
+            if user.id == id {
+                *user = user_prepared_to_be_updated.clone();
+                break;
+            }
+        }
+
+        Ok(UserRepositoryUpdateReturn {
+            id: user_prepared_to_be_updated.id,
+            username: user_prepared_to_be_updated.username,
+            email: user_prepared_to_be_updated.email,
+        })
+    }
 }
