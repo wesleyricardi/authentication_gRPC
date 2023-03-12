@@ -28,7 +28,7 @@ mod tests {
 
         assert_eq!(response.id.is_empty(), false);
         assert_eq!(response.username, "username".to_string());
-        assert_eq!(response.email, "email".to_string())
+        assert_eq!(response.email, "test@email.com".to_string())
     }
 
     #[test]
