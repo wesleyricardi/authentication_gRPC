@@ -44,8 +44,7 @@ mod tests {
             .unwrap();
 
         let user = model
-            .user_repository
-            .consult_by_username(response.username)
+            .login_verification("username2".to_string(), "password".to_string())
             .unwrap();
 
         assert_eq!(user.id, response.id);
