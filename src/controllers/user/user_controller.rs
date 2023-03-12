@@ -2,9 +2,7 @@ pub use crate::{
     models::user::user_model::{UserModel, UserModelCreateParams},
     rpc::authentication::authentication::{ReqLogin, ReqRegister},
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
-    services::sanitizer::user_input::sanitize_user_input::{
-        RegisterInputDirty, SanitizeUser, SanitizeUserImpl,
-    },
+    services::sanitizer::user_input::sanitize_user_input::{SanitizeUser, SanitizeUserImpl},
     views::user_view::UserViewArg,
 };
 pub use tonic::Status;
@@ -34,16 +32,14 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         req: ReqRegister,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status> {
-        let req_sanitized = self.sanitize_user.register_sanitize(RegisterInputDirty {
-            username: req.username,
-            email: req.email,
-            password: req.password,
-        })?;
+        let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
+        let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
+        let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
 
         let user = match self.model.create(UserModelCreateParams {
-            username: req_sanitized.username,
-            email: req_sanitized.email,
-            password: req_sanitized.password,
+            username: username_sanitized,
+            email: email_sanitized,
+            password: password_sanitized,
         }) {
             Ok(user) => user,
             Err(error) => return Err(error),
@@ -70,13 +66,12 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         req: ReqLogin,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status> {
-        let req_sanitized = self
-            .sanitize_user
-            .login_sanitize(req.username, req.password)?;
+        let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
+        let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
 
         let user = match self
             .model
-            .login_verification(req_sanitized.username, req_sanitized.password)
+            .login_verification(username_sanitized, password_sanitized)
         {
             Ok(user) => user,
             Err(error) => return Err(error),
