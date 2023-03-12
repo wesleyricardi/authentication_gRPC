@@ -49,4 +49,36 @@ mod tests {
 
         assert_eq!(user.id, response.id);
     }
+
+    #[test]
+    fn test_update() {
+        let model = get_mocked_model();
+
+        let created_user = model
+            .create(UserModelCreateParams {
+                username: "username".to_string(),
+                email: "test@email.com".to_string(),
+                password: "password".to_string(),
+            })
+            .unwrap();
+
+        model
+            .update(
+                created_user.id.clone(),
+                UserModelUpdateParams {
+                    username: Some("usernameupdated".to_string()),
+                    email: Some("updated@email.com".to_string()),
+                    password: Some("changedpassword".to_string()),
+                },
+            )
+            .unwrap();
+
+        let response = model
+            .login_verification("usernameupdated".to_string(), "changedpassword".to_string())
+            .unwrap();
+
+        assert_eq!(response.id, created_user.id);
+        assert_eq!(response.username, "usernameupdated".to_string());
+        assert_eq!(response.email, "updated@email.com".to_string());
+    }
 }
