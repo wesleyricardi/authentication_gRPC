@@ -1,3 +1,4 @@
+use crate::repositories::user::user_repository_mock::UserRepositoryUpdateParams;
 pub use crate::{
     repositories::user::user_repository::{UserRepository, UserRepositoryStoreParams},
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
@@ -23,6 +24,18 @@ pub struct UserModelLoginVerificationReturn {
     pub email: String,
 }
 
+pub struct UserModelUpdateParams {
+    pub username: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
+}
+
+pub struct UserModelUpdateReturn {
+    pub id: String,
+    pub username: String,
+    pub email: String,
+}
+
 pub trait UserModel {
     fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, Status>;
     fn login_verification(
@@ -30,6 +43,11 @@ pub trait UserModel {
         username: String,
         password: String,
     ) -> Result<UserModelLoginVerificationReturn, Status>;
+    fn update(
+        &self,
+        id: String,
+        user: UserModelUpdateParams,
+    ) -> Result<UserModelUpdateReturn, Status>;
 }
 
 pub struct UserModelImpl<R> {
@@ -71,6 +89,31 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
         }
 
         Ok(UserModelLoginVerificationReturn {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+        })
+    }
+
+    fn update(
+        &self,
+        id: String,
+        user: UserModelUpdateParams,
+    ) -> Result<UserModelUpdateReturn, Status> {
+        let password = match user.password {
+            Some(password) => Some((self.password_hasher)(password)?),
+            None => None,
+        };
+
+        let user_to_be_updated = UserRepositoryUpdateParams {
+            username: user.username,
+            email: user.email,
+            password,
+        };
+
+        let user = self.user_repository.store_update(id, user_to_be_updated)?;
+
+        Ok(UserModelUpdateReturn {
             id: user.id,
             username: user.username,
             email: user.email,
