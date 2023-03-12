@@ -40,4 +40,25 @@ impl UserModel for UserModelMock {
             email: user.email,
         })
     }
+
+    fn update(
+        &self,
+        id: String,
+        user: UserModelUpdateParams,
+    ) -> Result<UserModelUpdateReturn, Status> {
+        let user_to_be_updated = UserRepositoryUpdateParams {
+            username: user.username,
+            email: user.email,
+            password: user.password,
+        };
+
+        let repository = UserRepositoryMock;
+        let user = repository.store_update(id, user_to_be_updated)?;
+
+        Ok(UserModelUpdateReturn {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+        })
+    }
 }
