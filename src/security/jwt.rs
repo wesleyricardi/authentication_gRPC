@@ -69,6 +69,18 @@ pub const JWT_ENCODE_STUB: JwtEncode = |user| {
     Ok("json.web.token".to_string())
 };
 
+pub const JWT_DECODE_STUB: JwtDecode = |token| {
+    Ok(JWTAuthenticateToken {
+        sub: "id".to_string(),
+        user: UserToken {
+            id: token.to_string(),
+            username: "username".to_string(),
+            email: "test@email.com".to_string(),
+        },
+        exp: 10000 as usize,
+    })
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;
