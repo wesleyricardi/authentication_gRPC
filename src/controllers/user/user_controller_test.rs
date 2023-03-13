@@ -2,7 +2,7 @@
 mod tests {
     use crate::{
         controllers::user::user_controller::{
-            ReqLogin, ReqRegister, UserController, UserControllerImpl, UserViewArg,
+            LoginParams, RegisterParams, UserController, UserControllerImpl, UserViewArg,
         },
         models::user::user_model_mock::UserModelMock,
         security::jwt::JWT_ENCODE_STUB,
@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn test_register() {
-        let req = ReqRegister {
+        let req = RegisterParams {
             username: "username".to_string(),
             email: "test@email.com".to_string(),
             password: "password".to_string(),
@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn test_login() {
-        let req = ReqRegister {
+        let req = RegisterParams {
             username: "username2".to_string(),
             email: "test2@email.com".to_string(),
             password: "password".to_string(),
@@ -54,7 +54,7 @@ mod tests {
         let controller = get_controller_with_mocks_arg();
         let ViewStupReturn { user, token: _ } = controller.register(req, view_stup).unwrap();
 
-        let req: ReqLogin = ReqLogin {
+        let req = LoginParams {
             username: user.username.clone(),
             password: "password".to_string(),
         };

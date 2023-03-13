@@ -1,21 +1,31 @@
 pub use crate::{
     models::user::user_model::{UserModel, UserModelCreateParams},
-    rpc::authentication::authentication::{ReqLogin, ReqRegister},
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
     services::sanitizer::user_input::sanitize_user_input::{SanitizeUser, SanitizeUserImpl},
     views::user_view::UserViewArg,
 };
 pub use tonic::Status;
 
+pub struct RegisterParams {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+}
+
+pub struct LoginParams {
+    pub username: String,
+    pub password: String,
+}
+
 pub trait UserController {
     fn register<T>(
         &self,
-        req: ReqRegister,
+        req: RegisterParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status>;
     fn login<T>(
         &self,
-        req: ReqLogin,
+        req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status>;
 }
@@ -29,7 +39,7 @@ pub struct UserControllerImpl<M, S> {
 impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> {
     fn register<T>(
         &self,
-        req: ReqRegister,
+        req: RegisterParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status> {
         let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
@@ -60,7 +70,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
 
     fn login<T>(
         &self,
-        req: ReqLogin,
+        req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status> {
         let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
