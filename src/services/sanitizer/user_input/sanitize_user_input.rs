@@ -162,7 +162,10 @@ impl SanitizeUser for SanitizeUserImpl {
 
     fn sanitize_password_input(&self, password: String) -> Result<String, Status> {
         if password.is_empty() {
-            return Err(Status::new(tonic::Code::InvalidArgument, "Email is empty"));
+            return Err(Status::new(
+                tonic::Code::InvalidArgument,
+                "Password is empty",
+            ));
         }
 
         let mut instance = StringSanitizer::from(password);
@@ -173,7 +176,7 @@ impl SanitizeUser for SanitizeUserImpl {
         if password_sanitized.is_empty() {
             return Err(Status::new(
                 tonic::Code::InvalidArgument,
-                "Pasword is empty after sanitize",
+                "Password is empty after sanitize",
             ));
         };
 
