@@ -36,14 +36,11 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
         let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
 
-        let user = match self.model.create(UserModelCreateParams {
+        let user = self.model.create(UserModelCreateParams {
             username: username_sanitized,
             email: email_sanitized,
             password: password_sanitized,
-        }) {
-            Ok(user) => user,
-            Err(error) => return Err(error),
-        };
+        })?;
 
         let token = (self.jwt_encode)(UserToken {
             id: user.id.clone(),
@@ -69,13 +66,9 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
         let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
 
-        let user = match self
+        let user = self
             .model
-            .login_verification(username_sanitized, password_sanitized)
-        {
-            Ok(user) => user,
-            Err(error) => return Err(error),
-        };
+            .login_verification(username_sanitized, password_sanitized)?;
 
         let token = (self.jwt_encode)(UserToken {
             id: user.id.clone(),
