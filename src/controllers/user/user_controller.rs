@@ -19,9 +19,9 @@ pub struct LoginParams {
 }
 
 pub struct UpdateParams {
-    pub username: String,
-    pub email: String,
-    pub password: String,
+    pub username: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
 }
 
 pub trait UserController {
@@ -116,9 +116,29 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         req: UpdateParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, Status> {
-        let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
-        let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
-        let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
+        let username_sanitized = match req.username {
+            Some(username) => match self.sanitize_user.sanitize_username_input(username) {
+                Ok(username) => Some(username),
+                Err(_) => None,
+            },
+            None => None,
+        };
+
+        let email_sanitized = match req.email {
+            Some(email) => match self.sanitize_user.sanitize_email_input(email) {
+                Ok(email) => Some(email),
+                Err(_) => None,
+            },
+            None => None,
+        };
+
+        let password_sanitized = match req.password {
+            Some(password) => match self.sanitize_user.sanitize_password_input(password) {
+                Ok(password) => Some(password),
+                Err(_) => None,
+            },
+            None => None,
+        };
 
         let jwt_decoded = (self.jwt_decode)(&token)?;
 
@@ -131,9 +151,9 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         let user = self.model.update(
             id,
             UserModelUpdateParams {
-                username: Some(username_sanitized),
-                email: Some(email_sanitized),
-                password: Some(password_sanitized),
+                username: username_sanitized,
+                email: email_sanitized,
+                password: password_sanitized,
             },
         )?;
 

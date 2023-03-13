@@ -81,9 +81,9 @@ mod tests {
         let ViewStupReturn { user, token: _ } = controller.register(req, view_stup).unwrap();
 
         let req = UpdateParams {
-            username: "username_update".to_string(),
-            email: "test_update@email.com".to_string(),
-            password: "password_update".to_string(),
+            username: Some("username_update".to_string()),
+            email: Some("test_update@email.com".to_string()),
+            password: Some("password_update".to_string()),
         };
 
         controller.update(user.id.clone(), req, view_stup).unwrap();
