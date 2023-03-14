@@ -1,5 +1,7 @@
 use crate::{
-    rpc::authentication::authentication::{ResLogin, ResRegister, User as UserResponse},
+    rpc::authentication::authentication::{
+        ResLogin, ResRegister, ResUpdateUser, User as UserResponse,
+    },
     views::user_view::UserViewArg,
 };
 use tonic::Response;
@@ -23,5 +25,15 @@ pub fn render_res_login(user: UserViewArg, token: String) -> Response<ResLogin> 
             email: user.email,
         }),
         token,
+    })
+}
+
+pub fn render_res_update(user: UserViewArg) -> Response<ResUpdateUser> {
+    Response::new(ResUpdateUser {
+        user: Some(UserResponse {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+        }),
     })
 }

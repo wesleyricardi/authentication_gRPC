@@ -4,6 +4,7 @@ package authentication;
 service Authentication {
     rpc Register (ReqRegister) returns (ResRegister);
     rpc Login (ReqLogin) returns (ResLogin);
+    rpc Update (ReqUpdateUser) returns (ResUpdateUser);
 }
 
 message User {
@@ -31,4 +32,14 @@ message ReqLogin {
 message ResLogin {
     User user = 1;
     string token = 2;
+}
+
+message ReqUpdateUser {
+    optional string username = 1;
+    optional string email = 2;
+    optional string password = 3;
+}
+
+message ResUpdateUser {
+    User user = 1;
 }
