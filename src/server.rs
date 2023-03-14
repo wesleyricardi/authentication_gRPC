@@ -1,6 +1,7 @@
 use tonic::transport::Server;
 
 mod controllers;
+mod dtos;
 mod models;
 mod repositories;
 mod rpc;

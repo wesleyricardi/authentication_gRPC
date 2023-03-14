@@ -1,40 +1,11 @@
 use crate::repositories::user::user_repository_mock::UserRepositoryUpdateParams;
 pub use crate::{
+    dtos::models::dtos_model_user::*,
     repositories::user::user_repository::{UserRepository, UserRepositoryStoreParams},
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
 pub use tonic::Status;
 use uuid::Uuid;
-
-pub struct UserModelCreateParams {
-    pub username: String,
-    pub email: String,
-    pub password: String,
-}
-
-pub struct UserModelInsertReturn {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-}
-
-pub struct UserModelLoginVerificationReturn {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-}
-
-pub struct UserModelUpdateParams {
-    pub username: Option<String>,
-    pub email: Option<String>,
-    pub password: Option<String>,
-}
-
-pub struct UserModelUpdateReturn {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-}
 
 pub trait UserModel {
     fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, Status>;

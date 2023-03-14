@@ -1,8 +1,8 @@
 use crate::{
+    dtos::views::dtos_view_user::*,
     rpc::authentication::authentication::{
         ResLogin, ResRegister, ResUpdateUser, User as UserResponse,
     },
-    views::user_view::UserViewArg,
 };
 use tonic::Response;
 

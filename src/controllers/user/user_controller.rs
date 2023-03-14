@@ -1,28 +1,12 @@
-use crate::{models::user::user_model::UserModelUpdateParams, security::jwt::JwtDecode};
 pub use crate::{
+    dtos::controllers::dtos_controller_user::*,
+    dtos::views::dtos_view_user::*,
     models::user::user_model::{UserModel, UserModelCreateParams},
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
     services::sanitizer::user_input::sanitize_user_input::{SanitizeUser, SanitizeUserImpl},
-    views::user_view::UserViewArg,
 };
+use crate::{models::user::user_model::UserModelUpdateParams, security::jwt::JwtDecode};
 pub use tonic::Status;
-
-pub struct RegisterParams {
-    pub username: String,
-    pub email: String,
-    pub password: String,
-}
-
-pub struct LoginParams {
-    pub username: String,
-    pub password: String,
-}
-
-pub struct UpdateParams {
-    pub username: Option<String>,
-    pub email: Option<String>,
-    pub password: Option<String>,
-}
 
 pub trait UserController {
     fn register<T>(
