@@ -28,6 +28,14 @@ mod tests {
         ViewStupReturn { user, token }
     }
 
+    struct ViewStupUpdateReturn {
+        user: UserViewArg,
+    }
+
+    fn view_update_stup(user: UserViewArg) -> ViewStupUpdateReturn {
+        ViewStupUpdateReturn { user }
+    }
+
     #[test]
     fn test_register() {
         let req = RegisterParams {
@@ -86,7 +94,9 @@ mod tests {
             password: Some("password_update".to_string()),
         };
 
-        controller.update(user.id.clone(), req, view_stup).unwrap();
+        controller
+            .update(user.id.clone(), req, view_update_stup)
+            .unwrap();
 
         let req = LoginParams {
             username: "username_update".to_string(),

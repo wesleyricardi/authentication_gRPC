@@ -39,7 +39,7 @@ pub trait UserController {
         &self,
         token: String,
         req: UpdateParams,
-        view: fn(user: UserViewArg, token: String) -> T,
+        view: fn(user: UserViewArg) -> T,
     ) -> Result<T, Status>;
 }
 
@@ -114,7 +114,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         &self,
         token: String,
         req: UpdateParams,
-        view: fn(user: UserViewArg, token: String) -> T,
+        view: fn(user: UserViewArg) -> T,
     ) -> Result<T, Status> {
         let username_sanitized = match req.username {
             Some(username) => match self.sanitize_user.sanitize_username_input(username) {
@@ -157,13 +157,10 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             },
         )?;
 
-        Ok(view(
-            UserViewArg {
-                id: user.id,
-                username: user.username,
-                email: user.email,
-            },
-            token,
-        ))
+        Ok(view(UserViewArg {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+        }))
     }
 }
