@@ -41,6 +41,27 @@ mod tests {
     }
 
     #[test]
+    fn test_consult_by_id() {
+        let user_repository = UserRepositoryMock;
+
+        user_repository.store(UserRepositoryStoreParams {
+            id: "repository_user_id3".to_string(),
+            username: "repository_username3".to_string(),
+            email: "test3@repository.com".to_string(),
+            password: "password".to_string(),
+        });
+
+        let response = user_repository
+            .consult_by_id("repository_user_id3".to_string())
+            .unwrap();
+
+        assert_eq!(response.id, "repository_user_id3".to_string());
+        assert_eq!(response.username, "repository_username3".to_string());
+        assert_eq!(response.email, "test3@repository.com".to_string());
+        assert_eq!(response.password, "password".to_string());
+    }
+
+    #[test]
     fn test_store_update() {
         let user_repository = UserRepositoryMock;
 

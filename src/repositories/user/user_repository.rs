@@ -7,6 +7,7 @@ pub trait UserRepository {
         &self,
         username: String,
     ) -> Result<UserRepositoryConsultReturn, AppError>;
+    fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError>;
     fn store_update(
         &self,
         id: String,

@@ -54,6 +54,21 @@ impl UserRepository for UserRepositoryMock {
         })
     }
 
+    fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError> {
+        let stored_user = unsafe { &mut STORED_USERS.lock().unwrap() };
+        let result = match stored_user.iter().find(|user| user.id == id) {
+            Some(user) => user,
+            None => return Err(AppError::new(Code::NotFound, "User not found")),
+        };
+
+        Ok(UserRepositoryConsultReturn {
+            id: result.id.clone(),
+            username: result.username.clone(),
+            email: result.email.clone(),
+            password: result.password.clone(),
+        })
+    }
+
     fn store_update(
         &self,
         id: String,
