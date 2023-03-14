@@ -20,15 +20,15 @@ mod tests {
 
         let response = model
             .create(UserModelCreateParams {
-                username: "username".to_string(),
-                email: "test@email.com".to_string(),
+                username: "model_username".to_string(),
+                email: "test@model.com".to_string(),
                 password: "password".to_string(),
             })
             .unwrap();
 
         assert_eq!(response.id.is_empty(), false);
-        assert_eq!(response.username, "username".to_string());
-        assert_eq!(response.email, "test@email.com".to_string())
+        assert_eq!(response.username, "model_username".to_string());
+        assert_eq!(response.email, "test@model.com".to_string())
     }
 
     #[test]
@@ -37,14 +37,14 @@ mod tests {
 
         let response = model
             .create(UserModelCreateParams {
-                username: "username2".to_string(),
-                email: "test2@email.com".to_string(),
+                username: "model_username2".to_string(),
+                email: "test2@model.com".to_string(),
                 password: "password".to_string(),
             })
             .unwrap();
 
         let user = model
-            .login_verification("username2".to_string(), "password".to_string())
+            .login_verification("model_username2".to_string(), "password".to_string())
             .unwrap();
 
         assert_eq!(user.id, response.id);
@@ -56,8 +56,8 @@ mod tests {
 
         let created_user = model
             .create(UserModelCreateParams {
-                username: "username".to_string(),
-                email: "test@email.com".to_string(),
+                username: "model_username".to_string(),
+                email: "test@model.com".to_string(),
                 password: "password".to_string(),
             })
             .unwrap();
@@ -66,19 +66,22 @@ mod tests {
             .update(
                 created_user.id.clone(),
                 UserModelUpdateParams {
-                    username: Some("usernameupdated".to_string()),
-                    email: Some("updated@email.com".to_string()),
+                    username: Some("model_usernameupdated".to_string()),
+                    email: Some("updated@model.com".to_string()),
                     password: Some("changedpassword".to_string()),
                 },
             )
             .unwrap();
 
         let response = model
-            .login_verification("usernameupdated".to_string(), "changedpassword".to_string())
+            .login_verification(
+                "model_usernameupdated".to_string(),
+                "changedpassword".to_string(),
+            )
             .unwrap();
 
         assert_eq!(response.id, created_user.id);
-        assert_eq!(response.username, "usernameupdated".to_string());
-        assert_eq!(response.email, "updated@email.com".to_string());
+        assert_eq!(response.username, "model_usernameupdated".to_string());
+        assert_eq!(response.email, "updated@model.com".to_string());
     }
 }

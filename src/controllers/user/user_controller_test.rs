@@ -39,8 +39,8 @@ mod tests {
     #[test]
     fn test_register() {
         let req = RegisterParams {
-            username: "username".to_string(),
-            email: "test@email.com".to_string(),
+            username: "controller_username".to_string(),
+            email: "test@controller.com".to_string(),
             password: "password".to_string(),
         };
 
@@ -48,16 +48,16 @@ mod tests {
         let ViewStupReturn { user, token } = controller.register(req, view_stup).unwrap();
 
         assert_eq!(user.id.is_empty(), false);
-        assert_eq!(user.username, "username".to_string());
-        assert_eq!(user.email, "test@email.com".to_string());
+        assert_eq!(user.username, "controller_username".to_string());
+        assert_eq!(user.email, "test@controller.com".to_string());
         assert_eq!(token.is_empty(), false);
     }
 
     #[test]
     fn test_login() {
         let req = RegisterParams {
-            username: "username2".to_string(),
-            email: "test2@email.com".to_string(),
+            username: "controller_username2".to_string(),
+            email: "test2@controller.com".to_string(),
             password: "password".to_string(),
         };
 
@@ -80,8 +80,8 @@ mod tests {
     #[test]
     fn test_update() {
         let req = RegisterParams {
-            username: "username3".to_string(),
-            email: "test3@email.com".to_string(),
+            username: "controller_username3".to_string(),
+            email: "test3@controller.com".to_string(),
             password: "password".to_string(),
         };
 
@@ -89,8 +89,8 @@ mod tests {
         let ViewStupReturn { user, token: _ } = controller.register(req, view_stup).unwrap();
 
         let req = UpdateParams {
-            username: Some("username_update".to_string()),
-            email: Some("test_update@email.com".to_string()),
+            username: Some("controller_username_update".to_string()),
+            email: Some("test_update@controller.com".to_string()),
             password: Some("password_update".to_string()),
         };
 
@@ -99,15 +99,21 @@ mod tests {
             .unwrap();
 
         let req = LoginParams {
-            username: "username_update".to_string(),
+            username: "controller_username_update".to_string(),
             password: "password_update".to_string(),
         };
 
         let response = controller.login(req, view_stup).unwrap();
 
         assert_eq!(response.user.id, user.id);
-        assert_eq!(response.user.username, "username_update".to_string());
-        assert_eq!(response.user.email, "test_update@email.com".to_string());
+        assert_eq!(
+            response.user.username,
+            "controller_username_update".to_string()
+        );
+        assert_eq!(
+            response.user.email,
+            "test_update@controller.com".to_string()
+        );
         assert_eq!(response.token.is_empty(), false);
     }
 }

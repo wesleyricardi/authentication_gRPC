@@ -8,15 +8,15 @@ mod tests {
         let user_repository = UserRepositoryMock;
 
         let response = user_repository.store(UserRepositoryStoreParams {
-            id: "UNIQUE_ID".to_string(),
-            username: "username".to_string(),
-            email: "test@email.com".to_string(),
+            id: "repository_user_id".to_string(),
+            username: "repository_username".to_string(),
+            email: "test@repository.com".to_string(),
             password: "password".to_string(),
         });
 
-        assert_eq!(response.id, "UNIQUE_ID".to_string());
-        assert_eq!(response.username, "username".to_string());
-        assert_eq!(response.email, "test@email.com".to_string());
+        assert_eq!(response.id, "repository_user_id".to_string());
+        assert_eq!(response.username, "repository_username".to_string());
+        assert_eq!(response.email, "test@repository.com".to_string());
     }
 
     #[test]
@@ -24,19 +24,19 @@ mod tests {
         let user_repository = UserRepositoryMock;
 
         user_repository.store(UserRepositoryStoreParams {
-            id: "UNIQUE_ID2".to_string(),
-            username: "username2".to_string(),
-            email: "test2@email.com".to_string(),
+            id: "repository_user_id2".to_string(),
+            username: "repository_username2".to_string(),
+            email: "test2@repository.com".to_string(),
             password: "password".to_string(),
         });
 
         let response = user_repository
-            .consult_by_username("username2".to_string())
+            .consult_by_username("repository_username2".to_string())
             .unwrap();
 
-        assert_eq!(response.id, "UNIQUE_ID2".to_string());
-        assert_eq!(response.username, "username2".to_string());
-        assert_eq!(response.email, "test2@email.com".to_string());
+        assert_eq!(response.id, "repository_user_id2".to_string());
+        assert_eq!(response.username, "repository_username2".to_string());
+        assert_eq!(response.email, "test2@repository.com".to_string());
         assert_eq!(response.password, "password".to_string());
     }
 
@@ -45,18 +45,18 @@ mod tests {
         let user_repository = UserRepositoryMock;
 
         user_repository.store(UserRepositoryStoreParams {
-            id: "UNIQUE_ID3".to_string(),
-            username: "username3".to_string(),
-            email: "test3@email.com".to_string(),
+            id: "repository_user_id3".to_string(),
+            username: "repository_username3".to_string(),
+            email: "test3@repository.com".to_string(),
             password: "password".to_string(),
         });
 
         user_repository
             .store_update(
-                "UNIQUE_ID3".to_string(),
+                "repository_user_id3".to_string(),
                 UserRepositoryUpdateParams {
                     username: Some("updateduser".to_string()),
-                    email: Some("updated@email.com".to_string()),
+                    email: Some("updated@repository.com".to_string()),
                     password: Some("changedpassword".to_string()),
                 },
             )
@@ -66,9 +66,9 @@ mod tests {
             .consult_by_username("updateduser".to_string())
             .unwrap();
 
-        assert_eq!(response.id, "UNIQUE_ID3".to_string());
+        assert_eq!(response.id, "repository_user_id3".to_string());
         assert_eq!(response.username, "updateduser".to_string());
-        assert_eq!(response.email, "updated@email.com".to_string());
+        assert_eq!(response.email, "updated@repository.com".to_string());
         assert_eq!(response.password, "changedpassword".to_string());
     }
 }
