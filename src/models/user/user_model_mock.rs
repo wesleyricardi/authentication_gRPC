@@ -41,6 +41,16 @@ impl UserModel for UserModelMock {
         })
     }
 
+    fn recover_user_data(&self, id: String) -> Result<UserModelRecoverUserDataReturn, AppError> {
+        let repository = UserRepositoryMock;
+        let user = repository.consult_by_id(id)?;
+
+        Ok(UserModelRecoverUserDataReturn {
+            username: user.username,
+            email: user.email,
+        })
+    }
+
     fn update(
         &self,
         id: String,

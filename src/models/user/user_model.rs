@@ -13,6 +13,7 @@ pub trait UserModel {
         username: String,
         password: String,
     ) -> Result<UserModelLoginVerificationReturn, AppError>;
+    fn recover_user_data(&self, id: String) -> Result<UserModelRecoverUserDataReturn, AppError>;
     fn update(
         &self,
         id: String,
@@ -57,6 +58,15 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
 
         Ok(UserModelLoginVerificationReturn {
             id: user.id,
+            username: user.username,
+            email: user.email,
+        })
+    }
+
+    fn recover_user_data(&self, id: String) -> Result<UserModelRecoverUserDataReturn, AppError> {
+        let user = self.user_repository.consult_by_id(id)?;
+
+        Ok(UserModelRecoverUserDataReturn {
             username: user.username,
             email: user.email,
         })

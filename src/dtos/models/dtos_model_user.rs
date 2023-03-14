@@ -16,6 +16,11 @@ pub struct UserModelLoginVerificationReturn {
     pub email: String,
 }
 
+pub struct UserModelRecoverUserDataReturn {
+    pub username: String,
+    pub email: String,
+}
+
 pub struct UserModelUpdateParams {
     pub username: Option<String>,
     pub email: Option<String>,

@@ -50,6 +50,23 @@ mod tests {
         assert_eq!(user.id, response.id);
     }
 
+    fn test_recover_user_data() {
+        let model = get_mocked_model();
+
+        let response = model
+            .create(UserModelCreateParams {
+                username: "model_username3".to_string(),
+                email: "test3@model.com".to_string(),
+                password: "password".to_string(),
+            })
+            .unwrap();
+
+        let user = model.recover_user_data(response.id).unwrap();
+
+        assert_eq!(user.username, "model_username3".to_string());
+        assert_eq!(user.email, "test3@model.com".to_string());
+    }
+
     #[test]
     fn test_update() {
         let model = get_mocked_model();
