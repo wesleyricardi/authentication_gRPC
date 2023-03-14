@@ -28,6 +28,10 @@ mod tests {
         ViewStupReturn { user, token }
     }
 
+    struct ViewStupAuthenticationReturn {
+        user: UserViewArg,
+    }
+
     struct ViewStupUpdateReturn {
         user: UserViewArg,
     }
@@ -75,6 +79,25 @@ mod tests {
         assert_eq!(response.user.username, user.username);
         assert_eq!(response.user.email, user.email);
         assert_eq!(response.token.is_empty(), false);
+    }
+
+    #[test]
+    fn test_authentication() {
+        let req = RegisterParams {
+            username: "controller_username4".to_string(),
+            email: "test4@controller.com".to_string(),
+            password: "password".to_string(),
+        };
+
+        let controller = get_controller_with_mocks_arg();
+        let ViewStupReturn { user, .. } = controller.register(req, view_stup).unwrap();
+
+        let response = controller
+            .authenticate(user.id, |user| ViewStupAuthenticationReturn { user })
+            .unwrap();
+
+        assert_eq!(response.user.username, "controller_username4".to_string());
+        assert_eq!(response.user.email, "test4@controller.com".to_string());
     }
 
     #[test]

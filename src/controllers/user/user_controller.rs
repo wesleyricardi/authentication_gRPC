@@ -6,7 +6,9 @@ pub use crate::{
     services::sanitizer::user_input::sanitize_user_input::{SanitizeUser, SanitizeUserImpl},
 };
 use crate::{
-    error::AppError, models::user::user_model::UserModelUpdateParams, security::jwt::JwtDecode,
+    error::AppError,
+    models::user::user_model::UserModelUpdateParams,
+    security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
 
 pub trait UserController {
@@ -19,6 +21,11 @@ pub trait UserController {
         &self,
         req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
+    ) -> Result<T, AppError>;
+    fn authenticate<T>(
+        &self,
+        token: String,
+        view: fn(user: UserViewArg) -> T,
     ) -> Result<T, AppError>;
     fn update<T>(
         &self,
@@ -93,6 +100,24 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             },
             token,
         ))
+    }
+
+    fn authenticate<T>(
+        &self,
+        token: String,
+        view: fn(user: UserViewArg) -> T,
+    ) -> Result<T, AppError> {
+        let JWTAuthenticateToken {
+            user: user_token, ..
+        } = (self.jwt_decode)(&token)?;
+
+        let user = self.model.recover_user_data(user_token.id.clone())?;
+
+        Ok(view(UserViewArg {
+            id: user_token.id,
+            username: user.username,
+            email: user.email,
+        }))
     }
 
     fn update<T>(
