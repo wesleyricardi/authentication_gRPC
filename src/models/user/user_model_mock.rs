@@ -9,7 +9,7 @@ impl UserModel for UserModelMock {
         assert!(!user.email.is_empty());
         assert!(!user.password.is_empty());
 
-        let id = "UUIDV4".to_string();
+        let id = "UUIDV4_".to_string() + &user.username;
 
         let repository = UserRepositoryMock;
         let user = repository.store(UserRepositoryStoreParams {
