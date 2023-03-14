@@ -5,26 +5,27 @@ pub use crate::{
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
     services::sanitizer::user_input::sanitize_user_input::{SanitizeUser, SanitizeUserImpl},
 };
-use crate::{models::user::user_model::UserModelUpdateParams, security::jwt::JwtDecode};
-pub use tonic::Status;
+use crate::{
+    error::AppError, models::user::user_model::UserModelUpdateParams, security::jwt::JwtDecode,
+};
 
 pub trait UserController {
     fn register<T>(
         &self,
         req: RegisterParams,
         view: fn(user: UserViewArg, token: String) -> T,
-    ) -> Result<T, Status>;
+    ) -> Result<T, AppError>;
     fn login<T>(
         &self,
         req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
-    ) -> Result<T, Status>;
+    ) -> Result<T, AppError>;
     fn update<T>(
         &self,
         token: String,
         req: UpdateParams,
         view: fn(user: UserViewArg) -> T,
-    ) -> Result<T, Status>;
+    ) -> Result<T, AppError>;
 }
 
 pub struct UserControllerImpl<M, S> {
@@ -39,7 +40,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         &self,
         req: RegisterParams,
         view: fn(user: UserViewArg, token: String) -> T,
-    ) -> Result<T, Status> {
+    ) -> Result<T, AppError> {
         let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
         let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
         let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
@@ -70,7 +71,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         &self,
         req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
-    ) -> Result<T, Status> {
+    ) -> Result<T, AppError> {
         let username_sanitized = self.sanitize_user.sanitize_username_input(req.username)?;
         let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
 
@@ -99,7 +100,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         token: String,
         req: UpdateParams,
         view: fn(user: UserViewArg) -> T,
-    ) -> Result<T, Status> {
+    ) -> Result<T, AppError> {
         let username_sanitized = match req.username {
             Some(username) => match self.sanitize_user.sanitize_username_input(username) {
                 Ok(username) => Some(username),

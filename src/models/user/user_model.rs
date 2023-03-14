@@ -1,24 +1,23 @@
-use crate::repositories::user::user_repository_mock::UserRepositoryUpdateParams;
 pub use crate::{
     dtos::models::dtos_model_user::*,
     repositories::user::user_repository::{UserRepository, UserRepositoryStoreParams},
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
-pub use tonic::Status;
+use crate::{error::*, repositories::user::user_repository_mock::UserRepositoryUpdateParams};
 use uuid::Uuid;
 
 pub trait UserModel {
-    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, Status>;
+    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError>;
     fn login_verification(
         &self,
         username: String,
         password: String,
-    ) -> Result<UserModelLoginVerificationReturn, Status>;
+    ) -> Result<UserModelLoginVerificationReturn, AppError>;
     fn update(
         &self,
         id: String,
         user: UserModelUpdateParams,
-    ) -> Result<UserModelUpdateReturn, Status>;
+    ) -> Result<UserModelUpdateReturn, AppError>;
 }
 
 pub struct UserModelImpl<R> {
@@ -28,7 +27,7 @@ pub struct UserModelImpl<R> {
 }
 
 impl<R: UserRepository> UserModel for UserModelImpl<R> {
-    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, Status> {
+    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
         let id = Uuid::new_v4().to_string();
         let hashed_password = (self.password_hasher)(user.password)?;
 
@@ -49,14 +48,11 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
         &self,
         username: String,
         password: String,
-    ) -> Result<UserModelLoginVerificationReturn, Status> {
+    ) -> Result<UserModelLoginVerificationReturn, AppError> {
         let user = self.user_repository.consult_by_username(username)?;
 
         if !(self.password_verify)(user.password, password)? {
-            return Err(Status::new(
-                tonic::Code::Unauthenticated,
-                "Incorrect password",
-            ));
+            return Err(AppError::new(Code::Unauthenticated, "Incorrect password"));
         }
 
         Ok(UserModelLoginVerificationReturn {
@@ -70,7 +66,7 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
         &self,
         id: String,
         user: UserModelUpdateParams,
-    ) -> Result<UserModelUpdateReturn, Status> {
+    ) -> Result<UserModelUpdateReturn, AppError> {
         let password = match user.password {
             Some(password) => Some((self.password_hasher)(password)?),
             None => None,

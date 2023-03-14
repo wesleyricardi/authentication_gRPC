@@ -1,10 +1,10 @@
-use crate::repositories::user::user_repository_mock::*;
+use crate::{error::AppError, repositories::user::user_repository_mock::*};
 
 use super::user_model::*;
 
 pub struct UserModelMock;
 impl UserModel for UserModelMock {
-    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, Status> {
+    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
         assert!(!user.username.is_empty());
         assert!(!user.email.is_empty());
         assert!(!user.password.is_empty());
@@ -30,7 +30,7 @@ impl UserModel for UserModelMock {
         &self,
         username: String,
         _password: String,
-    ) -> Result<UserModelLoginVerificationReturn, Status> {
+    ) -> Result<UserModelLoginVerificationReturn, AppError> {
         let repository = UserRepositoryMock;
         let user = repository.consult_by_username(username)?;
 
@@ -45,7 +45,7 @@ impl UserModel for UserModelMock {
         &self,
         id: String,
         user: UserModelUpdateParams,
-    ) -> Result<UserModelUpdateReturn, Status> {
+    ) -> Result<UserModelUpdateReturn, AppError> {
         let user_to_be_updated = UserRepositoryUpdateParams {
             username: user.username,
             email: user.email,

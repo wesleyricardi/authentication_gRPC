@@ -7,6 +7,7 @@ use tonic::{Request, Response, Status};
 
 use crate::controllers::default_controllers::{get_default_user_controller, UserController};
 use crate::controllers::user::user_controller::{LoginParams, RegisterParams, UpdateParams};
+use crate::error_handling::error_handling_rpc::app_error_to_rpc_error;
 use crate::views::rpc;
 
 #[derive(Debug, Default)]
@@ -27,14 +28,17 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_register;
         let controller = get_default_user_controller();
 
-        controller.register(
+        match controller.register(
             RegisterParams {
                 username,
                 email,
                 password,
             },
             view,
-        )
+        ) {
+            Ok(response) => Ok(response),
+            Err(error) => Err(app_error_to_rpc_error(error)),
+        }
     }
 
     async fn login(&self, request: Request<ReqLogin>) -> Result<Response<ResLogin>, Status> {
@@ -43,7 +47,10 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_login;
         let controller = get_default_user_controller();
 
-        controller.login(LoginParams { username, password }, view)
+        match controller.login(LoginParams { username, password }, view) {
+            Ok(response) => Ok(response),
+            Err(error) => Err(app_error_to_rpc_error(error)),
+        }
     }
 
     async fn update(
@@ -65,7 +72,7 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_update;
         let controller = get_default_user_controller();
 
-        controller.update(
+        match controller.update(
             token.to_string(),
             UpdateParams {
                 username,
@@ -73,6 +80,9 @@ impl Authentication for AuthenticationService {
                 password,
             },
             view,
-        )
+        ) {
+            Ok(response) => Ok(response),
+            Err(error) => Err(app_error_to_rpc_error(error)),
+        }
     }
 }

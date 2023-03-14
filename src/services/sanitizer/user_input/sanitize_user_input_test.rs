@@ -22,12 +22,12 @@ mod tests {
 
         match sanitize.sanitize_username_input(username_input_dirty) {
             Ok(_) => panic!("Should have failed"),
-            Err(error) => assert_eq!(error.message(), "Username is empty"),
+            Err(error) => assert_eq!(error.message, "Username is empty"),
         }
 
         match sanitize.sanitize_username_input(username_input_dirty2) {
             Ok(_) => panic!("Should have failed"),
-            Err(error) => assert_eq!(error.message(), "Username is empty after sanitize"),
+            Err(error) => assert_eq!(error.message, "Username is empty after sanitize"),
         }
     }
 
@@ -49,12 +49,12 @@ mod tests {
 
         match sanitize.sanitize_email_input(email_input_dirty) {
             Ok(_) => panic!("Should have failed"),
-            Err(error) => assert_eq!(error.message(), "Email is empty"),
+            Err(error) => assert_eq!(error.message, "Email is empty"),
         }
 
         match sanitize.sanitize_email_input(email_input_dirty2) {
             Ok(_) => panic!("Should have failed"),
-            Err(error) => assert_eq!(error.message(), "Email is empty after sanitize"),
+            Err(error) => assert_eq!(error.message, "Email is empty after sanitize"),
         }
     }
 
@@ -78,12 +78,12 @@ mod tests {
 
         match sanitize.sanitize_password_input(password_input_dirty) {
             Ok(_) => panic!("Should have failed"),
-            Err(error) => assert_eq!(error.message(), "Password is empty"),
+            Err(error) => assert_eq!(error.message, "Password is empty"),
         }
 
         match sanitize.sanitize_password_input(password_input_dirty2) {
             Ok(_) => panic!("Should have failed"),
-            Err(error) => assert_eq!(error.message(), "Password is empty after sanitize"),
+            Err(error) => assert_eq!(error.message, "Password is empty after sanitize"),
         }
     }
 }

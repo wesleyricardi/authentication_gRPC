@@ -1,6 +1,6 @@
-use std::sync::Mutex;
-
 pub use super::user_repository::*;
+use crate::error::*;
+use std::sync::Mutex;
 
 #[derive(Debug, Clone)]
 pub struct UserStored {
@@ -36,11 +36,14 @@ impl UserRepository for UserRepositoryMock {
         }
     }
 
-    fn consult_by_username(&self, username: String) -> Result<UserRepositoryConsultReturn, Status> {
+    fn consult_by_username(
+        &self,
+        username: String,
+    ) -> Result<UserRepositoryConsultReturn, AppError> {
         let stored_user = unsafe { &mut STORED_USERS.lock().unwrap() };
         let result = match stored_user.iter().find(|user| user.username == username) {
             Some(user) => user,
-            None => return Err(Status::not_found("User not found")),
+            None => return Err(AppError::new(Code::NotFound, "User not found")),
         };
 
         Ok(UserRepositoryConsultReturn {
@@ -55,12 +58,12 @@ impl UserRepository for UserRepositoryMock {
         &self,
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,
-    ) -> Result<UserRepositoryUpdateReturn, Status> {
+    ) -> Result<UserRepositoryUpdateReturn, AppError> {
         let stored_user = unsafe { &mut STORED_USERS.lock().unwrap() };
 
         let user = match stored_user.iter().find(|user| user.id == id) {
             Some(user) => user,
-            None => return Err(Status::not_found("User not found")),
+            None => return Err(AppError::new(Code::NotFound, "User not found")),
         };
 
         let user_prepared_to_be_updated = UserStored {

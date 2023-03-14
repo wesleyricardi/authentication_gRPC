@@ -1,12 +1,12 @@
-use tonic::Status;
+use crate::error::*;
 
-pub type PasswordHasher = fn(password: String) -> Result<String, Status>;
-pub type PasswordVerify = fn(hash_string: String, password: String) -> Result<bool, Status>;
+pub type PasswordHasher = fn(password: String) -> Result<String, AppError>;
+pub type PasswordVerify = fn(hash_string: String, password: String) -> Result<bool, AppError>;
 
 pub const PASSWORD_HASHER: PasswordHasher = |password| {
     let hash = match bcrypt::hash(password, 8) {
         Ok(hash) => hash,
-        Err(error) => return Err(Status::new(tonic::Code::Internal, error.to_string())),
+        Err(error) => return Err(AppError::new(Code::Internal, error.to_string())),
     };
     return Ok(hash);
 };
@@ -14,7 +14,7 @@ pub const PASSWORD_HASHER: PasswordHasher = |password| {
 pub const PASSWORD_VERIFY: PasswordVerify = |hash_string, password| {
     let result = match bcrypt::verify(password, &hash_string) {
         Ok(result) => result,
-        Err(error) => return Err(Status::new(tonic::Code::Internal, error.to_string())),
+        Err(error) => return Err(AppError::new(Code::Internal, error.to_string())),
     };
     return Ok(result);
 };

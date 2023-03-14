@@ -1,6 +1,6 @@
+use crate::error::*;
 use jsonwebtoken::{get_current_timestamp, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use tonic::{Code, Status};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserToken {
@@ -16,8 +16,8 @@ pub struct JWTAuthenticateToken {
     exp: usize,
 }
 
-pub type JwtEncode = fn(user: UserToken) -> Result<String, Status>;
-pub type JwtDecode = fn(token: &str) -> Result<JWTAuthenticateToken, Status>;
+pub type JwtEncode = fn(user: UserToken) -> Result<String, AppError>;
+pub type JwtDecode = fn(token: &str) -> Result<JWTAuthenticateToken, AppError>;
 
 pub const JWT_ENCODE: JwtEncode = |user| {
     let user_token = JWTAuthenticateToken {
@@ -37,7 +37,7 @@ pub const JWT_ENCODE: JwtEncode = |user| {
     ) {
         Ok(token) => return Ok(token),
         Err(error) => {
-            return Err(Status::new(
+            return Err(AppError::new(
                 Code::InvalidArgument,
                 format!("failed to encode token :{}", error),
             ))
@@ -53,7 +53,7 @@ pub const JWT_DECODE: JwtDecode = |token| {
     ) {
         Ok(user_token) => return Ok(user_token.claims),
         Err(error) => {
-            return Err(Status::new(
+            return Err(AppError::new(
                 Code::InvalidArgument,
                 format!("failed to decode token :{}", error),
             ))

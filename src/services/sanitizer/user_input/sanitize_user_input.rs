@@ -1,21 +1,18 @@
+use crate::error::*;
 use sanitizer::prelude::*;
-pub use tonic::Status;
 
 pub trait SanitizeUser {
-    fn sanitize_username_input(&self, username: String) -> Result<String, Status>;
-    fn sanitize_email_input(&self, email: String) -> Result<String, Status>;
-    fn sanitize_password_input(&self, password: String) -> Result<String, Status>;
+    fn sanitize_username_input(&self, username: String) -> Result<String, AppError>;
+    fn sanitize_email_input(&self, email: String) -> Result<String, AppError>;
+    fn sanitize_password_input(&self, password: String) -> Result<String, AppError>;
 }
 
 pub struct SanitizeUserImpl;
 
 impl SanitizeUser for SanitizeUserImpl {
-    fn sanitize_username_input(&self, username: String) -> Result<String, Status> {
+    fn sanitize_username_input(&self, username: String) -> Result<String, AppError> {
         if username.is_empty() {
-            return Err(Status::new(
-                tonic::Code::InvalidArgument,
-                "Username is empty",
-            ));
+            return Err(AppError::new(Code::InvalidArgument, "Username is empty"));
         };
 
         let mut instance = StringSanitizer::from(username);
@@ -23,8 +20,8 @@ impl SanitizeUser for SanitizeUserImpl {
 
         let username_sanitized = instance.get();
         if username_sanitized.is_empty() {
-            return Err(Status::new(
-                tonic::Code::Internal,
+            return Err(AppError::new(
+                Code::Internal,
                 "Username is empty after sanitize",
             ));
         };
@@ -32,9 +29,9 @@ impl SanitizeUser for SanitizeUserImpl {
         return Ok(username_sanitized);
     }
 
-    fn sanitize_email_input(&self, email: String) -> Result<String, Status> {
+    fn sanitize_email_input(&self, email: String) -> Result<String, AppError> {
         if email.is_empty() {
-            return Err(Status::new(tonic::Code::InvalidArgument, "Email is empty"));
+            return Err(AppError::new(Code::InvalidArgument, "Email is empty"));
         }
 
         let mut instance = StringSanitizer::from(email);
@@ -43,8 +40,8 @@ impl SanitizeUser for SanitizeUserImpl {
         let email_sanitized = instance.get();
 
         if email_sanitized.is_empty() {
-            return Err(Status::new(
-                tonic::Code::InvalidArgument,
+            return Err(AppError::new(
+                Code::InvalidArgument,
                 "Email is empty after sanitize",
             ));
         };
@@ -52,12 +49,9 @@ impl SanitizeUser for SanitizeUserImpl {
         return Ok(email_sanitized);
     }
 
-    fn sanitize_password_input(&self, password: String) -> Result<String, Status> {
+    fn sanitize_password_input(&self, password: String) -> Result<String, AppError> {
         if password.is_empty() {
-            return Err(Status::new(
-                tonic::Code::InvalidArgument,
-                "Password is empty",
-            ));
+            return Err(AppError::new(Code::InvalidArgument, "Password is empty"));
         }
 
         let mut instance = StringSanitizer::from(password);
@@ -66,8 +60,8 @@ impl SanitizeUser for SanitizeUserImpl {
         let password_sanitized = instance.get();
 
         if password_sanitized.is_empty() {
-            return Err(Status::new(
-                tonic::Code::InvalidArgument,
+            return Err(AppError::new(
+                Code::InvalidArgument,
                 "Password is empty after sanitize",
             ));
         };
