@@ -1,7 +1,7 @@
 use crate::{
     dtos::views::dtos_view_user::*,
     rpc::authentication::authentication::{
-        ResLogin, ResRegister, ResUpdateUser, User as UserResponse,
+        ResAuthentication, ResLogin, ResRegister, ResUpdateUser, User as UserResponse,
     },
 };
 use tonic::Response;
@@ -25,6 +25,16 @@ pub fn render_res_login(user: UserViewArg, token: String) -> Response<ResLogin> 
             email: user.email,
         }),
         token,
+    })
+}
+
+pub fn render_res_authentication(user: UserViewArg) -> Response<ResAuthentication> {
+    Response::new(ResAuthentication {
+        user: Some(UserResponse {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+        }),
     })
 }
 

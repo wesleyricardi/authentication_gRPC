@@ -5,6 +5,7 @@ service Authentication {
     rpc Register (ReqRegister) returns (ResRegister);
     rpc Login (ReqLogin) returns (ResLogin);
     rpc Update (ReqUpdateUser) returns (ResUpdateUser);
+    rpc Authentication (ReqAuthentication) returns (ResAuthentication);
 }
 
 message User {
@@ -41,5 +42,11 @@ message ReqUpdateUser {
 }
 
 message ResUpdateUser {
+    User user = 1;
+}
+
+message ReqAuthentication {}
+
+message ResAuthentication {
     User user = 1;
 }

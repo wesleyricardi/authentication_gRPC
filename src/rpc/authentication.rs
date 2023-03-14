@@ -2,7 +2,10 @@ pub mod authentication {
     tonic::include_proto!("authentication");
 }
 use authentication::authentication_server::Authentication;
-use authentication::{ReqLogin, ReqRegister, ReqUpdateUser, ResLogin, ResRegister, ResUpdateUser};
+use authentication::{
+    ReqAuthentication, ReqLogin, ReqRegister, ReqUpdateUser, ResAuthentication, ResLogin,
+    ResRegister, ResUpdateUser,
+};
 use tonic::{Request, Response, Status};
 
 use crate::controllers::default_controllers::{get_default_user_controller, UserController};
@@ -48,6 +51,25 @@ impl Authentication for AuthenticationService {
         let controller = get_default_user_controller();
 
         match controller.login(LoginParams { username, password }, view) {
+            Ok(response) => Ok(response),
+            Err(error) => Err(app_error_to_rpc_error(error)),
+        }
+    }
+
+    async fn authentication(
+        &self,
+        request: Request<ReqAuthentication>,
+    ) -> Result<Response<ResAuthentication>, Status> {
+        let metadata = request.metadata();
+        let token = match metadata.get("authorization") {
+            Some(t) => t.to_str().unwrap(),
+            None => return Err(Status::unauthenticated("Token JWT not found")),
+        };
+
+        let view = rpc::user_view::render_res_authentication;
+        let controller = get_default_user_controller();
+
+        match controller.authenticate(token.to_string(), view) {
             Ok(response) => Ok(response),
             Err(error) => Err(app_error_to_rpc_error(error)),
         }
