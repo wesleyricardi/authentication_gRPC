@@ -4,8 +4,9 @@ pub use crate::{
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
 use crate::{error::*, repositories::user::user_repository_mock::UserRepositoryUpdateParams};
-use uuid::Uuid;
+use mockall::automock;
 
+#[automock]
 pub trait UserModel {
     fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError>;
     fn login_verification(
@@ -25,11 +26,12 @@ pub struct UserModelImpl<R> {
     pub user_repository: R,
     pub password_hasher: PasswordHasher,
     pub password_verify: PasswordVerify,
+    pub new_id: fn() -> String,
 }
 
 impl<R: UserRepository> UserModel for UserModelImpl<R> {
     fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
-        let id = Uuid::new_v4().to_string();
+        let id = (self.new_id)();
         let hashed_password = (self.password_hasher)(user.password)?;
 
         let user = self.user_repository.store(UserRepositoryStoreParams {

@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub struct UserModelCreateParams {
     pub username: String,
     pub email: String,
@@ -10,6 +11,7 @@ pub struct UserModelInsertReturn {
     pub email: String,
 }
 
+#[derive(Debug)]
 pub struct UserModelLoginVerificationReturn {
     pub id: String,
     pub username: String,
@@ -21,6 +23,7 @@ pub struct UserModelRecoverUserDataReturn {
     pub email: String,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct UserModelUpdateParams {
     pub username: Option<String>,
     pub email: Option<String>,

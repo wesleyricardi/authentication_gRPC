@@ -1,6 +1,9 @@
+use mockall::automock;
+
 pub use crate::dtos::repositories::dtos_repository_user::*;
 use crate::error::*;
 
+#[automock]
 pub trait UserRepository {
     fn store(&self, user: UserRepositoryStoreParams) -> UserRepositoryStoreReturn;
     fn consult_by_username(

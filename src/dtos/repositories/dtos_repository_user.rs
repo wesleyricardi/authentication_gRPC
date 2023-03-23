@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub struct UserRepositoryStoreParams {
     pub id: String,
     pub username: String,
@@ -18,6 +19,7 @@ pub struct UserRepositoryConsultReturn {
     pub password: String,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct UserRepositoryUpdateParams {
     pub username: Option<String>,
     pub email: Option<String>,

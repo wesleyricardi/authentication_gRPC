@@ -1,6 +1,8 @@
 use crate::error::*;
+use mockall::automock;
 use sanitizer::prelude::*;
 
+#[automock]
 pub trait SanitizeUser {
     fn sanitize_username_input(&self, username: String) -> Result<String, AppError>;
     fn sanitize_email_input(&self, email: String) -> Result<String, AppError>;

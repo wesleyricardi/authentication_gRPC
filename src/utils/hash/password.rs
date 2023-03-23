@@ -19,30 +19,33 @@ pub const PASSWORD_VERIFY: PasswordVerify = |hash_string, password| {
     return Ok(result);
 };
 
-pub const PASSWORD_HASHER_STUP: PasswordHasher = |password| {
-    assert!(!password.is_empty());
-
-    Ok("hashpassword".to_string())
-};
-
-pub const PASSWORD_VERIFY_STUP: PasswordVerify = |hash_string, password| {
-    assert!(!hash_string.is_empty());
-    assert!(!password.is_empty());
-    assert!(hash_string != password);
-
-    Ok(true)
-};
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    const PASSWORD: &str = "password";
+
     #[test]
     fn test_password_hasher() {
-        let password = "password";
-        let hash = PASSWORD_HASHER(password.to_string()).unwrap();
+        let hash = PASSWORD_HASHER(PASSWORD.to_string()).unwrap();
 
-        assert!(PASSWORD_VERIFY(hash.clone(), password.to_string()).unwrap());
-        assert!(!PASSWORD_VERIFY(hash, "wrong_password".to_string()).unwrap());
+        assert_ne!(hash, PASSWORD);
+    }
+
+    #[test]
+    fn test_password_verify() {
+        let hash = PASSWORD_HASHER(PASSWORD.to_string()).unwrap();
+
+        let result = PASSWORD_VERIFY(hash, PASSWORD.to_string()).unwrap();
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn test_password_with_wrong_password() {
+        let hash = PASSWORD_HASHER(PASSWORD.to_string()).unwrap();
+
+        let result = PASSWORD_VERIFY(hash, "wrong password".to_string()).unwrap();
+
+        assert_eq!(result, false);
     }
 }

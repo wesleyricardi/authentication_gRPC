@@ -11,9 +11,9 @@ pub struct UserToken {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JWTAuthenticateToken {
-    sub: String,
+    pub sub: String,
     pub user: UserToken,
-    exp: usize,
+    pub exp: usize,
 }
 
 pub type JwtEncode = fn(user: UserToken) -> Result<String, AppError>;
@@ -59,26 +59,6 @@ pub const JWT_DECODE: JwtDecode = |token| {
             ))
         }
     };
-};
-
-pub const JWT_ENCODE_STUB: JwtEncode = |user| {
-    assert!(!user.id.is_empty());
-    assert!(!user.username.is_empty());
-    assert!(!user.email.is_empty());
-
-    Ok("json.web.token".to_string())
-};
-
-pub const JWT_DECODE_STUB: JwtDecode = |token| {
-    Ok(JWTAuthenticateToken {
-        sub: "id".to_string(),
-        user: UserToken {
-            id: token.to_string(),
-            username: "username".to_string(),
-            email: "test@email.com".to_string(),
-        },
-        exp: 10000 as usize,
-    })
 };
 
 #[cfg(test)]
