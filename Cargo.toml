@@ -22,3 +22,6 @@ dotenv = "0.15.0"
 
 [build-dependencies]
 tonic-build = "0.7"
+
+[dev-dependencies]
+tokio-test = "0.4.2"
