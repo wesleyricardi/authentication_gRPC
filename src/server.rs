@@ -1,6 +1,7 @@
 use tonic::transport::Server;
 
 mod controllers;
+mod database;
 mod dtos;
 mod error;
 mod error_handling;
@@ -18,6 +19,8 @@ use crate::rpc::authentication::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv::dotenv().expect("Unable to load environment variables from .env file");
+
     let addr = "[::1]:50051".parse()?;
     let authentication_service = AuthenticationService::default();
 
