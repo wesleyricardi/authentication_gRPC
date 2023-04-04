@@ -1,0 +1,7 @@
+CREATE TABLE "user" (
+  id VARCHAR(255) NOT NULL,
+  username VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  createdat TIMESTAMP DEFAULT NOW(),
+  updatedat TIMESTAMP
+);
