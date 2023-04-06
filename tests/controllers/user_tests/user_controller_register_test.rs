@@ -21,8 +21,8 @@ const SANITIZED_USERNAME: &str = "username_sanitized";
 const SANITIZED_EMAIL: &str = "sanitized@email.com";
 const SANITIZED_PASSWORD: &str = "password_sanitized";
 
-#[test]
-fn test_register() {
+#[tokio::test]
+async fn test_register() {
     let expectation_of_sanitize_username = MockUserInputSanitizeUsername {
         calls: 1,
         param_username_with: FAKE_USERNAME.to_string(),
@@ -73,7 +73,7 @@ fn test_register() {
         password: FAKE_PASSWORD.to_string(),
     };
 
-    let MockViewReturn { user, token } = controller.register(req, view_mock).unwrap();
+    let MockViewReturn { user, token } = controller.register(req, view_mock).await.unwrap();
 
     assert_eq!(user.id, FAKE_USER_ID);
     assert_eq!(user.username, SANITIZED_USERNAME);

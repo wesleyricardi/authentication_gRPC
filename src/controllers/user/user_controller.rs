@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 pub use crate::{
     dtos::controllers::dtos_controller_user::*,
     dtos::views::dtos_view_user::*,
@@ -11,23 +13,24 @@ use crate::{
     security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
 
-pub trait UserController {
-    fn register<T>(
+#[async_trait]
+pub trait UserController: Sync + Send + 'static {
+    async fn register<T>(
         &self,
         req: RegisterParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, AppError>;
-    fn login<T>(
+    async fn login<T>(
         &self,
         req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
     ) -> Result<T, AppError>;
-    fn authenticate<T>(
+    async fn authenticate<T>(
         &self,
         token: String,
         view: fn(user: UserViewArg) -> T,
     ) -> Result<T, AppError>;
-    fn update<T>(
+    async fn update<T>(
         &self,
         token: String,
         req: UpdateParams,
@@ -42,8 +45,9 @@ pub struct UserControllerImpl<M, S> {
     pub jwt_decode: JwtDecode,
 }
 
+#[async_trait]
 impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> {
-    fn register<T>(
+    async fn register<T>(
         &self,
         req: RegisterParams,
         view: fn(user: UserViewArg, token: String) -> T,
@@ -52,11 +56,14 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
         let password_sanitized = self.sanitize_user.sanitize_password_input(req.password)?;
 
-        let user = self.model.create(UserModelCreateParams {
-            username: username_sanitized,
-            email: email_sanitized,
-            password: password_sanitized,
-        })?;
+        let user = self
+            .model
+            .create(UserModelCreateParams {
+                username: username_sanitized,
+                email: email_sanitized,
+                password: password_sanitized,
+            })
+            .await?;
 
         let token = (self.jwt_encode)(UserToken {
             id: user.id.clone(),
@@ -74,7 +81,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         ))
     }
 
-    fn login<T>(
+    async fn login<T>(
         &self,
         req: LoginParams,
         view: fn(user: UserViewArg, token: String) -> T,
@@ -84,7 +91,8 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
 
         let user = self
             .model
-            .login_verification(username_sanitized, password_sanitized)?;
+            .login_verification(username_sanitized, password_sanitized)
+            .await?;
 
         let token = (self.jwt_encode)(UserToken {
             id: user.id.clone(),
@@ -102,7 +110,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         ))
     }
 
-    fn authenticate<T>(
+    async fn authenticate<T>(
         &self,
         token: String,
         view: fn(user: UserViewArg) -> T,
@@ -111,7 +119,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             user: user_token, ..
         } = (self.jwt_decode)(&token)?;
 
-        let user = self.model.recover_user_data(user_token.id.clone())?;
+        let user = self.model.recover_user_data(user_token.id.clone()).await?;
 
         Ok(view(UserViewArg {
             id: user_token.id,
@@ -120,7 +128,7 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
         }))
     }
 
-    fn update<T>(
+    async fn update<T>(
         &self,
         token: String,
         req: UpdateParams,
@@ -158,14 +166,17 @@ impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> 
             email: _,
         } = jwt_decoded.user;
 
-        let user = self.model.update(
-            id,
-            UserModelUpdateParams {
-                username: username_sanitized,
-                email: email_sanitized,
-                password: password_sanitized,
-            },
-        )?;
+        let user = self
+            .model
+            .update(
+                id,
+                UserModelUpdateParams {
+                    username: username_sanitized,
+                    email: email_sanitized,
+                    password: password_sanitized,
+                },
+            )
+            .await?;
 
         Ok(view(UserViewArg {
             id: user.id,

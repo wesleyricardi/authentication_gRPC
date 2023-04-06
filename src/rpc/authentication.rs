@@ -31,14 +31,17 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_register;
         let controller = get_default_user_controller();
 
-        match controller.register(
-            RegisterParams {
-                username,
-                email,
-                password,
-            },
-            view,
-        ) {
+        match controller
+            .register(
+                RegisterParams {
+                    username,
+                    email,
+                    password,
+                },
+                view,
+            )
+            .await
+        {
             Ok(response) => Ok(response),
             Err(error) => Err(app_error_to_rpc_error(error)),
         }
@@ -50,7 +53,10 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_login;
         let controller = get_default_user_controller();
 
-        match controller.login(LoginParams { username, password }, view) {
+        match controller
+            .login(LoginParams { username, password }, view)
+            .await
+        {
             Ok(response) => Ok(response),
             Err(error) => Err(app_error_to_rpc_error(error)),
         }
@@ -69,7 +75,7 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_authentication;
         let controller = get_default_user_controller();
 
-        match controller.authenticate(token.to_string(), view) {
+        match controller.authenticate(token.to_string(), view).await {
             Ok(response) => Ok(response),
             Err(error) => Err(app_error_to_rpc_error(error)),
         }
@@ -94,15 +100,18 @@ impl Authentication for AuthenticationService {
         let view = rpc::user_view::render_res_update;
         let controller = get_default_user_controller();
 
-        match controller.update(
-            token.to_string(),
-            UpdateParams {
-                username,
-                email,
-                password,
-            },
-            view,
-        ) {
+        match controller
+            .update(
+                token.to_string(),
+                UpdateParams {
+                    username,
+                    email,
+                    password,
+                },
+                view,
+            )
+            .await
+        {
             Ok(response) => Ok(response),
             Err(error) => Err(app_error_to_rpc_error(error)),
         }

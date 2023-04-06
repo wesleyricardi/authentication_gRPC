@@ -1,3 +1,5 @@
+use std::{future::Future, pin::Pin};
+
 use authentication_gRPC::{
     error::*,
     models::{
@@ -13,8 +15,8 @@ use crate::repositories::user_repository_mock::{
     get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStore,
 };
 
-#[test]
-fn test_user_model_create() {
+#[tokio::test]
+async fn test_user_model_create() {
     const FAKE_ID: &str = "userFakeId";
     const FAKE_USERNAME: &str = "usernames";
     const FAKE_EMAIL: &str = "test@model.com";
@@ -48,6 +50,7 @@ fn test_user_model_create() {
             email: FAKE_EMAIL.to_string(),
             password: FAKE_PASSWORD.to_string(),
         })
+        .await
         .unwrap();
 
     assert_eq!(response.id, FAKE_ID);

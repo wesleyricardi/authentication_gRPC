@@ -1,3 +1,5 @@
+use std::{future::Future, pin::Pin};
+
 use authentication_gRPC::{
     error::*,
     models::user::user_model::{
@@ -58,7 +60,7 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockUserModel {
             .expect_create()
             .with(predicate::eq(param_user_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |user| Box::pin(async move { fn_returning(user) }));
     }
 
     if expectations.login_verification.is_some() {
@@ -76,7 +78,9 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockUserModel {
                 predicate::eq(param_password_with),
             )
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |username, password| {
+                Box::pin(async move { fn_returning(username, password) })
+            });
     }
 
     if expectations.recover_user_data.is_some() {
@@ -90,7 +94,7 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockUserModel {
             .expect_recover_user_data()
             .with(predicate::eq(param_id_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |id| Box::pin(async move { fn_returning(id) }));
     }
 
     if expectations.update.is_some() {
@@ -105,7 +109,7 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockUserModel {
             .expect_update()
             .with(predicate::eq(param_id_with), predicate::eq(param_user_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
     }
     mock_user_model
 }

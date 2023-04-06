@@ -14,8 +14,8 @@ const FAKE_EMAIL: &str = "test@model.com";
 const FAKE_PASSWORD: &str = "password";
 const FAKE_HASH_PASSWORD: &str = "hash_password";
 
-#[test]
-fn test_login_verification() {
+#[tokio::test]
+async fn test_login_verification() {
     let expectations_of_the_methods_that_will_be_used = MockUserRepositoryParams {
         consult_by_username: Some(MockUserRepositoryConsultByUsername {
             calls: 1,
@@ -34,14 +34,15 @@ fn test_login_verification() {
 
     let user = model
         .login_verification(FAKE_USERNAME.to_string(), FAKE_PASSWORD.to_string())
+        .await
         .unwrap();
 
     assert_eq!(user.id, FAKE_ID);
     assert_eq!(user.email, FAKE_EMAIL);
 }
 
-#[test]
-fn test_login_verification_givin_wrong_password() {
+#[tokio::test]
+async fn test_login_verification_givin_wrong_password() {
     const WRONG_PASSWORD: &str = "Wrong password";
 
     let expectations_of_the_methods_that_will_be_used = MockUserRepositoryParams {
@@ -60,7 +61,10 @@ fn test_login_verification_givin_wrong_password() {
         new_id: mock_new_id_with_panic_if_called,
     };
 
-    match model.login_verification(FAKE_USERNAME.to_string(), WRONG_PASSWORD.to_string()) {
+    match model
+        .login_verification(FAKE_USERNAME.to_string(), WRONG_PASSWORD.to_string())
+        .await
+    {
         Ok(_) => panic!("verification should fail"),
         Err(error) => assert_eq!(error.message, "Incorrect password"),
     };

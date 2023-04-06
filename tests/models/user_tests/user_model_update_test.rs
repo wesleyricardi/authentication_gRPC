@@ -18,8 +18,8 @@ const FAKE_USERNAME: &str = "username";
 const FAKE_EMAIL: &str = "test@model.com";
 const FAKE_HASH_PASSWORD: &str = "hash_password";
 
-#[test]
-fn test_update() {
+#[tokio::test]
+async fn test_update() {
     const FAKE_UPDATE_USERNAME: &str = "updatedUsername";
     const FAKE_UPDATE_PASSWORD: &str = "password";
     const FAKE_UPDATE_EMAIL: &str = "updated_email@model.com";
@@ -55,6 +55,7 @@ fn test_update() {
                 password: Some(FAKE_UPDATE_PASSWORD.to_string()),
             },
         )
+        .await
         .unwrap();
 
     assert_eq!(response.id, FAKE_ID);

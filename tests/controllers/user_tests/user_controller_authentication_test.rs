@@ -21,8 +21,8 @@ const FAKE_USERNAME: &str = "username";
 const FAKE_EMAIL: &str = "test@controller.com";
 const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
 
-#[test]
-fn test_authentication() {
+#[tokio::test]
+async fn test_authentication() {
     let expectations_of_the_methods_that_will_be_used = MockUserModelParams {
         recover_user_data: Some(MockUserModelRecoverUserData {
             calls: 1,
@@ -43,6 +43,7 @@ fn test_authentication() {
 
     let MockViewReturn { user, .. } = controller
         .authenticate(FAKE_JWT_TOKEN.to_string(), view_mock)
+        .await
         .unwrap();
 
     assert_eq!(user.username, FAKE_USERNAME);

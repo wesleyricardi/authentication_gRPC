@@ -13,8 +13,8 @@ const FAKE_USERNAME: &str = "username";
 const FAKE_EMAIL: &str = "test@model.com";
 const FAKE_PASSWORD: &str = "password";
 
-#[test]
-fn test_user_model_recover_user_data() {
+#[tokio::test]
+async fn test_user_model_recover_user_data() {
     let expectations_of_the_methods_that_will_be_used = MockUserRepositoryParams {
         consult_by_id: Some(MockUserRepositoryConsultById {
             calls: 1,
@@ -31,7 +31,7 @@ fn test_user_model_recover_user_data() {
         new_id: mock_new_id_with_panic_if_called,
     };
 
-    let user = model.recover_user_data(FAKE_ID.to_string()).unwrap();
+    let user = model.recover_user_data(FAKE_ID.to_string()).await.unwrap();
 
     assert_eq!(user.username, FAKE_USERNAME);
     assert_eq!(user.email, FAKE_EMAIL);

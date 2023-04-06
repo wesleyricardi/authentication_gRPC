@@ -1,3 +1,5 @@
+use std::{future::Future, pin::Pin};
+
 use authentication_gRPC::{
     error::*,
     repositories::user::user_repository_mock::{
@@ -13,11 +15,10 @@ pub struct MockUserRepositoryStore {
     pub param_user_with: UserRepositoryStoreParams,
     pub fn_returning: fn(UserRepositoryStoreParams) -> UserRepositoryStoreReturn,
 }
-
 pub struct MockUserRepositoryConsultByUsername {
     pub calls: usize,
     pub param_username_with: String,
-    pub fn_returning: fn(username: String) -> Result<UserRepositoryConsultReturn, AppError>,
+    pub fn_returning: fn(id: String) -> Result<UserRepositoryConsultReturn, AppError>,
 }
 
 pub struct MockUserRepositoryConsultById {
@@ -56,7 +57,7 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .expect_store()
             .with(predicate::eq(param_user_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |user| Box::pin(async move { fn_returning(user) }));
     }
 
     if expectations.consult_by_username.is_some() {
@@ -70,7 +71,7 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .expect_consult_by_username()
             .with(predicate::eq(param_username_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |username| Box::pin(async move { fn_returning(username) }));
     }
 
     if expectations.consult_by_id.is_some() {
@@ -84,7 +85,7 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .expect_consult_by_id()
             .with(predicate::eq(param_id_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |id| Box::pin(async move { fn_returning(id) }));
     }
 
     if expectations.store_update.is_some() {
@@ -99,7 +100,7 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .expect_store_update()
             .with(predicate::eq(param_id_with), predicate::eq(param_user_with))
             .times(calls)
-            .returning(fn_returning);
+            .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
     }
 
     mock_user_repository

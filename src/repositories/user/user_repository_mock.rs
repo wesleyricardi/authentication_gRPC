@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 pub use super::user_repository::*;
 use crate::error::*;
 use std::sync::Mutex;
@@ -11,10 +13,12 @@ pub struct UserStored {
 }
 type UsersStored = Mutex<Vec<UserStored>>;
 static mut STORED_USERS: UsersStored = Mutex::new(Vec::new());
+
 pub struct UserRepositoryMock;
 
+#[async_trait]
 impl UserRepository for UserRepositoryMock {
-    fn store(&self, user: UserRepositoryStoreParams) -> UserRepositoryStoreReturn {
+    async fn store(&self, user: UserRepositoryStoreParams) -> UserRepositoryStoreReturn {
         let stored_users = unsafe { &mut STORED_USERS.lock().unwrap() };
 
         stored_users.push(UserStored {
@@ -36,7 +40,7 @@ impl UserRepository for UserRepositoryMock {
         }
     }
 
-    fn consult_by_username(
+    async fn consult_by_username(
         &self,
         username: String,
     ) -> Result<UserRepositoryConsultReturn, AppError> {
@@ -54,7 +58,7 @@ impl UserRepository for UserRepositoryMock {
         })
     }
 
-    fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError> {
+    async fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError> {
         let stored_user = unsafe { &mut STORED_USERS.lock().unwrap() };
         let result = match stored_user.iter().find(|user| user.id == id) {
             Some(user) => user,
@@ -69,7 +73,7 @@ impl UserRepository for UserRepositoryMock {
         })
     }
 
-    fn store_update(
+    async fn store_update(
         &self,
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,

@@ -19,6 +19,7 @@ bcrypt = "0.14.0"
 mockall = "0.11.3"
 sqlx = {version = "0.6.3", features = ["postgres", "migrate", "runtime-tokio-rustls", "macros"]}
 dotenv = "0.15.0"
+async-trait = "0.1.68"
 
 [build-dependencies]
 tonic-build = "0.7"

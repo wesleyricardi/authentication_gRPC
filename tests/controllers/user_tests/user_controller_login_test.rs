@@ -25,8 +25,8 @@ const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
 const SANITIZED_USERNAME: &str = "username_sanitized";
 const SANITIZED_PASSWORD: &str = "password_sanitized";
 
-#[test]
-fn test_login() {
+#[tokio::test]
+async fn test_login() {
     let expectation_of_sanitize_username = MockUserInputSanitizeUsername {
         calls: 1,
         param_username_with: FAKE_USERNAME.to_string(),
@@ -65,7 +65,7 @@ fn test_login() {
         password: FAKE_PASSWORD.to_string(),
     };
 
-    let MockViewReturn { user, token } = controller.login(req, view_mock).unwrap();
+    let MockViewReturn { user, token } = controller.login(req, view_mock).await.unwrap();
 
     assert_eq!(user.id, FAKE_USER_ID);
     assert_eq!(user.username, SANITIZED_USERNAME);

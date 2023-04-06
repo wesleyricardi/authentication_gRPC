@@ -4,18 +4,23 @@ pub use crate::{
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
 use crate::{error::*, repositories::user::user_repository_mock::UserRepositoryUpdateParams};
+use async_trait::async_trait;
 use mockall::automock;
 
+#[async_trait]
 #[automock]
-pub trait UserModel {
-    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError>;
-    fn login_verification(
+pub trait UserModel: Sync + Send + 'static {
+    async fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError>;
+    async fn login_verification(
         &self,
         username: String,
         password: String,
     ) -> Result<UserModelLoginVerificationReturn, AppError>;
-    fn recover_user_data(&self, id: String) -> Result<UserModelRecoverUserDataReturn, AppError>;
-    fn update(
+    async fn recover_user_data(
+        &self,
+        id: String,
+    ) -> Result<UserModelRecoverUserDataReturn, AppError>;
+    async fn update(
         &self,
         id: String,
         user: UserModelUpdateParams,
@@ -29,17 +34,21 @@ pub struct UserModelImpl<R> {
     pub new_id: fn() -> String,
 }
 
+#[async_trait]
 impl<R: UserRepository> UserModel for UserModelImpl<R> {
-    fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
+    async fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
         let id = (self.new_id)();
         let hashed_password = (self.password_hasher)(user.password)?;
 
-        let user = self.user_repository.store(UserRepositoryStoreParams {
-            id,
-            username: user.username,
-            email: user.email,
-            password: hashed_password,
-        });
+        let user = self
+            .user_repository
+            .store(UserRepositoryStoreParams {
+                id,
+                username: user.username,
+                email: user.email,
+                password: hashed_password,
+            })
+            .await;
 
         Ok(UserModelInsertReturn {
             id: user.id,
@@ -47,12 +56,12 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
             email: user.email,
         })
     }
-    fn login_verification(
+    async fn login_verification(
         &self,
         username: String,
         password: String,
     ) -> Result<UserModelLoginVerificationReturn, AppError> {
-        let user = self.user_repository.consult_by_username(username)?;
+        let user = self.user_repository.consult_by_username(username).await?;
 
         if !(self.password_verify)(user.password, password)? {
             return Err(AppError::new(Code::Unauthenticated, "Incorrect password"));
@@ -65,8 +74,11 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
         })
     }
 
-    fn recover_user_data(&self, id: String) -> Result<UserModelRecoverUserDataReturn, AppError> {
-        let user = self.user_repository.consult_by_id(id)?;
+    async fn recover_user_data(
+        &self,
+        id: String,
+    ) -> Result<UserModelRecoverUserDataReturn, AppError> {
+        let user = self.user_repository.consult_by_id(id).await?;
 
         Ok(UserModelRecoverUserDataReturn {
             username: user.username,
@@ -74,7 +86,7 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
         })
     }
 
-    fn update(
+    async fn update(
         &self,
         id: String,
         user: UserModelUpdateParams,
@@ -90,7 +102,10 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
             password,
         };
 
-        let user = self.user_repository.store_update(id, user_to_be_updated)?;
+        let user = self
+            .user_repository
+            .store_update(id, user_to_be_updated)
+            .await?;
 
         Ok(UserModelUpdateReturn {
             id: user.id,
