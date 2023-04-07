@@ -2,7 +2,7 @@ use tonic::Status;
 
 use crate::error::*;
 
-pub fn app_error_to_rpc_error(error: AppError) -> Status {
+pub fn app_error_to_grpc_error(error: AppError) -> Status {
     match error.code {
         Code::Ok => Status::new(tonic::Code::Ok, error.message),
         Code::Cancelled => Status::new(tonic::Code::Cancelled, error.message),

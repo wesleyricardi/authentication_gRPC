@@ -10,7 +10,7 @@ use tonic::{Request, Response, Status};
 
 use crate::controllers::default_controllers::{get_default_user_controller, UserController};
 use crate::controllers::user::user_controller::{LoginParams, RegisterParams, UpdateParams};
-use crate::error_handling::error_handling_rpc::app_error_to_rpc_error;
+use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::views::rpc;
 
 #[derive(Debug, Default)]
@@ -43,7 +43,7 @@ impl Authentication for AuthenticationService {
             .await
         {
             Ok(response) => Ok(response),
-            Err(error) => Err(app_error_to_rpc_error(error)),
+            Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
 
@@ -58,7 +58,7 @@ impl Authentication for AuthenticationService {
             .await
         {
             Ok(response) => Ok(response),
-            Err(error) => Err(app_error_to_rpc_error(error)),
+            Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
 
@@ -77,7 +77,7 @@ impl Authentication for AuthenticationService {
 
         match controller.authenticate(token.to_string(), view).await {
             Ok(response) => Ok(response),
-            Err(error) => Err(app_error_to_rpc_error(error)),
+            Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
 
@@ -113,7 +113,7 @@ impl Authentication for AuthenticationService {
             .await
         {
             Ok(response) => Ok(response),
-            Err(error) => Err(app_error_to_rpc_error(error)),
+            Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
 }

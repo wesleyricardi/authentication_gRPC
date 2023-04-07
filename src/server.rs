@@ -4,7 +4,6 @@ mod controllers;
 mod database;
 mod dtos;
 mod error;
-mod error_handling;
 mod models;
 mod repositories;
 mod rpc;

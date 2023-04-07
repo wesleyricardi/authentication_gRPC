@@ -3,7 +3,6 @@ pub mod controllers;
 pub mod database;
 pub mod dtos;
 pub mod error;
-pub mod error_handling;
 pub mod models;
 pub mod repositories;
 pub mod rpc;
