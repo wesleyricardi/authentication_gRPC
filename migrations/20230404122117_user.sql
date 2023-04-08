@@ -1,7 +1,8 @@
-CREATE TABLE "user" (
-  id VARCHAR(255) NOT NULL,
+CREATE TABLE "users" (
+  id VARCHAR(255) NOT NULL ,
   username VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
   createdat TIMESTAMP DEFAULT NOW(),
   updatedat TIMESTAMP
 );

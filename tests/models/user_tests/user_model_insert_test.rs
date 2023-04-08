@@ -58,12 +58,14 @@ async fn test_user_model_create() {
     assert_eq!(response.email, FAKE_EMAIL)
 }
 
-fn mock_user_repository_store(user: UserRepositoryStoreParams) -> UserRepositoryStoreReturn {
-    UserRepositoryStoreReturn {
+fn mock_user_repository_store(
+    user: UserRepositoryStoreParams,
+) -> Result<UserRepositoryStoreReturn, AppError> {
+    Ok(UserRepositoryStoreReturn {
         id: user.id,
         username: user.username,
         email: user.email,
-    }
+    })
 }
 
 fn mock_password_verify_with_returning_error_if_called(

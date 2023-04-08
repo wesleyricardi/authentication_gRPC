@@ -18,7 +18,10 @@ pub struct UserRepositoryMock;
 
 #[async_trait]
 impl UserRepository for UserRepositoryMock {
-    async fn store(&self, user: UserRepositoryStoreParams) -> UserRepositoryStoreReturn {
+    async fn store(
+        &self,
+        user: UserRepositoryStoreParams,
+    ) -> Result<UserRepositoryStoreReturn, AppError> {
         let stored_users = unsafe { &mut STORED_USERS.lock().unwrap() };
 
         stored_users.push(UserStored {
@@ -33,11 +36,11 @@ impl UserRepository for UserRepositoryMock {
             .find(|result| result.username == user.username)
             .unwrap();
 
-        UserRepositoryStoreReturn {
+        Ok(UserRepositoryStoreReturn {
             id: result.id.clone(),
             username: result.username.clone(),
             email: result.email.clone(),
-        }
+        })
     }
 
     async fn consult_by_username(

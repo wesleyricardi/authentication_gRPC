@@ -48,7 +48,7 @@ impl<R: UserRepository> UserModel for UserModelImpl<R> {
                 email: user.email,
                 password: hashed_password,
             })
-            .await;
+            .await?;
 
         Ok(UserModelInsertReturn {
             id: user.id,

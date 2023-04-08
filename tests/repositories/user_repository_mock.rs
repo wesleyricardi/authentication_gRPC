@@ -13,7 +13,7 @@ use mockall::predicate;
 pub struct MockUserRepositoryStore {
     pub calls: usize,
     pub param_user_with: UserRepositoryStoreParams,
-    pub fn_returning: fn(UserRepositoryStoreParams) -> UserRepositoryStoreReturn,
+    pub fn_returning: fn(UserRepositoryStoreParams) -> Result<UserRepositoryStoreReturn, AppError>,
 }
 pub struct MockUserRepositoryConsultByUsername {
     pub calls: usize,
