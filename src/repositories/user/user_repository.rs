@@ -40,12 +40,13 @@ impl UserRepository for UserRepositoryPostgres {
         &self,
         user: UserRepositoryStoreParams,
     ) -> Result<UserRepositoryStoreReturn, AppError> {
-        match sqlx::query!(
+        match sqlx::query_as!(
+            User,
             "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
             user.id,
             user.username,
             user.email,
-            user.password
+            user.password,
         )
         .execute(&self.pool)
         .await
@@ -81,46 +82,59 @@ impl UserRepository for UserRepositoryPostgres {
 
 #[cfg(test)]
 mod tests {
-    use std::process::Command;
+    use std::{future::Future, process::Command};
 
     use super::*;
 
-    async fn drop_database(db_url: String, db_name: String) {
-        let pool = get_postgres_pool(Some(db_url)).await;
+    async fn test_with_database<T, F>(
+        pg_url: String,
+        db_name: String,
+        callback: fn(Pool<Postgres>) -> F,
+    ) -> T
+    where
+        F: Future<Output = T>,
+    {
+        let pool = &get_postgres_pool(Some(pg_url.clone())).await;
 
+        setup_database(pool, &pg_url, &db_name).await;
+
+        let db_url = format!("{pg_url}/{db_name}");
+        let result = callback(get_postgres_pool(Some(db_url)).await).await;
+
+        drop_database(pool, &db_name).await;
+
+        return result;
+    }
+
+    async fn drop_database(pool: &Pool<Postgres>, db_name: &str) {
         sqlx::query(
             "SELECT pg_terminate_backend(pg_stat_activity.pid)
                 FROM pg_stat_activity
                 WHERE pg_stat_activity.datname = $1
                   AND pid <> pg_backend_pid()",
         )
-        .bind(db_name.clone())
-        .execute(&pool)
+        .bind(db_name)
+        .execute(pool)
         .await
         .unwrap();
 
         sqlx::query(&(format!("DROP DATABASE IF EXISTS {db_name}")))
-            .execute(&pool)
+            .execute(pool)
             .await
             .unwrap();
     }
 
-    async fn setup_database(db_url: String, db_name: String) {
-        let pool = get_postgres_pool(Some(db_url.clone())).await;
-
+    async fn setup_database(pool: &Pool<Postgres>, pg_url: &str, db_name: &str) {
         let database_exists: bool =
-            match sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1)")
+            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1)")
                 .bind(&db_name)
-                .fetch_one(&pool)
+                .fetch_one(pool)
                 .await
-            {
-                Ok(result) => result,
-                Err(_) => false,
-            };
+                .unwrap();
 
         if !database_exists {
-            sqlx::query(&("CREATE DATABASE ".to_string() + &db_name))
-                .execute(&pool)
+            sqlx::query(&("CREATE DATABASE ".to_string() + db_name))
+                .execute(pool)
                 .await
                 .unwrap();
         }
@@ -130,7 +144,7 @@ mod tests {
                 "migrate",
                 "run",
                 "--database-url",
-                &(format!("{db_url}/{db_name}")),
+                &format!("{pg_url}/{db_name}"),
             ])
             .output()
             .expect("execute command failed");
@@ -141,32 +155,28 @@ mod tests {
     #[tokio::test]
     async fn test() {
         dotenv::from_filename(".env.test").ok();
-        let db_url = std::env::var("DATABASE_URL").expect("Unable to read DATABASE_URL env var");
-        let db_name = std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
-        let db_name = format!("{db_name}_test_store_user");
+        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
+        let mut db_name =
+            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
+        db_name = format!("{db_name}_store_user");
 
-        setup_database(db_url.clone(), db_name.clone()).await;
+        async fn repository_store(
+            pool: Pool<Postgres>,
+        ) -> Result<UserRepositoryStoreReturn, AppError> {
+            let repository = UserRepositoryPostgres { pool };
 
-        let repository = UserRepositoryPostgres {
-            pool: get_postgres_pool(Some(format!(
-                "{db_url}/{db_name}",
-                db_url = db_url.clone(),
-                db_name = db_name.clone()
-            )))
-            .await,
-        };
-
-        let response = repository
-            .store(UserRepositoryStoreParams {
-                id: "id".to_string(),
-                username: "username".to_string(),
-                email: "email".to_string(),
-                password: "password".to_string(),
-            })
+            repository
+                .store(UserRepositoryStoreParams {
+                    id: "id".to_string(),
+                    username: "username".to_string(),
+                    email: "email".to_string(),
+                    password: "password".to_string(),
+                })
+                .await
+        }
+        let response = test_with_database(pg_url, db_name, repository_store)
             .await
             .unwrap();
-
-        drop_database(db_url, db_name).await;
 
         assert_eq!(response.id, "id");
         assert_eq!(response.username, "username");
