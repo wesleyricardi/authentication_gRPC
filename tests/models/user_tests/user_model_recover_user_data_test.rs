@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     error::*,
-    models::{default_models::UserModel, user::user_model::UserModelImpl},
+    models::user::user_model::{UserModel, UserModelImpl},
     repositories::user::user_repository_mock::UserRepositoryConsultReturn,
 };
 

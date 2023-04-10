@@ -3,9 +3,8 @@ use crate::{
     services::sanitizer::sanitizer_user_input_mock::*,
 };
 use authentication_gRPC::{
-    controllers::{
-        default_controllers::UserController,
-        user::user_controller::{UpdateParams, UserControllerImpl, UserToken, UserViewArg},
+    controllers::user::user_controller::{
+        UpdateParams, UserController, UserControllerImpl, UserToken, UserViewArg,
     },
     error::*,
     models::user::user_model::{UserModelUpdateParams, UserModelUpdateReturn},

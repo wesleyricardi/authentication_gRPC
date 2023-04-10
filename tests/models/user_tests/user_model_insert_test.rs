@@ -2,10 +2,7 @@ use std::{future::Future, pin::Pin};
 
 use authentication_gRPC::{
     error::*,
-    models::{
-        default_models::UserModel,
-        user::user_model::{UserModelCreateParams, UserModelImpl},
-    },
+    models::user::user_model::{UserModel, UserModelCreateParams, UserModelImpl},
     repositories::user::user_repository_mock::{
         UserRepositoryStoreParams, UserRepositoryStoreReturn,
     },
