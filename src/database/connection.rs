@@ -1,5 +1,24 @@
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
+/// Get a pool connection using lib sqlx em postgres.
+///
+/// # Examples
+/// ```
+/// use authentication_gRPC::database::connection::get_postgres_pool;
+///
+/// let pool = get_postgres_pool(None);
+/// ```
+///
+/// Passing None as the argument will use environment variable DATABASE_URL as postgres url for connection,
+/// or you can set another postgres url like:
+///
+/// ```
+/// use authentication_gRPC::database::connection::get_postgres_pool;
+///
+/// let pool = get_postgres_pool(Some(String::from(
+///        "postgres://postgres:123456789@localhost:5432/authentication",
+/// )));
+/// ```
 pub async fn get_postgres_pool(db_url: Option<String>) -> Pool<Postgres> {
     let db_url = db_url
         .unwrap_or(std::env::var("DATABASE_URL").expect("Unable to read DATABASE_URL env var"));
