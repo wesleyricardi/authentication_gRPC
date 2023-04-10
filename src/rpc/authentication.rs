@@ -32,7 +32,7 @@ impl AuthenticationService {
 }
 
 pub type DefaultUserModel = UserModelImpl<UserRepositoryMock>;
-pub fn createUserModel(app_state: &AppState) -> DefaultUserModel {
+pub fn create_user_model(app_state: &AppState) -> DefaultUserModel {
     UserModelImpl {
         user_repository: UserRepositoryMock,
         password_hasher: PASSWORD_HASHER,
@@ -42,9 +42,9 @@ pub fn createUserModel(app_state: &AppState) -> DefaultUserModel {
 }
 
 type DefaultUserController = UserControllerImpl<DefaultUserModel, SanitizeUserImpl>;
-pub fn createUserController(app_state: &AppState) -> DefaultUserController {
+pub fn create_user_controller(app_state: &AppState) -> DefaultUserController {
     UserControllerImpl {
-        model: createUserModel(app_state),
+        model: create_user_model(app_state),
         sanitize_user: SanitizeUserImpl,
         jwt_encode: JWT_ENCODE,
         jwt_decode: JWT_DECODE,
@@ -65,7 +65,7 @@ impl Authentication for AuthenticationService {
         let app_state = &self.app_state;
 
         let view = rpc::user_view::render_res_register;
-        let controller = createUserController(app_state);
+        let controller = create_user_controller(app_state);
 
         match controller
             .register(
@@ -88,7 +88,7 @@ impl Authentication for AuthenticationService {
         let app_state = &self.app_state;
 
         let view = rpc::user_view::render_res_login;
-        let controller = createUserController(app_state);
+        let controller = create_user_controller(app_state);
 
         match controller
             .login(LoginParams { username, password }, view)
@@ -111,7 +111,7 @@ impl Authentication for AuthenticationService {
         };
 
         let view = rpc::user_view::render_res_authentication;
-        let controller = createUserController(app_state);
+        let controller = create_user_controller(app_state);
 
         match controller.authenticate(token.to_string(), view).await {
             Ok(response) => Ok(response),
@@ -137,7 +137,7 @@ impl Authentication for AuthenticationService {
         } = request.into_inner();
 
         let view = rpc::user_view::render_res_update;
-        let controller = createUserController(app_state);
+        let controller = create_user_controller(app_state);
 
         match controller
             .update(
