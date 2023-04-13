@@ -46,7 +46,7 @@ impl UserRepository for UserRepositoryPostgres {
             user.id,
             user.username,
             user.email,
-            user.password,
+            user.password, 
         )
         .execute(&self.pool)
         .await
@@ -158,7 +158,7 @@ mod tests {
         let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
         let mut db_name =
             std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
-        db_name = format!("{db_name}_store_user");
+        db_name = format!("{db_name}_test_store_user");
 
         async fn repository_store(
             pool: Pool<Postgres>,

@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db_pg_pool: get_postgres_pool(None).await,
     };
 
-    let addr = "[::1]:50051".parse()?;
+    let addr = "0.0.0.0:5051".parse()?;
     let authentication_service = AuthenticationService::new(app_state);
 
     println!("Server listening on {}", addr);
