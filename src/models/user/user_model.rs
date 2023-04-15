@@ -3,7 +3,7 @@ pub use crate::{
     repositories::user::user_repository::{UserRepository, UserRepositoryStoreParams},
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
-use crate::{error::*, repositories::user::user_repository_mock::UserRepositoryUpdateParams};
+use crate::{error::*, repositories::user::user_repository::UserRepositoryUpdateParams};
 use async_trait::async_trait;
 use mockall::automock;
 

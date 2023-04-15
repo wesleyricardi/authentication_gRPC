@@ -1,7 +1,7 @@
 use authentication_gRPC::{
     error::*,
     models::user::user_model::{UserModel, UserModelImpl, UserModelUpdateParams},
-    repositories::user::user_repository_mock::{
+    repositories::user::user_repository::{
         UserRepositoryUpdateParams, UserRepositoryUpdateReturn,
     },
 };

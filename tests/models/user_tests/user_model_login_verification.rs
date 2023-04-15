@@ -1,7 +1,7 @@
 use authentication_gRPC::{
     error::*,
     models::user::user_model::{UserModel, UserModelImpl},
-    repositories::user::user_repository_mock::UserRepositoryConsultReturn,
+    repositories::user::user_repository::UserRepositoryConsultReturn,
 };
 
 use crate::repositories::user_repository_mock::{

@@ -1,5 +1,3 @@
-use std::{future::Future, pin::Pin};
-
 use authentication_gRPC::{
     error::*,
     models::user::user_model::{
