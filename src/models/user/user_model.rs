@@ -9,7 +9,7 @@ use mockall::automock;
 
 #[async_trait]
 #[automock]
-pub trait UserModel: Sync + Send + 'static {
+pub trait UserModel: Sync + Send {
     async fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError>;
     async fn login_verification(
         &self,

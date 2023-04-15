@@ -14,7 +14,7 @@ use crate::{
 };
 
 #[async_trait]
-pub trait UserController: Sync + Send + 'static {
+pub trait UserController: Sync + Send {
     async fn register<T>(
         &self,
         req: RegisterParams,

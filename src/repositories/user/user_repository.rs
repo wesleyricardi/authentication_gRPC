@@ -8,7 +8,7 @@ use sqlx::{Pool, Postgres};
 
 #[async_trait]
 #[automock]
-pub trait UserRepository: Sync + Send + 'static {
+pub trait UserRepository: Sync + Send {
     async fn store(
         &self,
         user: UserRepositoryStoreParams,
@@ -24,31 +24,24 @@ pub trait UserRepository: Sync + Send + 'static {
         user_to_be_updated: UserRepositoryUpdateParams,
     ) -> Result<UserRepositoryUpdateReturn, AppError>;
 }
-pub struct UserRepositoryPostgres {
-    pub pool: Pool<Postgres>,
-}
-
-struct User {
-    id: String,
-    username: String,
-    email: String,
+pub struct UserRepositoryPostgres<'a> {
+    pub pool: &'a Pool<Postgres>,
 }
 
 #[async_trait]
-impl UserRepository for UserRepositoryPostgres {
+impl UserRepository for UserRepositoryPostgres<'_> {
     async fn store(
         &self,
         user: UserRepositoryStoreParams,
     ) -> Result<UserRepositoryStoreReturn, AppError> {
-        match sqlx::query_as!(
-            User,
+        match sqlx::query!(
             "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
             user.id,
             user.username,
             user.email,
             user.password, 
         )
-        .execute(&self.pool)
+        .execute(self.pool)
         .await
         {
             Ok(_) => Ok(UserRepositoryStoreReturn {
@@ -64,11 +57,17 @@ impl UserRepository for UserRepositoryPostgres {
         &self,
         username: String,
     ) -> Result<UserRepositoryConsultReturn, AppError> {
-        todo!();
+        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password FROM users WHERE username = $1", username).fetch_one(self.pool).await {
+            Ok(user) => Ok(user),
+            Err(error) => Err(sqlx_error_to_app_error(error)), 
+        }
     }
 
     async fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError> {
-        todo!();
+        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password FROM users WHERE id = $1", id).fetch_one(self.pool).await {
+            Ok(user) => Ok(user),
+            Err(error) => Err(sqlx_error_to_app_error(error)), 
+        }
     }
 
     async fn store_update(
@@ -76,7 +75,27 @@ impl UserRepository for UserRepositoryPostgres {
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,
     ) -> Result<UserRepositoryUpdateReturn, AppError> {
-        todo!();
+        match sqlx::query!(
+            "UPDATE users
+            SET username = $1, email = $2, password = $3
+            WHERE id = $4;",
+            user_to_be_updated.username,
+            user_to_be_updated.email,
+            user_to_be_updated.password, 
+            id,
+        )
+        .execute(self.pool)
+        .await {
+            Ok(_) => {
+                let user = self.consult_by_id(id).await?;
+                Ok(UserRepositoryUpdateReturn {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email
+                })
+            },
+            Err(error) => Err(sqlx_error_to_app_error(error)), 
+        }
     }
 }
 
@@ -90,10 +109,10 @@ mod tests {
         pg_url: String,
         db_name: String,
         callback: fn(Pool<Postgres>) -> F,
-    ) -> T
+    ) -> Result<T, AppError>
     where
-        F: Future<Output = T>,
-    {
+    F: Future<Output = Result<T, AppError>>,
+{
         let pool = &get_postgres_pool(Some(pg_url.clone())).await;
 
         setup_database(pool, &pg_url, &db_name).await;
@@ -152,8 +171,13 @@ mod tests {
         println!("{}", String::from_utf8_lossy(&output.stdout));
     }
 
+    const FAKE_ID: &str = "userFakeId";
+    const FAKE_USERNAME: &str = "username";
+    const FAKE_EMAIL: &str = "test@model.com";
+    const FAKE_PASSWORD: &str = "password";
+
     #[tokio::test]
-    async fn test() {
+    async fn test_store_user() {
         dotenv::from_filename(".env.test").ok();
         let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
         let mut db_name =
@@ -163,23 +187,149 @@ mod tests {
         async fn repository_store(
             pool: Pool<Postgres>,
         ) -> Result<UserRepositoryStoreReturn, AppError> {
-            let repository = UserRepositoryPostgres { pool };
+            let repository = UserRepositoryPostgres { pool: &pool };
 
             repository
                 .store(UserRepositoryStoreParams {
-                    id: "id".to_string(),
-                    username: "username".to_string(),
-                    email: "email".to_string(),
-                    password: "password".to_string(),
+                    id: FAKE_ID.to_string(),
+                    username: FAKE_USERNAME.to_string(),
+                    email: FAKE_EMAIL.to_string(),
+                    password: FAKE_PASSWORD.to_string(),
                 })
                 .await
         }
+
         let response = test_with_database(pg_url, db_name, repository_store)
             .await
             .unwrap();
 
-        assert_eq!(response.id, "id");
-        assert_eq!(response.username, "username");
-        assert_eq!(response.email, "email");
+        assert_eq!(response.id, FAKE_ID);
+        assert_eq!(response.username, FAKE_USERNAME);
+        assert_eq!(response.email, FAKE_EMAIL);
     }
+
+    #[tokio::test]
+    async fn test_consult_user_by_username() {
+        dotenv::from_filename(".env.test").ok();
+        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
+        let mut db_name =
+            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
+        db_name = format!("{db_name}_test_consult_by_username");
+
+        async fn repository_consult_by_username(
+            pool: Pool<Postgres>,
+        ) -> Result<UserRepositoryConsultReturn, AppError> {
+            sqlx::query_as!(
+                User,
+                "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
+                FAKE_ID,
+                FAKE_USERNAME,
+                FAKE_EMAIL,
+                FAKE_PASSWORD, 
+            )
+            .execute(&pool)
+            .await.unwrap();
+
+            let repository = UserRepositoryPostgres { pool: &pool };
+
+            repository
+                .consult_by_username(FAKE_USERNAME.to_string())
+                .await
+        }
+
+        let response = test_with_database(pg_url, db_name, repository_consult_by_username)
+            .await
+            .unwrap();
+
+        assert_eq!(response.id, FAKE_ID);
+        assert_eq!(response.username, FAKE_USERNAME);
+        assert_eq!(response.email, FAKE_EMAIL);
+        assert_eq!(response.password, FAKE_PASSWORD);
+
+    }
+
+    #[tokio::test]
+    async fn test_consult_user_by_id() {
+        dotenv::from_filename(".env.test").ok();
+        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
+        let mut db_name =
+            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
+        db_name = format!("{db_name}_test_consult_by_id");
+
+        async fn repository_consult_by_id(
+            pool: Pool<Postgres>,
+        ) -> Result<UserRepositoryConsultReturn, AppError> {
+            sqlx::query_as!(
+                User,
+                "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
+                FAKE_ID,
+                FAKE_USERNAME,
+                FAKE_EMAIL,
+                FAKE_PASSWORD, 
+            )
+            .execute(&pool)
+            .await.unwrap();
+
+            let repository = UserRepositoryPostgres { pool: &pool };
+
+            repository
+                .consult_by_id(FAKE_ID.to_string())
+                .await
+        }
+
+        let response = test_with_database(pg_url, db_name, repository_consult_by_id)
+            .await
+            .unwrap();
+
+        assert_eq!(response.id, FAKE_ID);
+        assert_eq!(response.username, FAKE_USERNAME);
+        assert_eq!(response.email, FAKE_EMAIL);
+        assert_eq!(response.password, FAKE_PASSWORD);
+    }
+
+    #[tokio::test]
+    async fn test_store_update() {
+        const FAKE_USERNAME_UPDATED: &str = "username_uptadated";
+        const FAKE_EMAIL_UPDATED: &str = "email@updated.com";
+        const FAKE_PASSWORD_UPDATED: &str = "updated_password";
+
+        dotenv::from_filename(".env.test").ok();
+        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
+        let mut db_name =
+            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
+        db_name = format!("{db_name}_test_store_update");
+
+        async fn repository_store_update(
+            pool: Pool<Postgres>,
+        ) -> Result<UserRepositoryUpdateReturn, AppError> {
+            sqlx::query_as!(
+                User,
+                "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
+                FAKE_ID,
+                FAKE_USERNAME,
+                FAKE_EMAIL,
+                FAKE_PASSWORD, 
+            )
+            .execute(&pool)
+            .await.unwrap();
+
+            let repository = UserRepositoryPostgres { pool: &pool };
+
+            repository
+                .store_update(FAKE_ID.to_string(), UserRepositoryUpdateParams { 
+                    username: Some(FAKE_USERNAME_UPDATED.to_string()), 
+                    email: Some(FAKE_EMAIL_UPDATED.to_string()), 
+                    password: Some(FAKE_PASSWORD_UPDATED.to_string()) })
+                .await
+        }
+
+        let response = test_with_database(pg_url, db_name, repository_store_update)
+            .await
+            .unwrap();
+
+        assert_eq!(response.id, FAKE_ID);
+        assert_eq!(response.username, FAKE_USERNAME_UPDATED);
+        assert_eq!(response.email, FAKE_EMAIL_UPDATED);
+    }
+
 }

@@ -1,6 +1,7 @@
 pub mod authentication {
     tonic::include_proto!("authentication");
 }
+
 use authentication::authentication_server::Authentication;
 use authentication::{
     ReqAuthentication, ReqLogin, ReqRegister, ReqUpdateUser, ResAuthentication, ResLogin,
@@ -13,7 +14,7 @@ use crate::controllers::user::user_controller::{
 };
 
 use crate::models::user::user_model::UserModelImpl;
-use crate::repositories::user::user_repository_mock::UserRepositoryMock;
+use crate::repositories::user::user_repository::{UserRepositoryPostgres};
 use crate::security::jwt::{JWT_DECODE, JWT_ENCODE};
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
@@ -31,17 +32,20 @@ impl AuthenticationService {
     }
 }
 
-pub type DefaultUserModel = UserModelImpl<UserRepositoryMock>;
+pub type DefaultUserModel<'a> = UserModelImpl<UserRepositoryPostgres<'a>>;
 pub fn create_user_model(app_state: &AppState) -> DefaultUserModel {
+    let pool = &app_state.db_pg_pool;
     UserModelImpl {
-        user_repository: UserRepositoryMock,
+        user_repository: UserRepositoryPostgres {
+            pool,
+        },
         password_hasher: PASSWORD_HASHER,
         password_verify: PASSWORD_VERIFY,
         new_id: new_uuidv4,
     }
 }
 
-type DefaultUserController = UserControllerImpl<DefaultUserModel, SanitizeUserImpl>;
+type DefaultUserController<'a> = UserControllerImpl<DefaultUserModel<'a>, SanitizeUserImpl>;
 pub fn create_user_controller(app_state: &AppState) -> DefaultUserController {
     UserControllerImpl {
         model: create_user_model(app_state),
