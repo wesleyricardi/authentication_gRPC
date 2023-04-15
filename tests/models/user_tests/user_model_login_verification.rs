@@ -4,7 +4,7 @@ use authentication_gRPC::{
     repositories::user::user_repository::UserRepositoryConsultReturn,
 };
 
-use crate::repositories::user_repository_mock::{
+use crate::mocks::user_repository_mock::{
     get_mock_user_repository, MockUserRepositoryConsultByUsername, MockUserRepositoryParams,
 };
 

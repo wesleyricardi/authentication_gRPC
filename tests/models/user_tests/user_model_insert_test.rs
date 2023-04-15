@@ -6,7 +6,7 @@ use authentication_gRPC::{
     },
 };
 
-use crate::repositories::user_repository_mock::{
+use crate::mocks::user_repository_mock::{
     get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStore,
 };
 

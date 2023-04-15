@@ -1,11 +1,10 @@
 use crate::{
-    models::user_model_mock::{
+    mocks::{user_model_mock::{
         get_mock_user_model, MockUserModelLoginVerification, MockUserModelParams,
-    },
-    services::sanitizer::sanitizer_user_input_mock::{
+    }, sanitizer_user_input_mock::{
         get_mock_user_input_sanitizer, MockUserInputSanitizeParams, MockUserInputSanitizePassword,
         MockUserInputSanitizeUsername,
-    },
+    }}
 };
 use authentication_gRPC::{
     controllers::user::user_controller::{

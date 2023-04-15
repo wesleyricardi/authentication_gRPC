@@ -8,12 +8,11 @@ use authentication_gRPC::{
 };
 
 use crate::{
-    models::user_model_mock::{
+    mocks::{user_model_mock::{
         get_mock_user_model, MockUserModelParams, MockUserModelRecoverUserData,
-    },
-    services::sanitizer::sanitizer_user_input_mock::{
+    },sanitizer_user_input_mock::{
         get_mock_user_input_sanitizer, MockUserInputSanitizeParams,
-    },
+    }},
 };
 
 const FAKE_USER_ID: &str = "user_id";
