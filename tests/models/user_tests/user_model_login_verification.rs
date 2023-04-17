@@ -84,6 +84,8 @@ fn mock_user_reposory_consult_by_username(
         username,
         email: FAKE_EMAIL.to_string(),
         password: FAKE_PASSWORD.to_string(),
+        activated: false,
+        blocked: false
     })
 }
 

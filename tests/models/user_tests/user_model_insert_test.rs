@@ -60,6 +60,8 @@ fn mock_user_repository_store(
         id: user.id,
         username: user.username,
         email: user.email,
+        activated: false,
+        blocked: false
     })
 }
 

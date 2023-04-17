@@ -10,6 +10,8 @@ pub struct UserRepositoryStoreReturn {
     pub id: String,
     pub username: String,
     pub email: String,
+    pub activated: bool,
+    pub blocked: bool
 }
 
 pub struct UserRepositoryConsultReturn {
@@ -17,6 +19,8 @@ pub struct UserRepositoryConsultReturn {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub activated: bool,
+    pub blocked: bool
 }
 
 #[derive(Debug, PartialEq)]

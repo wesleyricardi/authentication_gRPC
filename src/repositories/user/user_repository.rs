@@ -48,6 +48,8 @@ impl UserRepository for UserRepositoryPostgres<'_> {
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                activated: false,
+                blocked: false,
             }),
             Err(error) => Err(sqlx_error_to_app_error(error)),
         }
@@ -57,14 +59,14 @@ impl UserRepository for UserRepositoryPostgres<'_> {
         &self,
         username: String,
     ) -> Result<UserRepositoryConsultReturn, AppError> {
-        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password FROM users WHERE username = $1", username).fetch_one(self.pool).await {
+        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password, activated, blocked FROM users WHERE username = $1", username).fetch_one(self.pool).await {
             Ok(user) => Ok(user),
             Err(error) => Err(sqlx_error_to_app_error(error)), 
         }
     }
 
     async fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError> {
-        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password FROM users WHERE id = $1", id).fetch_one(self.pool).await {
+        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password, activated, blocked FROM users WHERE id = $1", id).fetch_one(self.pool).await {
             Ok(user) => Ok(user),
             Err(error) => Err(sqlx_error_to_app_error(error)), 
         }

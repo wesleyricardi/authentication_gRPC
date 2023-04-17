@@ -49,6 +49,8 @@ fn mock_user_reposory_consult_by_id(id: String) -> Result<UserRepositoryConsultR
         username: FAKE_USERNAME.to_string(),
         email: FAKE_EMAIL.to_string(),
         password: FAKE_PASSWORD.to_string(),
+        activated: false,
+        blocked: false
     })
 }
 
