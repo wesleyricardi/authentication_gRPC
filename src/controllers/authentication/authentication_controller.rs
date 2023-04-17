@@ -162,8 +162,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
 
         let UserToken {
             id,
-            username: _,
-            email: _,
+            ..
         } = jwt_decoded.user;
 
         let user = self
