@@ -99,6 +99,8 @@ fn mock_user_model_login_verification(
         id: FAKE_USER_ID.to_string(),
         username,
         email: FAKE_EMAIL.to_string(),
+        activated: false,
+        blocked: false,
     })
 }
 

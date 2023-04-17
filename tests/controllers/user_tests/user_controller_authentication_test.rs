@@ -68,6 +68,8 @@ fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn,
     Ok(UserModelRecoverUserDataReturn {
         username: FAKE_USERNAME.to_string(),
         email: FAKE_EMAIL.to_string(),
+        activated: false,
+        blocked: false
     })
 }
 fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {

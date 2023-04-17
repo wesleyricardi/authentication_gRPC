@@ -9,6 +9,8 @@ pub struct UserModelInsertReturn {
     pub id: String,
     pub username: String,
     pub email: String,
+    pub activated: bool,
+    pub blocked: bool
 }
 
 #[derive(Debug)]
@@ -16,11 +18,15 @@ pub struct UserModelLoginVerificationReturn {
     pub id: String,
     pub username: String,
     pub email: String,
+    pub activated: bool,
+    pub blocked: bool
 }
 
 pub struct UserModelRecoverUserDataReturn {
     pub username: String,
     pub email: String,
+    pub activated: bool,
+    pub blocked: bool
 }
 
 #[derive(Debug, PartialEq)]

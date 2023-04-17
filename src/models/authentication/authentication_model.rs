@@ -54,6 +54,8 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
             id: user.id,
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked,
         })
     }
     async fn login_verification(
@@ -71,6 +73,8 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
             id: user.id,
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked,
         })
     }
 
@@ -83,6 +87,8 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
         Ok(UserModelRecoverUserDataReturn {
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked,
         })
     }
 

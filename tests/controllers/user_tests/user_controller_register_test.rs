@@ -95,6 +95,8 @@ fn mock_user_model_create(user: UserModelCreateParams) -> Result<UserModelInsert
         id: FAKE_USER_ID.to_string(),
         username: user.username,
         email: user.email,
+        activated: false,
+        blocked: false
     })
 }
 
