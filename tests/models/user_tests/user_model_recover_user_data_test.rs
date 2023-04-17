@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     error::*,
-    models::user::user_model::{UserModel, UserModelImpl},
+    models::authentication::authentication_model::{AuthenticationModel, UserModel},
     repositories::user::user_repository::UserRepositoryConsultReturn,
 };
 
@@ -24,7 +24,7 @@ async fn test_user_model_recover_user_data() {
         ..Default::default()
     };
 
-    let model = UserModelImpl {
+    let model = UserModel {
         user_repository: get_mock_user_repository(expectations_of_the_methods_that_will_be_used),
         password_hasher: mock_password_hasher_with_returning_error_if_called,
         password_verify: mock_password_verify_with_returning_error_if_called,

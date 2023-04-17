@@ -9,7 +9,7 @@ use mockall::automock;
 
 #[async_trait]
 #[automock]
-pub trait UserModel: Sync + Send {
+pub trait AuthenticationModel: Sync + Send {
     async fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError>;
     async fn login_verification(
         &self,
@@ -27,7 +27,7 @@ pub trait UserModel: Sync + Send {
     ) -> Result<UserModelUpdateReturn, AppError>;
 }
 
-pub struct UserModelImpl<R> {
+pub struct UserModel<R> {
     pub user_repository: R,
     pub password_hasher: PasswordHasher,
     pub password_verify: PasswordVerify,
@@ -35,7 +35,7 @@ pub struct UserModelImpl<R> {
 }
 
 #[async_trait]
-impl<R: UserRepository> UserModel for UserModelImpl<R> {
+impl<R: UserRepository> AuthenticationModel for UserModel<R> {
     async fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
         let id = (self.new_id)();
         let hashed_password = (self.password_hasher)(user.password)?;

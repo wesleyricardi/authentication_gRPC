@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     error::*,
-    models::user::user_model::{UserModel, UserModelImpl},
+    models::authentication::authentication_model::{AuthenticationModel, UserModel},
     repositories::user::user_repository::UserRepositoryConsultReturn,
 };
 
@@ -25,7 +25,7 @@ async fn test_login_verification() {
         ..Default::default()
     };
 
-    let model = UserModelImpl {
+    let model = UserModel {
         user_repository: get_mock_user_repository(expectations_of_the_methods_that_will_be_used),
         password_hasher: mock_password_hasher_with_returning_error_if_called,
         password_verify: mock_verify_password,
@@ -54,7 +54,7 @@ async fn test_login_verification_givin_wrong_password() {
         ..Default::default()
     };
 
-    let model = UserModelImpl {
+    let model = UserModel {
         user_repository: get_mock_user_repository(expectations_of_the_methods_that_will_be_used),
         password_hasher: mock_password_hasher_with_returning_error_if_called,
         password_verify: mock_verify_password,

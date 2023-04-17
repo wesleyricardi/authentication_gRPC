@@ -3,12 +3,12 @@ use crate::{
     sanitizer_user_input_mock::*,},
 };
 use authentication_gRPC::{
-    controllers::user::user_controller::{
-        UpdateParams, UserController, UserControllerImpl, UserToken, UserViewArg,
+    controllers::authentication::authentication_controller::{
+        UpdateParams, AuthenticationController, UserController, UserViewArg
     },
     error::*,
-    models::user::user_model::{UserModelUpdateParams, UserModelUpdateReturn},
-    security::jwt::JWTAuthenticateToken,
+    models::authentication::authentication_model::{UserModelUpdateParams, UserModelUpdateReturn},
+    security::jwt::{JWTAuthenticateToken, UserToken}
 };
 
 const FAKE_USER_ID: &str = "user_id";
@@ -57,7 +57,7 @@ async fn test_update() {
         ..Default::default()
     };
 
-    let controller = UserControllerImpl {
+    let controller = UserController {
         model: get_mock_user_model(expectations_of_the_methods_that_will_be_used),
         sanitize_user: get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
             username: Some(expectation_of_sanitize_username),

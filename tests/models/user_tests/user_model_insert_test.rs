@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     error::*,
-    models::user::user_model::{UserModel, UserModelCreateParams, UserModelImpl},
+    models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams, UserModel},
     repositories::user::user_repository::{
         UserRepositoryStoreParams, UserRepositoryStoreReturn,
     },
@@ -32,7 +32,7 @@ async fn test_user_model_create() {
         }),
         ..Default::default()
     };
-    let model = UserModelImpl {
+    let model = UserModel {
         user_repository: get_mock_user_repository(expectations_of_the_methods_that_will_be_used),
         password_hasher: |_| Ok(FAKE_HASH_PASSWORD.to_string()),
         password_verify: mock_password_verify_with_returning_error_if_called,

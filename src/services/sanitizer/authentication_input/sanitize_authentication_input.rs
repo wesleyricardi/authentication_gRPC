@@ -3,15 +3,15 @@ use mockall::automock;
 use sanitizer::prelude::*;
 
 #[automock]
-pub trait SanitizeUser: Sync + Send + 'static {
+pub trait SanitizeAuthentication: Sync + Send {
     fn sanitize_username_input(&self, username: String) -> Result<String, AppError>;
     fn sanitize_email_input(&self, email: String) -> Result<String, AppError>;
     fn sanitize_password_input(&self, password: String) -> Result<String, AppError>;
 }
 
-pub struct SanitizeUserImpl;
+pub struct SanitizeUser;
 
-impl SanitizeUser for SanitizeUserImpl {
+impl SanitizeAuthentication for SanitizeUser {
     fn sanitize_username_input(&self, username: String) -> Result<String, AppError> {
         if username.is_empty() {
             return Err(AppError::new(Code::InvalidArgument, "Username is empty"));

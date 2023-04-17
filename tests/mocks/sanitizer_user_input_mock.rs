@@ -1,5 +1,5 @@
 use authentication_gRPC::{
-    error::AppError, services::sanitizer::user_input::sanitize_user_input::MockSanitizeUser,
+    error::AppError, services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication,
 };
 use mockall::predicate;
 
@@ -30,8 +30,8 @@ pub struct MockUserInputSanitizeParams {
 
 pub fn get_mock_user_input_sanitizer(
     expectations: MockUserInputSanitizeParams,
-) -> MockSanitizeUser {
-    let mut mock_user_input_sanitize = MockSanitizeUser::new();
+) -> MockSanitizeAuthentication {
+    let mut mock_user_input_sanitize = MockSanitizeAuthentication::new();
 
     if expectations.username.is_some() {
         let MockUserInputSanitizeUsername {

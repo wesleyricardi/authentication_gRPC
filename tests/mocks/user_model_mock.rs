@@ -1,7 +1,7 @@
 use authentication_gRPC::{
     error::*,
-    models::user::user_model::{
-        MockUserModel, UserModelCreateParams, UserModelInsertReturn,
+    models::authentication::authentication_model::{
+        MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
         UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams,
         UserModelUpdateReturn,
     },
@@ -44,8 +44,8 @@ pub struct MockUserModelParams {
     pub update: Option<MockUserModelUpdate>,
 }
 
-pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockUserModel {
-    let mut mock_user_model = MockUserModel::new();
+pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticationModel {
+    let mut mock_user_model = MockAuthenticationModel::new();
 
     if expectations.create.is_some() {
         let MockUserModelCreate {

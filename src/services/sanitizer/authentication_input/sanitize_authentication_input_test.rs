@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use crate::services::sanitizer::user_input::sanitize_user_input::*;
+    use crate::services::sanitizer::authentication_input::sanitize_authentication_input::*;
 
     #[test]
     fn test_santinize_username_input() {
-        let sanitize = SanitizeUserImpl;
+        let sanitize = SanitizeUser;
         let username_input_dirty = "use&$%rname".to_string();
 
         let sanitized_username = sanitize
@@ -16,7 +16,7 @@ mod tests {
 
     #[test]
     fn test_error_sanitize_username_input() {
-        let sanitize = SanitizeUserImpl;
+        let sanitize = SanitizeUser;
         let username_input_dirty = "".to_string();
         let username_input_dirty2 = "&$%".to_string();
 
@@ -33,7 +33,7 @@ mod tests {
 
     #[test]
     fn test_santinize_email_input() {
-        let sanitize = SanitizeUserImpl;
+        let sanitize = SanitizeUser;
         let email_input_dirty = "  test@email.com  ".to_string();
 
         let sanitized_email = sanitize.sanitize_email_input(email_input_dirty).unwrap();
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn test_error_sanitize_email_input() {
-        let sanitize = SanitizeUserImpl;
+        let sanitize = SanitizeUser;
         let email_input_dirty = "".to_string();
         let email_input_dirty2 = "    ".to_string();
 
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn test_santinize_password_input() {
-        let sanitize = SanitizeUserImpl;
+        let sanitize = SanitizeUser;
         let password_input_dirty = "  password  ".to_string();
 
         let sanitized_password = sanitize
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn test_error_sanitize_password_input() {
-        let sanitize = SanitizeUserImpl;
+        let sanitize = SanitizeUser;
         let password_input_dirty = "".to_string();
         let password_input_dirty2 = "   ".to_string();
 

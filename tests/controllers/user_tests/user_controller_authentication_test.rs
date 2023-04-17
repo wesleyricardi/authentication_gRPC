@@ -1,10 +1,10 @@
 use authentication_gRPC::{
-    controllers::user::user_controller::{
-        UserController, UserControllerImpl, UserToken, UserViewArg,
+    controllers::authentication::authentication_controller::{
+        AuthenticationController, UserController, UserViewArg,
     },
     error::*,
-    models::user::user_model::UserModelRecoverUserDataReturn,
-    security::jwt::JWTAuthenticateToken,
+    models::authentication::authentication_model::UserModelRecoverUserDataReturn,
+    security::jwt::{JWTAuthenticateToken, UserToken}
 };
 
 use crate::{
@@ -31,7 +31,7 @@ async fn test_authentication() {
         ..Default::default()
     };
 
-    let controller = UserControllerImpl {
+    let controller = UserController {
         model: get_mock_user_model(expectations_of_the_methods_that_will_be_used),
         sanitize_user: get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
             ..Default::default()

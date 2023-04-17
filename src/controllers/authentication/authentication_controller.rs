@@ -3,18 +3,18 @@ use async_trait::async_trait;
 pub use crate::{
     dtos::controllers::dtos_controller_user::*,
     dtos::views::dtos_view_user::*,
-    models::user::user_model::{UserModel, UserModelCreateParams},
+    models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
     security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
-    services::sanitizer::user_input::sanitize_user_input::{SanitizeUser, SanitizeUserImpl},
+    services::sanitizer::authentication_input::sanitize_authentication_input::{SanitizeAuthentication, SanitizeUser},
 };
 use crate::{
     error::AppError,
-    models::user::user_model::UserModelUpdateParams,
+    models::authentication::authentication_model::UserModelUpdateParams,
     security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
 
 #[async_trait]
-pub trait UserController: Sync + Send {
+pub trait AuthenticationController: Sync + Send {
     async fn register<T>(
         &self,
         req: RegisterParams,
@@ -38,7 +38,7 @@ pub trait UserController: Sync + Send {
     ) -> Result<T, AppError>;
 }
 
-pub struct UserControllerImpl<M, S> {
+pub struct UserController<M, S> {
     pub model: M,
     pub sanitize_user: S,
     pub jwt_encode: JwtEncode,
@@ -46,7 +46,7 @@ pub struct UserControllerImpl<M, S> {
 }
 
 #[async_trait]
-impl<M: UserModel, S: SanitizeUser> UserController for UserControllerImpl<M, S> {
+impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController for UserController<M, S> {
     async fn register<T>(
         &self,
         req: RegisterParams,
