@@ -30,7 +30,7 @@ impl UsersCodeRepository for UsersCodeRepositoryPostgres<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::{connection::get_postgres_pool, utils::integration_test::test_with_database};
+    use crate::database::utils::integration_test::test_with_database;
 
     use super::*;
     use chrono::Duration;
