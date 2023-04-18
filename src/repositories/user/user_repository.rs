@@ -22,7 +22,7 @@ pub trait UserRepository: Sync + Send {
         &self,
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,
-    ) -> Result<UserRepositoryUpdateReturn, AppError>;
+    ) -> Result<String, AppError>;
 }
 pub struct UserRepositoryPostgres<'a> {
     pub pool: &'a Pool<Postgres>,
@@ -76,7 +76,7 @@ impl UserRepository for UserRepositoryPostgres<'_> {
         &self,
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,
-    ) -> Result<UserRepositoryUpdateReturn, AppError> {
+    ) -> Result<String, AppError> {
         match sqlx::query!(
             "UPDATE users
             SET username = $1, email = $2, password = $3
@@ -89,12 +89,7 @@ impl UserRepository for UserRepositoryPostgres<'_> {
         .execute(self.pool)
         .await {
             Ok(_) => {
-                let user = self.consult_by_id(id).await?;
-                Ok(UserRepositoryUpdateReturn {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email
-                })
+                Ok(String::from("User updated successfully"))
             },
             Err(error) => Err(sqlx_error_to_app_error(error)), 
         }
@@ -303,7 +298,7 @@ mod tests {
 
         async fn repository_store_update(
             pool: Pool<Postgres>,
-        ) -> Result<UserRepositoryUpdateReturn, AppError> {
+        ) -> Result<String, AppError> {
             sqlx::query_as!(
                 User,
                 "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
@@ -329,9 +324,7 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(response.id, FAKE_ID);
-        assert_eq!(response.username, FAKE_USERNAME_UPDATED);
-        assert_eq!(response.email, FAKE_EMAIL_UPDATED);
+        assert_eq!(response, "User updated successfully");
     }
 
 }

@@ -24,7 +24,7 @@ pub trait AuthenticationModel: Sync + Send {
         &self,
         id: String,
         user: UserModelUpdateParams,
-    ) -> Result<UserModelUpdateReturn, AppError>;
+    ) -> Result<String, AppError>;
 }
 
 pub struct UserModel<R> {
@@ -96,7 +96,7 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
         &self,
         id: String,
         user: UserModelUpdateParams,
-    ) -> Result<UserModelUpdateReturn, AppError> {
+    ) -> Result<String, AppError> {
         let password = match user.password {
             Some(password) => Some((self.password_hasher)(password)?),
             None => None,
@@ -108,15 +108,8 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
             password,
         };
 
-        let user = self
-            .user_repository
+        self.user_repository
             .store_update(id, user_to_be_updated)
-            .await?;
-
-        Ok(UserModelUpdateReturn {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-        })
+            .await
     }
 }

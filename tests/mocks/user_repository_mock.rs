@@ -2,7 +2,7 @@ use authentication_gRPC::{
     error::*,
     repositories::user::user_repository::{
         MockUserRepository, UserRepositoryConsultReturn, UserRepositoryStoreParams,
-        UserRepositoryStoreReturn, UserRepositoryUpdateParams, UserRepositoryUpdateReturn,
+        UserRepositoryStoreReturn, UserRepositoryUpdateParams,
     },
 };
 use mockall::predicate;
@@ -30,7 +30,7 @@ pub struct MockUserRepositoryStoreUpdate {
     pub param_id_with: String,
     pub param_user_with: UserRepositoryUpdateParams,
     pub fn_returning:
-        fn(id: String, UserRepositoryUpdateParams) -> Result<UserRepositoryUpdateReturn, AppError>,
+        fn(id: String, UserRepositoryUpdateParams) -> Result<String, AppError>,
 }
 
 #[derive(Default)]

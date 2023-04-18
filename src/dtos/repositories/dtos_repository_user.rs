@@ -29,9 +29,3 @@ pub struct UserRepositoryUpdateParams {
     pub email: Option<String>,
     pub password: Option<String>,
 }
-
-pub struct UserRepositoryUpdateReturn {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-}

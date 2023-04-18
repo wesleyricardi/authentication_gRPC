@@ -2,7 +2,7 @@ use authentication_gRPC::{
     error::*,
     models::authentication::authentication_model::{AuthenticationModel, UserModel, UserModelUpdateParams},
     repositories::user::user_repository::{
-        UserRepositoryUpdateParams, UserRepositoryUpdateReturn,
+        UserRepositoryUpdateParams,
     },
 };
 
@@ -11,8 +11,6 @@ use crate::mocks::user_repository_mock::{
 };
 
 const FAKE_ID: &str = "userFakeId";
-const FAKE_USERNAME: &str = "username";
-const FAKE_EMAIL: &str = "test@model.com";
 const FAKE_HASH_PASSWORD: &str = "hash_password";
 
 #[tokio::test]
@@ -55,26 +53,20 @@ async fn test_update() {
         .await
         .unwrap();
 
-    assert_eq!(response.id, FAKE_ID);
-    assert_eq!(response.username, FAKE_UPDATE_USERNAME);
-    assert_eq!(response.email, FAKE_UPDATE_EMAIL);
+    assert_eq!(response, "User updated successfully");
 }
 
 fn mock_user_repository_store_update(
     id: String,
-    user: UserRepositoryUpdateParams,
-) -> Result<UserRepositoryUpdateReturn, AppError> {
+    _user: UserRepositoryUpdateParams,
+) -> Result<String, AppError> {
     if FAKE_ID != id {
         return Err(AppError::new(
             Code::NotFound,
             "not found the user with the given id",
         ));
     }
-    Ok(UserRepositoryUpdateReturn {
-        id,
-        username: user.username.unwrap_or(FAKE_USERNAME.to_string()),
-        email: user.email.unwrap_or(FAKE_EMAIL.to_string()),
-    })
+    Ok(String::from("User updated successfully"))
 }
 
 fn mock_new_id_with_panic_if_called() -> String {

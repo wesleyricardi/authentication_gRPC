@@ -3,7 +3,6 @@ use authentication_gRPC::{
     models::authentication::authentication_model::{
         MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
         UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams,
-        UserModelUpdateReturn,
     },
 };
 use mockall::predicate;
@@ -33,7 +32,7 @@ pub struct MockUserModelUpdate {
     pub calls: usize,
     pub param_id_with: String,
     pub param_user_with: UserModelUpdateParams,
-    pub fn_returning: fn(String, UserModelUpdateParams) -> Result<UserModelUpdateReturn, AppError>,
+    pub fn_returning: fn(String, UserModelUpdateParams) -> Result<String, AppError>,
 }
 
 #[derive(Default)]

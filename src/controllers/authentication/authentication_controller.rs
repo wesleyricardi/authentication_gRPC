@@ -34,7 +34,7 @@ pub trait AuthenticationController: Sync + Send {
         &self,
         token: String,
         req: UpdateParams,
-        view: fn(user: UserViewArg) -> T,
+        view: fn(message: String) -> T,
     ) -> Result<T, AppError>;
 }
 
@@ -132,7 +132,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         &self,
         token: String,
         req: UpdateParams,
-        view: fn(user: UserViewArg) -> T,
+        view: fn(message: String) -> T,
     ) -> Result<T, AppError> {
         let username_sanitized = match req.username {
             Some(username) => match self.sanitize_user.sanitize_username_input(username) {
@@ -165,7 +165,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             ..
         } = jwt_decoded.user;
 
-        let user = self
+        let message = self
             .model
             .update(
                 id,
@@ -177,10 +177,6 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             )
             .await?;
 
-        Ok(view(UserViewArg {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-        }))
+        Ok(view(message))
     }
 }

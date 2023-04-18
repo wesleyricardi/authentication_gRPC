@@ -42,7 +42,7 @@ message ReqUpdateUser {
 }
 
 message ResUpdateUser {
-    User user = 1;
+    string message = 1;
 }
 
 message ReqAuthentication {}

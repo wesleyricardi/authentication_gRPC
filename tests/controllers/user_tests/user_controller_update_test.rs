@@ -4,10 +4,10 @@ use crate::{
 };
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::{
-        UpdateParams, AuthenticationController, UserController, UserViewArg
+        UpdateParams, AuthenticationController, UserController
     },
     error::*,
-    models::authentication::authentication_model::{UserModelUpdateParams, UserModelUpdateReturn},
+    models::authentication::authentication_model::{UserModelUpdateParams},
     security::jwt::{JWTAuthenticateToken, UserToken}
 };
 
@@ -73,28 +73,23 @@ async fn test_update() {
         password: Some(FAKE_PASSWORD.to_string()),
     };
 
-    let MockViewReturn { user } = controller
+    let response = controller
         .update(FAKE_JWT_TOKEN.to_string(), req, view_mock)
         .await
         .unwrap();
 
-    assert_eq!(user.id, FAKE_USER_ID);
-    assert_eq!(user.username, SANITIZED_USERNAME);
-    assert_eq!(user.email, SANITIZED_EMAIL);
+    assert_eq!(response, "User updated successfully");
 }
 
-struct MockViewReturn {
-    user: UserViewArg,
-}
 
-fn view_mock(user: UserViewArg) -> MockViewReturn {
-    MockViewReturn { user }
+fn view_mock(message: String) -> String {
+    message
 }
 
 fn mock_user_model_update(
     id: String,
-    user: UserModelUpdateParams,
-) -> Result<UserModelUpdateReturn, AppError> {
+    _user: UserModelUpdateParams,
+) -> Result<String, AppError> {
     if id != FAKE_USER_ID {
         return Err(AppError::new(
             Code::NotFound,
@@ -102,11 +97,7 @@ fn mock_user_model_update(
         ));
     }
 
-    Ok(UserModelUpdateReturn {
-        id,
-        username: user.username.unwrap_or(FAKE_USERNAME.to_string()),
-        email: user.email.unwrap_or(FAKE_EMAIL.to_string()),
-    })
+    Ok(String::from("User updated successfully"))
 }
 
 fn mock_jwt_encode(user: UserToken) -> Result<String, AppError> {

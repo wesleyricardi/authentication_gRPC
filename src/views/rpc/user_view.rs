@@ -38,12 +38,8 @@ pub fn render_res_authentication(user: UserViewArg) -> Response<ResAuthenticatio
     })
 }
 
-pub fn render_res_update(user: UserViewArg) -> Response<ResUpdateUser> {
+pub fn render_res_update(message: String) -> Response<ResUpdateUser> {
     Response::new(ResUpdateUser {
-        user: Some(UserResponse {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-        }),
+        message
     })
 }
