@@ -12,6 +12,8 @@ message User {
     string id = 1;
     string username = 2;
     string email = 3;
+    bool activated = 4;
+    bool blocked = 5;
 }
 
 message ReqRegister {

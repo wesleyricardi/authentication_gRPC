@@ -47,6 +47,8 @@ async fn test_authentication() {
 
     assert_eq!(user.username, FAKE_USERNAME);
     assert_eq!(user.email, FAKE_EMAIL);
+    assert_eq!(user.activated, false);
+    assert_eq!(user.blocked, false);
 }
 
 struct MockViewReturn {

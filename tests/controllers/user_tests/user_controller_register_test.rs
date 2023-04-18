@@ -78,6 +78,8 @@ async fn test_register() {
     assert_eq!(user.id, FAKE_USER_ID);
     assert_eq!(user.username, SANITIZED_USERNAME);
     assert_eq!(user.email, SANITIZED_EMAIL);
+    assert_eq!(user.activated, false);
+    assert_eq!(user.blocked, false);
     assert_eq!(token, FAKE_JWT_TOKEN);
 }
 

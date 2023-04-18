@@ -76,6 +76,8 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                activated: user.activated,
+                blocked: user.blocked
             },
             token,
         ))
@@ -105,6 +107,8 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                activated: user.activated,
+                blocked: user.blocked
             },
             token,
         ))
@@ -125,6 +129,8 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             id: user_token.id,
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked
         }))
     }
 

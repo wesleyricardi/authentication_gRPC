@@ -12,6 +12,8 @@ pub fn render_res_register(user: UserViewArg, token: String) -> Response<ResRegi
             id: user.id,
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked
         }),
         token,
     })
@@ -23,6 +25,8 @@ pub fn render_res_login(user: UserViewArg, token: String) -> Response<ResLogin> 
             id: user.id,
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked
         }),
         token,
     })
@@ -34,6 +38,8 @@ pub fn render_res_authentication(user: UserViewArg) -> Response<ResAuthenticatio
             id: user.id,
             username: user.username,
             email: user.email,
+            activated: user.activated,
+            blocked: user.blocked
         }),
     })
 }
