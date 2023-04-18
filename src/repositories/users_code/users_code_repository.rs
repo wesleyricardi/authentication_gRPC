@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use chrono::NaiveDateTime;
-use sqlx::{Pool, Postgres, types::chrono::{DateTime, Utc}};
+use sqlx::{Pool, Postgres};
 use crate::{error::AppError, utils::adapters::sqlx_error_to_app_error::sqlx_error_to_app_error};
 
 #[async_trait]
