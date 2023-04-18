@@ -1,0 +1,6 @@
+CREATE TABLE "users_code" (
+  id SERIAL PRIMARY KEY,
+  code VARCHAR(255) NOT NULL,
+  expireAt TIMESTAMP NOT NULL,
+  user_id VARCHAR(255) NOT NULL REFERENCES users(id)
+);

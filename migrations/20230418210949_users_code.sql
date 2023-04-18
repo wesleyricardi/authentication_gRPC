@@ -1,0 +1,1 @@
+CREATE INDEX idx_code_user_id ON users_code (code, user_id);
