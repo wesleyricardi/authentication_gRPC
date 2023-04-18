@@ -17,9 +17,10 @@ serde = "1.0.152"
 sanitizer = "0.1.6"
 bcrypt = "0.14.0"
 mockall = "0.11.3"
-sqlx = {version = "0.6.3", features = ["postgres", "migrate", "runtime-tokio-rustls", "macros"]}
+sqlx = {version = "0.6.3", features = ["postgres", "migrate", "runtime-tokio-rustls", "macros", "chrono", "time"]}
 dotenv = "0.15.0"
 async-trait = "0.1.68"
+chrono = "0.4.24"
 
 [build-dependencies]
 tonic-build = "0.7"
