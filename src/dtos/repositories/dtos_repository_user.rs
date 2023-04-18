@@ -28,4 +28,6 @@ pub struct UserRepositoryUpdateParams {
     pub username: Option<String>,
     pub email: Option<String>,
     pub password: Option<String>,
+    pub activated: Option<bool>,
+    pub blocked: Option<bool>
 }

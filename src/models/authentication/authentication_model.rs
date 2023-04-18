@@ -106,6 +106,8 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
             username: user.username,
             email: user.email,
             password,
+            activated: None,
+            blocked: None,
         };
 
         self.user_repository

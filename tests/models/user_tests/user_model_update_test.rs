@@ -23,6 +23,8 @@ async fn test_update() {
         username: Some(FAKE_UPDATE_USERNAME.to_string()),
         email: Some(FAKE_UPDATE_EMAIL.to_string()),
         password: Some(FAKE_HASH_PASSWORD.to_string()),
+        activated: None,
+        blocked: None,
     };
 
     let mock_repository = get_mock_user_repository(MockUserRepositoryParams {

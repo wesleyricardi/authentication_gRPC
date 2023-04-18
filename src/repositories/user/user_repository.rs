@@ -77,23 +77,49 @@ impl UserRepository for UserRepositoryPostgres<'_> {
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,
     ) -> Result<String, AppError> {
-        match sqlx::query!(
-            "UPDATE users
-            SET username = $1, email = $2, password = $3
-            WHERE id = $4;",
-            user_to_be_updated.username,
-            user_to_be_updated.email,
-            user_to_be_updated.password, 
-            id,
-        )
-        .execute(self.pool)
-        .await {
-            Ok(_) => {
-                Ok(String::from("User updated successfully"))
-            },
-            Err(error) => Err(sqlx_error_to_app_error(error)), 
+        let mut set_clauses = Vec::new();
+    
+        if let Some(username) = user_to_be_updated.username {
+            set_clauses.push(format!("username = '{}'", username));
+        }
+    
+        if let Some(email) = user_to_be_updated.email {
+            set_clauses.push(format!("email = '{}'", email));
+        }
+    
+        if let Some(password) = user_to_be_updated.password {
+            set_clauses.push(format!("password = '{}'", password));
+        }
+    
+        if let Some(activated) = user_to_be_updated.activated {
+            set_clauses.push(format!("activated = '{}'", activated));
+        }
+    
+        if let Some(blocked) = user_to_be_updated.blocked {
+            set_clauses.push(format!("blocked = '{}'", blocked));
+        }
+    
+        if set_clauses.is_empty() {
+            return Err(AppError::new(Code::InvalidArgument, "No fields to update"));
+        }
+    
+        let set_clause = set_clauses.join(", ");
+        
+        let query = format!(
+            "UPDATE users SET {} WHERE id = $1",
+            set_clause,
+        );
+        
+        match sqlx::query(&query)
+            .bind(id)
+            .execute(self.pool)
+            .await
+        {
+            Ok(_) => Ok(String::from("User updated successfully")),
+            Err(error) => Err(sqlx_error_to_app_error(error)),
         }
     }
+
 }
 
 #[cfg(test)]
@@ -312,12 +338,25 @@ mod tests {
 
             let repository = UserRepositoryPostgres { pool: &pool };
 
-            repository
+            let response = repository
                 .store_update(FAKE_ID.to_string(), UserRepositoryUpdateParams { 
                     username: Some(FAKE_USERNAME_UPDATED.to_string()), 
-                    email: Some(FAKE_EMAIL_UPDATED.to_string()), 
-                    password: Some(FAKE_PASSWORD_UPDATED.to_string()) })
-                .await
+                    email: None, 
+                    password: Some(FAKE_PASSWORD_UPDATED.to_string()),
+                    activated: None,
+                    blocked: None
+                 })
+                .await?;
+
+            let result = sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password, activated, blocked FROM users WHERE id = $1", FAKE_ID).fetch_one(&pool).await.unwrap();
+            
+            assert_eq!(result.username, FAKE_USERNAME_UPDATED);
+            assert_eq!(result.email, FAKE_EMAIL);
+            assert_eq!(result.password, FAKE_PASSWORD_UPDATED);
+            assert_eq!(result.activated, false);
+            assert_eq!(result.blocked, false);
+ 
+            Ok(response)
         }
 
         let response = test_with_database(pg_url, db_name, repository_store_update)
