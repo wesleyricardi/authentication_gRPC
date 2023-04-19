@@ -96,6 +96,7 @@ dependencies = [
  "jsonwebtoken",
  "mockall",
  "prost",
+ "rand",
  "sanitizer",
  "serde",
  "sqlx",

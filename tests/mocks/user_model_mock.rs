@@ -2,7 +2,7 @@ use authentication_gRPC::{
     error::*,
     models::authentication::authentication_model::{
         MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
-        UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams,
+        UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams, CodeType,
     },
 };
 use mockall::predicate;
@@ -35,12 +35,20 @@ pub struct MockUserModelUpdate {
     pub fn_returning: fn(String, UserModelUpdateParams) -> Result<String, AppError>,
 }
 
+pub struct MockUserModelCreateUserCode {
+    pub calls: usize,
+    pub param_user_id_with: String,
+    pub param_code_type_with: CodeType,
+    pub fn_returning: fn(user_id: String, code: CodeType) -> Result<String, AppError>,
+}
+
 #[derive(Default)]
 pub struct MockUserModelParams {
     pub create: Option<MockUserModelCreate>,
     pub login_verification: Option<MockUserModelLoginVerification>,
     pub recover_user_data: Option<MockUserModelRecoverUserData>,
     pub update: Option<MockUserModelUpdate>,
+    pub create_user_code: Option<MockUserModelCreateUserCode>
 }
 
 pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticationModel {
@@ -108,5 +116,21 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .times(calls)
             .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
     }
+
+    if let Some(create_user_code) = expectations.create_user_code {
+        let MockUserModelCreateUserCode {
+            calls,
+            fn_returning,
+            param_user_id_with,
+            param_code_type_with,
+        } = create_user_code;
+
+        mock_user_model
+            .expect_create_user_code()
+            .with(predicate::eq(param_user_id_with), predicate::eq(param_code_type_with))
+            .times(calls)
+            .returning(move |user_id, code| Box::pin(async move {fn_returning(user_id, code)}));
+    }
+
     mock_user_model
 }

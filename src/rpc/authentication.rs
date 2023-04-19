@@ -15,8 +15,10 @@ use crate::controllers::authentication::authentication_controller::{
 
 use crate::models::authentication::authentication_model::UserModel;
 use crate::repositories::user::user_repository::{UserRepositoryPostgres};
+use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryPostgres;
 use crate::security::jwt::{JWT_DECODE, JWT_ENCODE};
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
+use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
 use crate::utils::hash::password::{PASSWORD_HASHER, PASSWORD_VERIFY};
 use crate::views::rpc;
@@ -32,16 +34,18 @@ impl AuthenticationService {
     }
 }
 
-pub type DefaultAuthenticationModel<'a> = UserModel<UserRepositoryPostgres<'a>>;
+pub type DefaultAuthenticationModel<'a> = UserModel<UserRepositoryPostgres<'a>, UsersCodeRepositoryPostgres<'a>>;
 pub fn create_user_model(app_state: &AppState) -> DefaultAuthenticationModel {
     let pool = &app_state.db_pg_pool;
     UserModel {
         user_repository: UserRepositoryPostgres {
             pool,
         },
+        user_code_repository: UsersCodeRepositoryPostgres { pool },
         password_hasher: PASSWORD_HASHER,
         password_verify: PASSWORD_VERIFY,
         new_id: new_uuidv4,
+        generate_code: six_number_code_generator,
     }
 }
 

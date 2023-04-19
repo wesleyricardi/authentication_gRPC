@@ -4,9 +4,9 @@ use authentication_gRPC::{
     repositories::user::user_repository::UserRepositoryConsultReturn,
 };
 
-use crate::mocks::user_repository_mock::{
+use crate::mocks::{user_repository_mock::{
     get_mock_user_repository, MockUserRepositoryConsultByUsername, MockUserRepositoryParams,
-};
+}, users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams}};
 
 const FAKE_ID: &str = "userFakeId";
 const FAKE_USERNAME: &str = "username";
@@ -30,6 +30,10 @@ async fn test_login_verification() {
         password_hasher: mock_password_hasher_with_returning_error_if_called,
         password_verify: mock_verify_password,
         new_id: mock_new_id_with_panic_if_called,
+        user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
+            ..Default::default()
+        }),
+        generate_code: || panic!("cannot be called on this test")
     };
 
     let user = model
@@ -59,6 +63,10 @@ async fn test_login_verification_givin_wrong_password() {
         password_hasher: mock_password_hasher_with_returning_error_if_called,
         password_verify: mock_verify_password,
         new_id: mock_new_id_with_panic_if_called,
+        user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
+            ..Default::default()
+        }),
+        generate_code: || panic!("cannot be called on this test")
     };
 
     match model

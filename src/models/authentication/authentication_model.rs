@@ -3,9 +3,16 @@ pub use crate::{
     repositories::user::user_repository::{UserRepository, UserRepositoryStoreParams},
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
-use crate::{error::*, repositories::user::user_repository::UserRepositoryUpdateParams};
+use crate::{error::*, repositories::{user::user_repository::UserRepositoryUpdateParams, users_code::users_code_repository::{UsersCodeRepository, UsersCode}}, utils::generate_code::six_number_code_generator::six_number_code_generator};
 use async_trait::async_trait;
+use chrono::{Duration, Utc};
 use mockall::automock;
+
+#[derive(Debug, PartialEq)]
+pub enum CodeType {
+    Activation,
+    Recovery
+}
 
 #[async_trait]
 #[automock]
@@ -25,17 +32,20 @@ pub trait AuthenticationModel: Sync + Send {
         id: String,
         user: UserModelUpdateParams,
     ) -> Result<String, AppError>;
+    async fn create_user_code(&self, user_id: String, code_type: CodeType) -> Result<String, AppError>;
 }
 
-pub struct UserModel<R> {
+pub struct UserModel<R, C> {
     pub user_repository: R,
+    pub user_code_repository: C,
     pub password_hasher: PasswordHasher,
     pub password_verify: PasswordVerify,
     pub new_id: fn() -> String,
+    pub generate_code: fn() -> String,
 }
 
 #[async_trait]
-impl<R: UserRepository> AuthenticationModel for UserModel<R> {
+impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserModel<R, C> {
     async fn create(&self, user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {
         let id = (self.new_id)();
         let hashed_password = (self.password_hasher)(user.password)?;
@@ -113,5 +123,24 @@ impl<R: UserRepository> AuthenticationModel for UserModel<R> {
         self.user_repository
             .store_update(id, user_to_be_updated)
             .await
+    }
+    async fn create_user_code(&self, user_id: String, code_type: CodeType) -> Result<String, AppError> {
+        let expire_minutes = match code_type {
+            CodeType::Activation => 30, //minutes
+            CodeType::Recovery => 30 //minutes
+        };
+
+        let expire_at= Utc::now().naive_utc() + Duration::minutes(expire_minutes.into());
+
+        let code = UsersCode {
+            code: (self.generate_code)(),
+            expire_at,
+            user_id
+        };
+
+        match self.user_code_repository.store(code).await {
+            Ok(_) => Ok(String::from("Code created successfully")),
+            Err(error) => Err(error)
+        }
     }
 }

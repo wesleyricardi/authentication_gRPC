@@ -6,9 +6,9 @@ use authentication_gRPC::{
     },
 };
 
-use crate::mocks::user_repository_mock::{
+use crate::mocks::{user_repository_mock::{
     get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStoreUpdate,
-};
+}, users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams}};
 
 const FAKE_ID: &str = "userFakeId";
 const FAKE_HASH_PASSWORD: &str = "hash_password";
@@ -41,6 +41,10 @@ async fn test_update() {
         password_hasher: |_| Ok(FAKE_HASH_PASSWORD.to_string()),
         password_verify: mock_password_verify_with_returning_error_if_called,
         new_id: mock_new_id_with_panic_if_called,
+        user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
+            ..Default::default()
+        }),
+        generate_code: || panic!("cannot be called on this test")
     };
 
     let response = model

@@ -1,3 +1,5 @@
+use core::panic;
+
 use authentication_gRPC::{
     error::*,
     models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams, UserModel},
@@ -6,9 +8,9 @@ use authentication_gRPC::{
     },
 };
 
-use crate::mocks::user_repository_mock::{
+use crate::mocks::{user_repository_mock::{
     get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStore,
-};
+}, users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams}};
 
 #[tokio::test]
 async fn test_user_model_create() {
@@ -24,6 +26,8 @@ async fn test_user_model_create() {
         email: FAKE_EMAIL.to_string(),
         password: FAKE_HASH_PASSWORD.to_string(),
     };
+
+
     let expectations_of_the_methods_that_will_be_used = MockUserRepositoryParams {
         store: Some(MockUserRepositoryStore {
             calls: 1,
@@ -32,11 +36,17 @@ async fn test_user_model_create() {
         }),
         ..Default::default()
     };
+
+
     let model = UserModel {
         user_repository: get_mock_user_repository(expectations_of_the_methods_that_will_be_used),
         password_hasher: |_| Ok(FAKE_HASH_PASSWORD.to_string()),
         password_verify: mock_password_verify_with_returning_error_if_called,
         new_id: || FAKE_ID.to_string(),
+        user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
+            ..Default::default()
+        }),
+        generate_code: || panic!("cannot be called on this test")
     };
 
     let response = model

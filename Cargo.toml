@@ -21,6 +21,7 @@ sqlx = {version = "0.6.3", features = ["postgres", "migrate", "runtime-tokio-rus
 dotenv = "0.15.0"
 async-trait = "0.1.68"
 chrono = "0.4.24"
+rand = "0.8.5"
 
 [build-dependencies]
 tonic-build = "0.7"

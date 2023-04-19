@@ -1,17 +1,19 @@
 use async_trait::async_trait;
 use chrono::NaiveDateTime;
+use mockall::automock;
 use sqlx::{Pool, Postgres};
 use crate::{error::AppError, utils::adapters::sqlx_error_to_app_error::sqlx_error_to_app_error};
 
 #[async_trait]
-pub trait UsersCodeRepository {
+#[automock]
+pub trait UsersCodeRepository: Send + Sync{
     async fn store(&self, code: UsersCode) -> Result<String, AppError>;
 }
 
 pub struct UsersCode {
-    code: String, 
-    expire_at: NaiveDateTime, 
-    user_id: String
+    pub code: String, 
+    pub expire_at: NaiveDateTime, 
+    pub user_id: String
 }
 
 pub struct UsersCodeRepositoryPostgres<'a> {
