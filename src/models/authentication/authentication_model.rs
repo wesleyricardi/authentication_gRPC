@@ -132,14 +132,16 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
 
         let expire_at= Utc::now().naive_utc() + Duration::minutes(expire_minutes.into());
 
+        let code_key = (self.generate_code)();
+    
         let code = UsersCode {
-            code: (self.generate_code)(),
+            code: code_key.clone(),
             expire_at,
             user_id
         };
 
         match self.user_code_repository.store(code).await {
-            Ok(_) => Ok(String::from("Code created successfully")),
+            Ok(_) => Ok(String::from(code_key)),
             Err(error) => Err(error)
         }
     }

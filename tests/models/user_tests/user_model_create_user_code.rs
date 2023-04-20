@@ -34,9 +34,9 @@ async fn test_user_model_create_user_code() {
         new_id: || panic!("cannot be called on this test"),
     };
 
-    let response = model.create_user_code(FAKE_ID.to_string(), CodeType::Activation).await.unwrap();
+    let code = model.create_user_code(FAKE_ID.to_string(), CodeType::Activation).await.unwrap();
 
-   assert_eq!(response, "Code created successfully");
+   assert_eq!(code, FAKE_CODE);
 }
 
 fn mock_code_repository_store(
