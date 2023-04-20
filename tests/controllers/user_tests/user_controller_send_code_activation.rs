@@ -1,23 +1,11 @@
-use authentication_gRPC::{
-    controllers::authentication::authentication_controller::{
-        AuthenticationController, UserController, UserViewArg,
-    },
-    error::*,
-    models::authentication::authentication_model::UserModelRecoverUserDataReturn,
-    security::jwt::{JWTAuthenticateToken, UserToken}
-};
+use authentication_gRPC::{models::authentication::authentication_model::{UserModelRecoverUserDataReturn, CodeType}, error::{AppError, Code}, controllers::authentication::authentication_controller::{UserController, AuthenticationController}, security::jwt::{JWTAuthenticateToken, UserToken}};
 
-use crate::{
-    mocks::{user_model_mock::{
-        get_mock_user_model, MockUserModelParams, MockUserModelRecoverUserData,
-    },sanitizer_user_input_mock::{
-        get_mock_user_input_sanitizer, MockUserInputSanitizeParams,
-    }},
-};
+use crate::mocks::{user_model_mock::{MockUserModelRecoverUserData, MockUserModelParams, MockUserModelCreateUserCode, get_mock_user_model}, sanitizer_user_input_mock::{get_mock_user_input_sanitizer, MockUserInputSanitizeParams}};
 
 const FAKE_USER_ID: &str = "user_id";
-const FAKE_USERNAME: &str = "username";
 const FAKE_EMAIL: &str = "test@controller.com";
+const FAKE_USERNAME: &str = "username";
+const FAKE_USER_CODE: &str = "000001";
 const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
 
 #[tokio::test]
@@ -28,6 +16,13 @@ async fn test_authentication() {
             param_id_with: FAKE_USER_ID.to_string(),
             fn_returning: mock_user_model_recover,
         }),
+        
+        create_user_code: Some(MockUserModelCreateUserCode {
+            calls: 1,
+            param_user_id_with: FAKE_USER_ID.to_string(),
+            param_code_type_with: CodeType::Activation,
+            fn_returning: mock_user_model_create_code,
+        }),
         ..Default::default()
     };
 
@@ -36,28 +31,24 @@ async fn test_authentication() {
         sanitize_user: get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
             ..Default::default()
         }),
-        send_email: mock_send_email_with_returning_error_if_called,
+        send_email: |to, subject, body| {
+            assert_eq!(to, FAKE_EMAIL);
+            assert_eq!(subject, "activation code");
+            assert_eq!(body, format!("<div>The activation code is {}</div>", FAKE_USER_CODE));
+
+            Ok(String::from("Send email successfully"))
+        },
         jwt_encode: mock_jwt_encode_with_returning_error_if_called,
         jwt_decode: mock_jwt_decode,
     };
 
-    let MockViewReturn { user, .. } = controller
-        .authenticate(FAKE_JWT_TOKEN.to_string(), view_mock)
-        .await
-        .unwrap();
+    let response = controller.send_activation_code(FAKE_JWT_TOKEN.to_string(), view_mock).await.unwrap();
 
-    assert_eq!(user.username, FAKE_USERNAME);
-    assert_eq!(user.email, FAKE_EMAIL);
-    assert_eq!(user.activated, false);
-    assert_eq!(user.blocked, false);
+    assert_eq!(response, "Code send successufully");
 }
 
-struct MockViewReturn {
-    user: UserViewArg,
-}
-
-fn view_mock(user: UserViewArg) -> MockViewReturn {
-    MockViewReturn { user }
+fn view_mock(message: String) -> String {
+    message
 }
 
 fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn, AppError> {
@@ -75,6 +66,11 @@ fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn,
         blocked: false
     })
 }
+
+fn mock_user_model_create_code(_: String, _: CodeType) -> Result<String, AppError> {
+    Ok(FAKE_USER_CODE.to_string())
+}
+
 fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
     if token != FAKE_JWT_TOKEN {
         return Err(AppError::new(Code::PermissionDenied, "Invalid token"));
@@ -95,11 +91,5 @@ fn mock_jwt_encode_with_returning_error_if_called(_: UserToken) -> Result<String
     Err(AppError::new(
         Code::Internal,
         "cannot be called on this test",
-    ))
-}
-
-fn mock_send_email_with_returning_error_if_called(_: String, _: String, _:String) -> Result<String, AppError> {
-    Err(AppError::new(Code::Internal, 
-        "cannot be called on this test"
     ))
 }

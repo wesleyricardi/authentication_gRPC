@@ -17,6 +17,7 @@ use crate::models::authentication::authentication_model::UserModel;
 use crate::repositories::user::user_repository::{UserRepositoryPostgres};
 use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryPostgres;
 use crate::security::jwt::{JWT_DECODE, JWT_ENCODE};
+use crate::services::mail::send::send_email;
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
@@ -54,6 +55,7 @@ pub fn create_user_controller(app_state: &AppState) -> DefaultAuthenticationCont
     UserController {
         model: create_user_model(app_state),
         sanitize_user: SanitizeUser,
+        send_email: send_email,
         jwt_encode: JWT_ENCODE,
         jwt_decode: JWT_DECODE,
     }

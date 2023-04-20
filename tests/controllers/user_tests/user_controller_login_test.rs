@@ -55,6 +55,7 @@ async fn test_login() {
             password: Some(expectation_of_sanitize_password),
             ..Default::default()
         }),
+        send_email: mock_send_email_with_returning_error_if_called,
         jwt_encode: mock_jwt_encode,
         jwt_decode: mock_jwt_decode_with_returning_error_if_called,
     };
@@ -125,5 +126,11 @@ fn mock_jwt_decode_with_returning_error_if_called(
     Err(AppError::new(
         Code::Internal,
         "cannot be called on this test",
+    ))
+}
+
+fn mock_send_email_with_returning_error_if_called(_: String, _: String, _:String) -> Result<String, AppError> {
+    Err(AppError::new(Code::Internal, 
+        "cannot be called on this test"
     ))
 }

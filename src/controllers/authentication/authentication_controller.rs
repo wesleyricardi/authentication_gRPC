@@ -8,10 +8,11 @@ pub use crate::{
     services::sanitizer::authentication_input::sanitize_authentication_input::{SanitizeAuthentication, SanitizeUser},
 };
 use crate::{
-    error::AppError,
-    models::authentication::authentication_model::UserModelUpdateParams,
-    security::jwt::{JWTAuthenticateToken, JwtDecode},
+    error::{AppError, Code},
+    models::authentication::authentication_model::{UserModelUpdateParams, CodeType, UserModelRecoverUserDataReturn},
+    security::jwt::{JWTAuthenticateToken, JwtDecode}, services::mail::send::send_email,
 };
+
 
 #[async_trait]
 pub trait AuthenticationController: Sync + Send {
@@ -36,11 +37,13 @@ pub trait AuthenticationController: Sync + Send {
         req: UpdateParams,
         view: fn(message: String) -> T,
     ) -> Result<T, AppError>;
+    async fn send_activation_code<T>(&self, token: String, view: fn(message: String) -> T) -> Result<T, AppError>; 
 }
 
 pub struct UserController<M, S> {
     pub model: M,
     pub sanitize_user: S,
+    pub send_email: fn(to_adress: String, subject: String, body:String) -> Result<String, AppError>,
     pub jwt_encode: JwtEncode,
     pub jwt_decode: JwtDecode,
 }
@@ -184,5 +187,25 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             .await?;
 
         Ok(view(message))
+    }
+
+    async fn send_activation_code<T>(&self, token: String, view: fn(message: String) -> T) -> Result<T, AppError> {
+        let jwt_decoded = (self.jwt_decode)(&token)?;
+
+        let UserToken {
+            id,
+            ..
+        } = jwt_decoded.user;
+
+        let UserModelRecoverUserDataReturn  { email, ..} = self.model.recover_user_data(id.clone()).await?;
+
+        let code = self.model.create_user_code(id, CodeType::Activation).await?;
+
+        let body = format!("<div>The activation code is {}</div>", code);
+
+        match (self.send_email)(email, String::from("activation code"), body) {
+            Ok(_) => Ok(view(String::from("Code send successufully"))),
+            Err(_) => Err(AppError { code: Code::Internal, message: String::from("send email failed") })
+        }
     }
 }
