@@ -14,6 +14,7 @@ F: Future<Output = Result<T, AppError>>,
 {
     let pool = &get_postgres_pool(Some(pg_url.clone())).await;
 
+    drop_database(pool, &db_name).await;
     setup_database(pool, &pg_url, &db_name).await;
 
     let db_url = format!("{pg_url}/{db_name}");
