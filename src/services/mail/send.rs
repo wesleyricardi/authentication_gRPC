@@ -36,7 +36,7 @@ fn get_transport() -> Result<SmtpTransport, AppError> {
  }
 
 
-pub fn send_email(to_adress: String, subject:&str, body:String) -> Result<String, AppError> {
+pub fn send_email(to_adress: String, subject: String, body:String) -> Result<String, AppError> {
     let message = Message::builder()
         .from(get_from()?)
         .to(to_adress.parse().map_err(|_| AppError { 
@@ -67,7 +67,7 @@ mod tests {
     #[test]
     fn test_send_email() {
         dotenv::from_filename(".env.test").ok();
-        let response = send_email(load_env_var("MAIL_USER_ADRESS").unwrap(), "email test", String::from("<div>This is a teste</div>")).unwrap();
+        let response = send_email(load_env_var("MAIL_USER_ADRESS").unwrap(), String::from("email test"), String::from("<div>This is a teste</div>")).unwrap();
         
         assert_eq!(response, "E-mail send successfully")
     }
