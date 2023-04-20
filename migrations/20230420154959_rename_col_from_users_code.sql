@@ -1,0 +1,1 @@
+ALTER TABLE users_code RENAME COLUMN "expireat" TO expire_at;

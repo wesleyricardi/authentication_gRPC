@@ -12,7 +12,7 @@ pub trait UsersCodeRepository: Send + Sync{
 
 pub struct UsersCode {
     pub code: String, 
-    pub expire_at: NaiveDateTime, 
+    pub expire_at: NaiveDateTime,
     pub user_id: String
 }
 
@@ -23,7 +23,7 @@ pub struct UsersCodeRepositoryPostgres<'a> {
 #[async_trait]
 impl UsersCodeRepository for UsersCodeRepositoryPostgres<'_> {
     async fn store(&self, code: UsersCode) -> Result<String, AppError> {
-        match sqlx::query!("INSERT INTO users_code (code, expireat, user_id) VALUES ($1, $2, $3)", code.code, code.expire_at, code.user_id).execute(self.pool).await {
+        match sqlx::query!("INSERT INTO users_code (code, expire_at, user_id) VALUES ($1, $2, $3)", code.code, code.expire_at, code.user_id).execute(self.pool).await {
             Ok(_) => Ok(String::from("Code store successfully")),
             Err(error) => Err(sqlx_error_to_app_error(error)),
         }
