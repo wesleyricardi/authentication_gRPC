@@ -5,13 +5,18 @@ use sqlx::{Postgres, Pool};
 use crate::{error::AppError, database::connection::get_postgres_pool};
 
 pub async fn test_with_database<T, F>(
-    pg_url: String,
-    db_name: String,
+    test_name: &str,
     callback: fn(Pool<Postgres>) -> F,
 ) -> Result<T, AppError>
 where
 F: Future<Output = Result<T, AppError>>,
 {
+    dotenv::from_filename(".env.test").ok();
+    let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
+    let mut db_name =
+        std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
+    db_name = format!("{db_name}_{test_name}");
+
     let pool = &get_postgres_pool(Some(pg_url.clone())).await;
 
     drop_database(pool, &db_name).await;

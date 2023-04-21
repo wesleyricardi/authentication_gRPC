@@ -135,12 +135,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_store_user() {
-        dotenv::from_filename(".env.test").ok();
-        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
-        let mut db_name =
-            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
-        db_name = format!("{db_name}_test_store_user");
-
         async fn repository_store(
             pool: Pool<Postgres>,
         ) -> Result<UserRepositoryStoreReturn, AppError> {
@@ -156,7 +150,7 @@ mod tests {
                 .await
         }
 
-        let response = test_with_database(pg_url, db_name, repository_store)
+        let response = test_with_database("test_store_user", repository_store)
             .await
             .unwrap();
 
@@ -167,12 +161,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_consult_user_by_username() {
-        dotenv::from_filename(".env.test").ok();
-        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
-        let mut db_name =
-            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
-        db_name = format!("{db_name}_test_consult_by_username");
-
         async fn repository_consult_by_username(
             pool: Pool<Postgres>,
         ) -> Result<UserRepositoryConsultReturn, AppError> {
@@ -194,7 +182,7 @@ mod tests {
                 .await
         }
 
-        let response = test_with_database(pg_url, db_name, repository_consult_by_username)
+        let response = test_with_database("test_consult_by_username", repository_consult_by_username)
             .await
             .unwrap();
 
@@ -207,12 +195,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_consult_user_by_id() {
-        dotenv::from_filename(".env.test").ok();
-        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
-        let mut db_name =
-            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
-        db_name = format!("{db_name}_test_consult_by_id");
-
         async fn repository_consult_by_id(
             pool: Pool<Postgres>,
         ) -> Result<UserRepositoryConsultReturn, AppError> {
@@ -234,7 +216,7 @@ mod tests {
                 .await
         }
 
-        let response = test_with_database(pg_url, db_name, repository_consult_by_id)
+        let response = test_with_database("test_consult_by_id", repository_consult_by_id)
             .await
             .unwrap();
 
@@ -249,12 +231,6 @@ mod tests {
         const FAKE_USERNAME_UPDATED: &str = "username_uptadated";
         const FAKE_EMAIL_UPDATED: &str = "email@updated.com";
         const FAKE_PASSWORD_UPDATED: &str = "updated_password";
-
-        dotenv::from_filename(".env.test").ok();
-        let pg_url = std::env::var("POSTGRES_URL").expect("Unable to read POSTGRES_URL env var");
-        let mut db_name =
-            std::env::var("DATABASE_NAME").expect("Unable to read DATABASE_NAME env var");
-        db_name = format!("{db_name}_test_store_update");
 
         async fn repository_store_update(
             pool: Pool<Postgres>,
@@ -282,7 +258,11 @@ mod tests {
                  })
                 .await?;
 
-            let result = sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password, activated, blocked FROM users WHERE id = $1", FAKE_ID).fetch_one(&pool).await.unwrap();
+            let result = sqlx::query_as!(UserRepositoryConsultReturn, 
+                "SELECT id, username, email, password, activated, 
+                blocked FROM users WHERE id = $1", FAKE_ID)
+                .fetch_one(&pool)
+                .await.unwrap();
             
             assert_eq!(result.username, FAKE_USERNAME_UPDATED);
             assert_eq!(result.email, FAKE_EMAIL);
@@ -293,7 +273,7 @@ mod tests {
             Ok(response)
         }
 
-        let response = test_with_database(pg_url, db_name, repository_store_update)
+        let response = test_with_database("test_store_update", repository_store_update)
             .await
             .unwrap();
 
