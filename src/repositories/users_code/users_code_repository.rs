@@ -46,7 +46,7 @@ impl UsersCodeRepository for UsersCodeRepositoryPostgres<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::utils::integration_test::test_with_database;
+    use crate::{database::utils::integration_test::test_with_database, error::Code};
 
     use super::*;
     use chrono::Duration;
@@ -89,12 +89,30 @@ mod tests {
             repository.store(UsersCode { code: FAKE_CODE.to_string(), expire_at: expire, user_id: FAKE_USER_ID.to_string() }).await
         }
 
-
         let response = test_with_database("test_store_code", repository_store_code)
         .await
         .unwrap();
 
         assert_eq!(response, "Code store successfully")
+    }
+
+    #[tokio::test]
+    async fn test_store_code_without_user() {
+        async fn repository_store_code_without_user(pool: Pool<Postgres>) -> Result<String, AppError> {
+            let repository = UsersCodeRepositoryPostgres {
+                pool: &pool
+            };
+
+            let expire: NaiveDateTime = Utc::now().naive_utc() + Duration::minutes(30);
+            repository.store(UsersCode { code: FAKE_CODE.to_string(), expire_at: expire, user_id: FAKE_USER_ID.to_string() }).await
+        }
+
+        let error = match test_with_database("test_store_code_without_user", repository_store_code_without_user).await {
+            Ok(_) => panic!("test should fail"),
+            Err(error) => error,
+        };
+
+        assert_eq!(error.message, "insert or update on table violates foreign key constraint")
     }
 
     #[tokio::test]
@@ -117,6 +135,26 @@ mod tests {
         assert!(response.expire_at > Utc::now().naive_utc());
         assert_eq!(response.user_id, FAKE_USER_ID);
         assert_eq!(response.code, FAKE_CODE);
+    }
+
+    #[tokio::test]
+    async fn test_get_nonexistent_code() {
+        async fn repository_test_get_nonexistent_code(pool: Pool<Postgres>) -> Result<UsersCode, AppError> { 
+            let repository = UsersCodeRepositoryPostgres {
+                pool: &pool
+            };
+    
+          repository.get(FAKE_USER_ID.to_string(), FAKE_CODE.to_string()).await
+        }
+
+        let error = match test_with_database("test_get_nonexistent_code", repository_test_get_nonexistent_code)
+        .await
+        {
+            Ok(_) => panic!("test should fail"),
+            Err(error) => error,
+        };
+
+        assert_eq!(error.code, Code::NotFound);
     }
 
 
