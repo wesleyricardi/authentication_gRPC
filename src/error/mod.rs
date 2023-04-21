@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Code {
     Ok = 0,
     Cancelled = 1,
