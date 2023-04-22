@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Code {
     Ok = 0,
     Cancelled = 1,
@@ -17,6 +17,8 @@ pub enum Code {
     Unavailable = 14,
     DataLoss = 15,
     Unauthenticated = 16,
+    DatabaseError = 17,
+    SQLError = 18,
 }
 
 #[derive(Debug)]
