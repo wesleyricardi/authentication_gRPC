@@ -1,16 +1,19 @@
-use core::panic;
-
 use authentication_gRPC::{
     error::*,
-    models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams, UserModel},
+    models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
     repositories::user::user_repository::{
         UserRepositoryStoreParams, UserRepositoryStoreReturn,
     },
 };
 
-use crate::mocks::{user_repository_mock::{
-    get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStore,
-}, users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams}};
+use crate::{
+    mocks::user_repository_mock::{
+        get_mock_user_repository, 
+        MockUserRepositoryParams, 
+        MockUserRepositoryStore,
+    }, 
+    utils::builders::UserModelBuilder
+};
 
 #[tokio::test]
 async fn test_user_model_create() {
@@ -27,27 +30,20 @@ async fn test_user_model_create() {
         password: FAKE_HASH_PASSWORD.to_string(),
     };
 
-
-    let expectations_of_the_methods_that_will_be_used = MockUserRepositoryParams {
+    let mock_user_repository = get_mock_user_repository(MockUserRepositoryParams {
         store: Some(MockUserRepositoryStore {
             calls: 1,
             param_user_with: user_store_params,
             fn_returning: mock_user_repository_store,
         }),
         ..Default::default()
-    };
+    });
 
-
-    let model = UserModel {
-        user_repository: get_mock_user_repository(expectations_of_the_methods_that_will_be_used),
-        password_hasher: |_| Ok(FAKE_HASH_PASSWORD.to_string()),
-        password_verify: mock_password_verify_with_returning_error_if_called,
-        new_id: || FAKE_ID.to_string(),
-        user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
-            ..Default::default()
-        }),
-        generate_code: || panic!("cannot be called on this test")
-    };
+    let model = UserModelBuilder::new()
+    .mount_password_hasher(|_| Ok(FAKE_HASH_PASSWORD.to_string()))
+    .mount_new_id(|| FAKE_ID.to_string())
+    .mount_user_repository(mock_user_repository)
+    .build();
 
     let response = model
         .create(UserModelCreateParams {
@@ -73,14 +69,4 @@ fn mock_user_repository_store(
         activated: false,
         blocked: false
     })
-}
-
-fn mock_password_verify_with_returning_error_if_called(
-    _: String,
-    _: String,
-) -> Result<bool, AppError> {
-    Err(AppError::new(
-        Code::Internal,
-        "cannot be called on this test",
-    ))
 }
