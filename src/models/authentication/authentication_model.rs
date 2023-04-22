@@ -4,14 +4,11 @@ pub use crate::{
     utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
 };
 use crate::{
-    error::*, 
+    error::*,
     repositories::{
-        user::user_repository::UserRepositoryUpdateParams, 
-        users_code::users_code_repository::{
-            UsersCodeRepository, 
-            UsersCode
-        }
-    }
+        user::user_repository::UserRepositoryUpdateParams,
+        users_code::users_code_repository::{UsersCode, UsersCodeRepository},
+    },
 };
 use async_trait::async_trait;
 use chrono::{Duration, Utc};
@@ -20,7 +17,7 @@ use mockall::automock;
 #[derive(Debug, PartialEq)]
 pub enum CodeType {
     Activation,
-    Recovery
+    Recovery,
 }
 
 #[async_trait]
@@ -36,12 +33,12 @@ pub trait AuthenticationModel: Sync + Send {
         &self,
         id: String,
     ) -> Result<UserModelRecoverUserDataReturn, AppError>;
-    async fn update(
+    async fn update(&self, id: String, user: UserModelUpdateParams) -> Result<String, AppError>;
+    async fn create_user_code(
         &self,
-        id: String,
-        user: UserModelUpdateParams,
+        user_id: String,
+        code_type: CodeType,
     ) -> Result<String, AppError>;
-    async fn create_user_code(&self, user_id: String, code_type: CodeType) -> Result<String, AppError>;
     async fn active_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
 }
 
@@ -112,11 +109,7 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
         })
     }
 
-    async fn update(
-        &self,
-        id: String,
-        user: UserModelUpdateParams,
-    ) -> Result<String, AppError> {
+    async fn update(&self, id: String, user: UserModelUpdateParams) -> Result<String, AppError> {
         let password = match user.password {
             Some(password) => Some((self.password_hasher)(password)?),
             None => None,
@@ -134,36 +127,44 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
             .store_update(id, user_to_be_updated)
             .await
     }
-    async fn create_user_code(&self, user_id: String, code_type: CodeType) -> Result<String, AppError> {
+    async fn create_user_code(
+        &self,
+        user_id: String,
+        code_type: CodeType,
+    ) -> Result<String, AppError> {
         let expire_minutes = match code_type {
             CodeType::Activation => 30, //minutes
-            CodeType::Recovery => 30 //minutes
+            CodeType::Recovery => 30,   //minutes
         };
 
-        let expire_at= Utc::now().naive_utc() + Duration::minutes(expire_minutes.into());
+        let expire_at = Utc::now().naive_utc() + Duration::minutes(expire_minutes.into());
 
         let code_key = (self.generate_code)();
-    
+
         let code = UsersCode {
             code: code_key.clone(),
             expire_at,
-            user_id
+            user_id,
         };
 
         match self.user_code_repository.store(code).await {
             Ok(_) => Ok(String::from(code_key)),
-            Err(error) => Err(error)
+            Err(error) => Err(error),
         }
     }
 
     async fn active_user(&self, user_id: String, code_key: String) -> Result<String, AppError> {
-        let code = self.user_code_repository.get(user_id.clone(), code_key).await.map_err(|error| match error.code {
-            Code::NotFound => AppError::new(Code::NotFound, "Code not found"),
-            _ => AppError::new(Code::Internal, "internal error")
-        })?;
+        let code = self
+            .user_code_repository
+            .get(user_id.clone(), code_key)
+            .await
+            .map_err(|error| match error.code {
+                Code::NotFound => AppError::new(Code::NotFound, "Code not found"),
+                _ => AppError::new(Code::Internal, "internal error"),
+            })?;
 
         if code.expire_at < Utc::now().naive_utc() {
-            return Err(AppError::new(Code::InvalidArgument, "Code expired"))
+            return Err(AppError::new(Code::InvalidArgument, "Code expired"));
         }
 
         let user_to_be_updated = UserRepositoryUpdateParams {

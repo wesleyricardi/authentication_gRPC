@@ -35,30 +35,24 @@ pub const JWT_ENCODE: JwtEncode = |user| {
         &user_token,
         &EncodingKey::from_secret("JWT_SECRET".as_ref()),
     ) {
-        Ok(token) => return Ok(token),
-        Err(error) => {
-            return Err(AppError::new(
-                Code::InvalidArgument,
-                format!("failed to encode token :{}", error),
-            ))
-        }
-    };
+        Ok(token) => Ok(token),
+        Err(error) => Err(AppError::new(
+            Code::InvalidArgument,
+            format!("failed to encode token :{}", error),
+        )),
+    }
 };
 
-pub const JWT_DECODE: JwtDecode = |token| {
-    match jsonwebtoken::decode::<JWTAuthenticateToken>(
-        token,
-        &DecodingKey::from_secret("JWT_SECRET".as_ref()),
-        &Validation::default(),
-    ) {
-        Ok(user_token) => return Ok(user_token.claims),
-        Err(error) => {
-            return Err(AppError::new(
-                Code::InvalidArgument,
-                format!("failed to decode token :{}", error),
-            ))
-        }
-    };
+pub const JWT_DECODE: JwtDecode = |token| match jsonwebtoken::decode::<JWTAuthenticateToken>(
+    token,
+    &DecodingKey::from_secret("JWT_SECRET".as_ref()),
+    &Validation::default(),
+) {
+    Ok(user_token) => Ok(user_token.claims),
+    Err(error) => Err(AppError::new(
+        Code::InvalidArgument,
+        format!("failed to decode token :{}", error),
+    )),
 };
 
 #[cfg(test)]

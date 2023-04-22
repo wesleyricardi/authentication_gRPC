@@ -1,8 +1,8 @@
 use authentication_gRPC::{
     error::*,
     models::authentication::authentication_model::{
-        MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
-        UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams, CodeType,
+        CodeType, MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
+        UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams,
     },
 };
 use mockall::predicate;
@@ -48,7 +48,7 @@ pub struct MockUserModelParams {
     pub login_verification: Option<MockUserModelLoginVerification>,
     pub recover_user_data: Option<MockUserModelRecoverUserData>,
     pub update: Option<MockUserModelUpdate>,
-    pub create_user_code: Option<MockUserModelCreateUserCode>
+    pub create_user_code: Option<MockUserModelCreateUserCode>,
 }
 
 pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticationModel {
@@ -127,9 +127,12 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
 
         mock_user_model
             .expect_create_user_code()
-            .with(predicate::eq(param_user_id_with), predicate::eq(param_code_type_with))
+            .with(
+                predicate::eq(param_user_id_with),
+                predicate::eq(param_code_type_with),
+            )
             .times(calls)
-            .returning(move |user_id, code| Box::pin(async move {fn_returning(user_id, code)}));
+            .returning(move |user_id, code| Box::pin(async move { fn_returning(user_id, code) }));
     }
 
     mock_user_model

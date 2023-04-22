@@ -1,14 +1,14 @@
-use crate::{
-    mocks::{user_model_mock::{get_mock_user_model, MockUserModelParams, MockUserModelUpdate}, 
-    sanitizer_user_input_mock::*,},
+use crate::mocks::{
+    sanitizer_user_input_mock::*,
+    user_model_mock::{get_mock_user_model, MockUserModelParams, MockUserModelUpdate},
 };
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::{
-        UpdateParams, AuthenticationController, UserController
+        AuthenticationController, UpdateParams, UserController,
     },
     error::*,
-    models::authentication::authentication_model::{UserModelUpdateParams},
-    security::jwt::{JWTAuthenticateToken, UserToken}
+    models::authentication::authentication_model::UserModelUpdateParams,
+    security::jwt::{JWTAuthenticateToken, UserToken},
 };
 
 const FAKE_USER_ID: &str = "user_id";
@@ -82,15 +82,11 @@ async fn test_update() {
     assert_eq!(response, "User updated successfully");
 }
 
-
 fn view_mock(message: String) -> String {
     message
 }
 
-fn mock_user_model_update(
-    id: String,
-    _user: UserModelUpdateParams,
-) -> Result<String, AppError> {
+fn mock_user_model_update(id: String, _user: UserModelUpdateParams) -> Result<String, AppError> {
     if id != FAKE_USER_ID {
         return Err(AppError::new(
             Code::NotFound,
@@ -130,8 +126,13 @@ fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
     })
 }
 
-fn mock_send_email_with_returning_error_if_called(_: String, _: String, _:String) -> Result<String, AppError> {
-    Err(AppError::new(Code::Internal, 
-        "cannot be called on this test"
+fn mock_send_email_with_returning_error_if_called(
+    _: String,
+    _: String,
+    _: String,
+) -> Result<String, AppError> {
+    Err(AppError::new(
+        Code::Internal,
+        "cannot be called on this test",
     ))
 }

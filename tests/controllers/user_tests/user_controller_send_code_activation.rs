@@ -1,6 +1,19 @@
-use authentication_gRPC::{models::authentication::authentication_model::{UserModelRecoverUserDataReturn, CodeType}, error::{AppError, Code}, controllers::authentication::authentication_controller::{UserController, AuthenticationController}, security::jwt::{JWTAuthenticateToken, UserToken}};
+use authentication_gRPC::{
+    controllers::authentication::authentication_controller::{
+        AuthenticationController, UserController,
+    },
+    error::{AppError, Code},
+    models::authentication::authentication_model::{CodeType, UserModelRecoverUserDataReturn},
+    security::jwt::{JWTAuthenticateToken, UserToken},
+};
 
-use crate::mocks::{user_model_mock::{MockUserModelRecoverUserData, MockUserModelParams, MockUserModelCreateUserCode, get_mock_user_model}, sanitizer_user_input_mock::{get_mock_user_input_sanitizer, MockUserInputSanitizeParams}};
+use crate::mocks::{
+    sanitizer_user_input_mock::{get_mock_user_input_sanitizer, MockUserInputSanitizeParams},
+    user_model_mock::{
+        get_mock_user_model, MockUserModelCreateUserCode, MockUserModelParams,
+        MockUserModelRecoverUserData,
+    },
+};
 
 const FAKE_USER_ID: &str = "user_id";
 const FAKE_EMAIL: &str = "test@controller.com";
@@ -16,7 +29,7 @@ async fn test_authentication() {
             param_id_with: FAKE_USER_ID.to_string(),
             fn_returning: mock_user_model_recover,
         }),
-        
+
         create_user_code: Some(MockUserModelCreateUserCode {
             calls: 1,
             param_user_id_with: FAKE_USER_ID.to_string(),
@@ -34,7 +47,10 @@ async fn test_authentication() {
         send_email: |to, subject, body| {
             assert_eq!(to, FAKE_EMAIL);
             assert_eq!(subject, "activation code");
-            assert_eq!(body, format!("<div>The activation code is {}</div>", FAKE_USER_CODE));
+            assert_eq!(
+                body,
+                format!("<div>The activation code is {}</div>", FAKE_USER_CODE)
+            );
 
             Ok(String::from("Send email successfully"))
         },
@@ -42,7 +58,10 @@ async fn test_authentication() {
         jwt_decode: mock_jwt_decode,
     };
 
-    let response = controller.send_activation_code(FAKE_JWT_TOKEN.to_string(), view_mock).await.unwrap();
+    let response = controller
+        .send_activation_code(FAKE_JWT_TOKEN.to_string(), view_mock)
+        .await
+        .unwrap();
 
     assert_eq!(response, "Code send successufully");
 }
@@ -63,7 +82,7 @@ fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn,
         username: FAKE_USERNAME.to_string(),
         email: FAKE_EMAIL.to_string(),
         activated: false,
-        blocked: false
+        blocked: false,
     })
 }
 

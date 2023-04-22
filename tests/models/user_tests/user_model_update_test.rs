@@ -1,14 +1,17 @@
 use authentication_gRPC::{
     error::*,
-    models::authentication::authentication_model::{AuthenticationModel, UserModel, UserModelUpdateParams},
-    repositories::user::user_repository::{
-        UserRepositoryUpdateParams,
+    models::authentication::authentication_model::{
+        AuthenticationModel, UserModel, UserModelUpdateParams,
     },
+    repositories::user::user_repository::UserRepositoryUpdateParams,
 };
 
-use crate::mocks::{user_repository_mock::{
-    get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStoreUpdate,
-}, users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams}};
+use crate::mocks::{
+    user_repository_mock::{
+        get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStoreUpdate,
+    },
+    users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams},
+};
 
 const FAKE_ID: &str = "userFakeId";
 const FAKE_HASH_PASSWORD: &str = "hash_password";
@@ -44,7 +47,7 @@ async fn test_update() {
         user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
             ..Default::default()
         }),
-        generate_code: || panic!("cannot be called on this test")
+        generate_code: || panic!("cannot be called on this test"),
     };
 
     let response = model

@@ -1,24 +1,20 @@
 use authentication_gRPC::{
+    controllers::authentication::authentication_controller::UserController,
+    error::AppError,
+    models::authentication::authentication_model::{MockAuthenticationModel, UserModel},
     repositories::{
-        user::user_repository::MockUserRepository, 
-        users_code::users_code_repository::MockUsersCodeRepository}, 
-        models::authentication::authentication_model::{UserModel, MockAuthenticationModel}, utils::hash::password::{
-            PasswordHasher, 
-            PasswordVerify
-        }, controllers::authentication::authentication_controller::UserController, services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication, security::jwt::{JWTAuthenticateToken, UserToken}, error::AppError
+        user::user_repository::MockUserRepository,
+        users_code::users_code_repository::MockUsersCodeRepository,
+    },
+    security::jwt::{JWTAuthenticateToken, UserToken},
+    services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication,
+    utils::hash::password::{PasswordHasher, PasswordVerify},
 };
 
 use crate::mocks::{
-    user_repository_mock::{
-        get_mock_user_repository, 
-        MockUserRepositoryParams
-    }, 
-    users_code_repository_mock::{
-        get_mock_users_code_repository, 
-        MockUsersCodeRepositoryParams
-    }
+    user_repository_mock::{get_mock_user_repository, MockUserRepositoryParams},
+    users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams},
 };
-
 
 pub struct UserModelBuilderForTest {
     user_repository: MockUserRepository,
@@ -29,16 +25,27 @@ pub struct UserModelBuilderForTest {
     generate_code: fn() -> String,
 }
 
-
 impl UserModelBuilderForTest {
     pub fn new() -> Self {
         Self {
-            user_repository: get_mock_user_repository(MockUserRepositoryParams{..Default::default()}),
-            user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams{..Default::default()}),
-            password_hasher: |_| panic!("password_hasher could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"),
-            password_verify: |_,_| panic!("password_verify could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"),
-            new_id:  || panic!("new_id could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"),
-            generate_code: || panic!("generate code could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"), 
+            user_repository: get_mock_user_repository(MockUserRepositoryParams {
+                ..Default::default()
+            }),
+            user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
+                ..Default::default()
+            }),
+            password_hasher: |_| {
+                panic!("password_hasher could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest")
+            },
+            password_verify: |_, _| {
+                panic!("password_verify could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest")
+            },
+            new_id: || {
+                panic!("new_id could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest")
+            },
+            generate_code: || {
+                panic!("generate code could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest")
+            },
         }
     }
 
@@ -89,7 +96,7 @@ pub struct UserControllerBuilderForTest {
     jwt_encode: fn(UserToken) -> Result<String, AppError>,
     model: MockAuthenticationModel,
     sanitize_user: MockSanitizeAuthentication,
-    send_email: fn(to:String, subject:String, body:String) -> Result<String, AppError>,
+    send_email: fn(to: String, subject: String, body: String) -> Result<String, AppError>,
 }
 
 impl UserControllerBuilderForTest {
@@ -97,9 +104,15 @@ impl UserControllerBuilderForTest {
         Self {
             model: MockAuthenticationModel::new(),
             sanitize_user: MockSanitizeAuthentication::new(),
-            jwt_decode: |_| panic!("jwt_decode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest"),
-            jwt_encode: |_| panic!("jwt_encode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest"),
-            send_email: |_,_,_| panic!("send_email could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest"),
+            jwt_decode: |_| {
+                panic!("jwt_decode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
+            },
+            jwt_encode: |_| {
+                panic!("jwt_encode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
+            },
+            send_email: |_, _, _| {
+                panic!("send_email could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
+            },
         }
     }
 
@@ -113,17 +126,26 @@ impl UserControllerBuilderForTest {
         self
     }
 
-    pub fn mount_jwt_decode(mut self, jwt_decode: fn(&str) -> Result<JWTAuthenticateToken, AppError>) -> Self {
+    pub fn mount_jwt_decode(
+        mut self,
+        jwt_decode: fn(&str) -> Result<JWTAuthenticateToken, AppError>,
+    ) -> Self {
         self.jwt_decode = jwt_decode;
         self
     }
 
-    pub fn mount_jwt_encode(mut self, jwt_encode: fn(UserToken) -> Result<String, AppError>) -> Self {
+    pub fn mount_jwt_encode(
+        mut self,
+        jwt_encode: fn(UserToken) -> Result<String, AppError>,
+    ) -> Self {
         self.jwt_encode = jwt_encode;
         self
     }
 
-    pub fn mount_send_email(mut self, send_email: fn(to:String, subject:String, body:String) -> Result<String, AppError>) -> Self {
+    pub fn mount_send_email(
+        mut self,
+        send_email: fn(to: String, subject: String, body: String) -> Result<String, AppError>,
+    ) -> Self {
         self.send_email = send_email;
         self
     }

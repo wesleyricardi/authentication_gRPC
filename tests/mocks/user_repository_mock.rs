@@ -29,8 +29,7 @@ pub struct MockUserRepositoryStoreUpdate {
     pub calls: usize,
     pub param_id_with: String,
     pub param_user_with: UserRepositoryUpdateParams,
-    pub fn_returning:
-        fn(id: String, UserRepositoryUpdateParams) -> Result<String, AppError>,
+    pub fn_returning: fn(id: String, UserRepositoryUpdateParams) -> Result<String, AppError>,
 }
 
 #[derive(Default)]

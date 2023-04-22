@@ -17,7 +17,7 @@ mod views;
 use crate::rpc::authentication::{
     authentication::authentication_server::AuthenticationServer, AuthenticationService,
 };
- 
+
 pub struct AppState {
     db_pg_pool: Pool<Postgres>,
 }

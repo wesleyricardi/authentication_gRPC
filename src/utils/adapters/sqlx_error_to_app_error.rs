@@ -4,7 +4,7 @@ use sqlx::Error;
 pub fn sqlx_error_to_app_error(error: Error) -> AppError {
     match error {
         Error::RowNotFound => AppError::new(Code::NotFound, "DB: nothing found with given parameters"),
-        Error::Database(err) => match err.code().as_ref().map(|s| &**s) {
+        Error::Database(err) => match err.code().as_deref() {
             Some("23505") => AppError::new(Code::AlreadyExists, "DB: insert or update on table violates unique constraint"),
             Some("23514") => AppError::new(Code::DatabaseError, "insert or update on table violates check verification"),
             Some("23506") => AppError::new(Code::DatabaseError, "delete on table violates foreign key constraint"),
@@ -29,4 +29,3 @@ pub fn sqlx_error_to_app_error(error: Error) -> AppError {
         _ => AppError::new(Code::SQLError, "Error unknown"),
     }
 }
-

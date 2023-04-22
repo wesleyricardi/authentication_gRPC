@@ -8,7 +8,7 @@ pub const PASSWORD_HASHER: PasswordHasher = |password| {
         Ok(hash) => hash,
         Err(error) => return Err(AppError::new(Code::Internal, error.to_string())),
     };
-    return Ok(hash);
+    Ok(hash)
 };
 
 pub const PASSWORD_VERIFY: PasswordVerify = |hash_string, password| {
@@ -16,7 +16,7 @@ pub const PASSWORD_VERIFY: PasswordVerify = |hash_string, password| {
         Ok(result) => result,
         Err(error) => return Err(AppError::new(Code::Internal, error.to_string())),
     };
-    return Ok(result);
+    Ok(result)
 };
 
 #[cfg(test)]

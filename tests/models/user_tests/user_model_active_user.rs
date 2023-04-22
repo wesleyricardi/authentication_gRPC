@@ -1,26 +1,25 @@
-use chrono::{Utc, Duration};
+use chrono::{Duration, Utc};
 
 use authentication_gRPC::{
+    error::AppError,
+    models::authentication::authentication_model::AuthenticationModel,
     repositories::{
-        user::user_repository::UserRepositoryUpdateParams, 
-        users_code::users_code_repository::UsersCode
-    }, 
-    models::authentication::authentication_model::AuthenticationModel, 
-    error::{AppError}};
+        user::user_repository::UserRepositoryUpdateParams,
+        users_code::users_code_repository::UsersCode,
+    },
+};
 
 use crate::{
     mocks::{
         user_repository_mock::{
-            get_mock_user_repository, 
-            MockUserRepositoryStoreUpdate, 
-            MockUserRepositoryParams
-        }, 
+            get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStoreUpdate,
+        },
         users_code_repository_mock::{
-            get_mock_users_code_repository, 
-            MockUsersCodeRepositoryParams, 
-            MockUsersCodeRepositoryGet
-        }
-    }, utils::builders::UserModelBuilderForTest
+            get_mock_users_code_repository, MockUsersCodeRepositoryGet,
+            MockUsersCodeRepositoryParams,
+        },
+    },
+    utils::builders::UserModelBuilderForTest,
 };
 
 #[tokio::test]
@@ -35,7 +34,7 @@ async fn test_active_user() {
         activated: Some(true),
         ..Default::default()
     };
-    
+
     let mock_repository = get_mock_user_repository(MockUserRepositoryParams {
         store_update: Some(MockUserRepositoryStoreUpdate {
             calls: 1,
@@ -46,22 +45,26 @@ async fn test_active_user() {
         ..Default::default()
     });
 
-    let mock_users_code_repository = get_mock_users_code_repository(MockUsersCodeRepositoryParams {
-        get: Some(MockUsersCodeRepositoryGet {
-            calls: 1,
-            param_user_id_with: FAKE_ID.to_string(),
-            param_code_with: FAKE_CODE.to_string(),
-            fn_returning: mock_users_code_repository_get,
-        }),
-        ..Default::default()
-    });
+    let mock_users_code_repository =
+        get_mock_users_code_repository(MockUsersCodeRepositoryParams {
+            get: Some(MockUsersCodeRepositoryGet {
+                calls: 1,
+                param_user_id_with: FAKE_ID.to_string(),
+                param_code_with: FAKE_CODE.to_string(),
+                fn_returning: mock_users_code_repository_get,
+            }),
+            ..Default::default()
+        });
 
     let model = UserModelBuilderForTest::new()
-    .mount_user_repository(mock_repository)
-    .mount_code_repository(mock_users_code_repository)
-    .build();
+        .mount_user_repository(mock_repository)
+        .mount_code_repository(mock_users_code_repository)
+        .build();
 
-    let response = model.active_user(FAKE_ID.to_string(), FAKE_CODE.to_string()).await.unwrap();
+    let response = model
+        .active_user(FAKE_ID.to_string(), FAKE_CODE.to_string())
+        .await
+        .unwrap();
 
     assert_eq!(response, "User activated");
 }

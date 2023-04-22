@@ -11,7 +11,7 @@ pub struct UserRepositoryStoreReturn {
     pub username: String,
     pub email: String,
     pub activated: bool,
-    pub blocked: bool
+    pub blocked: bool,
 }
 
 pub struct UserRepositoryConsultReturn {
@@ -20,7 +20,7 @@ pub struct UserRepositoryConsultReturn {
     pub email: String,
     pub password: String,
     pub activated: bool,
-    pub blocked: bool
+    pub blocked: bool,
 }
 
 #[derive(Debug, PartialEq, Default)]
@@ -29,5 +29,5 @@ pub struct UserRepositoryUpdateParams {
     pub email: Option<String>,
     pub password: Option<String>,
     pub activated: Option<bool>,
-    pub blocked: Option<bool>
+    pub blocked: Option<bool>,
 }

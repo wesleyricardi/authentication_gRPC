@@ -4,15 +4,12 @@ use authentication_gRPC::{
     },
     error::*,
     models::authentication::authentication_model::UserModelRecoverUserDataReturn,
-    security::jwt::{JWTAuthenticateToken, UserToken}
+    security::jwt::{JWTAuthenticateToken, UserToken},
 };
 
-use crate::{
-    mocks::{user_model_mock::{
-        get_mock_user_model, MockUserModelParams, MockUserModelRecoverUserData,
-    },sanitizer_user_input_mock::{
-        get_mock_user_input_sanitizer, MockUserInputSanitizeParams,
-    }},
+use crate::mocks::{
+    sanitizer_user_input_mock::{get_mock_user_input_sanitizer, MockUserInputSanitizeParams},
+    user_model_mock::{get_mock_user_model, MockUserModelParams, MockUserModelRecoverUserData},
 };
 
 const FAKE_USER_ID: &str = "user_id";
@@ -72,7 +69,7 @@ fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn,
         username: FAKE_USERNAME.to_string(),
         email: FAKE_EMAIL.to_string(),
         activated: false,
-        blocked: false
+        blocked: false,
     })
 }
 fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
@@ -98,8 +95,13 @@ fn mock_jwt_encode_with_returning_error_if_called(_: UserToken) -> Result<String
     ))
 }
 
-fn mock_send_email_with_returning_error_if_called(_: String, _: String, _:String) -> Result<String, AppError> {
-    Err(AppError::new(Code::Internal, 
-        "cannot be called on this test"
+fn mock_send_email_with_returning_error_if_called(
+    _: String,
+    _: String,
+    _: String,
+) -> Result<String, AppError> {
+    Err(AppError::new(
+        Code::Internal,
+        "cannot be called on this test",
     ))
 }

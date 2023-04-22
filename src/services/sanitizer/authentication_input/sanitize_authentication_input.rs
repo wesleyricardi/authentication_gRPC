@@ -28,7 +28,7 @@ impl SanitizeAuthentication for SanitizeUser {
             ));
         };
 
-        return Ok(username_sanitized);
+        Ok(username_sanitized)
     }
 
     fn sanitize_email_input(&self, email: String) -> Result<String, AppError> {
@@ -48,7 +48,7 @@ impl SanitizeAuthentication for SanitizeUser {
             ));
         };
 
-        return Ok(email_sanitized);
+        Ok(email_sanitized)
     }
 
     fn sanitize_password_input(&self, password: String) -> Result<String, AppError> {
@@ -68,6 +68,6 @@ impl SanitizeAuthentication for SanitizeUser {
             ));
         };
 
-        return Ok(password_sanitized);
+        Ok(password_sanitized)
     }
 }

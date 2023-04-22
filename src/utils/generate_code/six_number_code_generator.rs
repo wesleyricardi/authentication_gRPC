@@ -1,4 +1,4 @@
-use rand::{Rng, distributions::Alphanumeric};
+use rand::{distributions::Alphanumeric, Rng};
 
 pub fn six_number_code_generator() -> String {
     let rng = rand::thread_rng();

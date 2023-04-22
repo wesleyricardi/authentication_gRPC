@@ -1,14 +1,13 @@
-use crate::{
-    mocks::{user_model_mock::{
-        get_mock_user_model, MockUserModelLoginVerification, MockUserModelParams,
-    }, sanitizer_user_input_mock::{
+use crate::mocks::{
+    sanitizer_user_input_mock::{
         get_mock_user_input_sanitizer, MockUserInputSanitizeParams, MockUserInputSanitizePassword,
         MockUserInputSanitizeUsername,
-    }}
+    },
+    user_model_mock::{get_mock_user_model, MockUserModelLoginVerification, MockUserModelParams},
 };
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::{
-        LoginParams, AuthenticationController, UserController, UserViewArg
+        AuthenticationController, LoginParams, UserController, UserViewArg,
     },
     error::*,
     models::authentication::authentication_model::UserModelLoginVerificationReturn,
@@ -129,8 +128,13 @@ fn mock_jwt_decode_with_returning_error_if_called(
     ))
 }
 
-fn mock_send_email_with_returning_error_if_called(_: String, _: String, _:String) -> Result<String, AppError> {
-    Err(AppError::new(Code::Internal, 
-        "cannot be called on this test"
+fn mock_send_email_with_returning_error_if_called(
+    _: String,
+    _: String,
+    _: String,
+) -> Result<String, AppError> {
+    Err(AppError::new(
+        Code::Internal,
+        "cannot be called on this test",
     ))
 }
