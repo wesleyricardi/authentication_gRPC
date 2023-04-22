@@ -20,7 +20,7 @@ use crate::{
             MockUsersCodeRepositoryParams, 
             MockUsersCodeRepositoryGet
         }
-    }, utils::builders::UserModelBuilder
+    }, utils::builders::UserModelBuilderForTest
 };
 
 #[tokio::test]
@@ -56,7 +56,7 @@ async fn test_active_user() {
         ..Default::default()
     });
 
-    let model = UserModelBuilder::new()
+    let model = UserModelBuilderForTest::new()
     .mount_user_repository(mock_repository)
     .mount_code_repository(mock_users_code_repository)
     .build();

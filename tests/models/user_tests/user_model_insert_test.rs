@@ -12,7 +12,7 @@ use crate::{
         MockUserRepositoryParams, 
         MockUserRepositoryStore,
     }, 
-    utils::builders::UserModelBuilder
+    utils::builders::UserModelBuilderForTest
 };
 
 #[tokio::test]
@@ -39,7 +39,7 @@ async fn test_user_model_create() {
         ..Default::default()
     });
 
-    let model = UserModelBuilder::new()
+    let model = UserModelBuilderForTest::new()
     .mount_password_hasher(|_| Ok(FAKE_HASH_PASSWORD.to_string()))
     .mount_new_id(|| FAKE_ID.to_string())
     .mount_user_repository(mock_user_repository)

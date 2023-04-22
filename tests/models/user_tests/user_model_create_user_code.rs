@@ -1,7 +1,7 @@
 use authentication_gRPC::{repositories::users_code::users_code_repository::UsersCode, models::authentication::authentication_model::{AuthenticationModel, CodeType}, error::AppError};
 use chrono::Utc;
 
-use crate::{mocks::{users_code_repository_mock::{MockUsersCodeRepositoryStore, MockUsersCodeRepositoryParams, get_mock_users_code_repository}}, utils::builders::UserModelBuilder};
+use crate::{mocks::{users_code_repository_mock::{MockUsersCodeRepositoryStore, MockUsersCodeRepositoryParams, get_mock_users_code_repository}}, utils::builders::UserModelBuilderForTest};
 
 #[tokio::test]
 async fn test_user_model_create_user_code() {
@@ -23,7 +23,7 @@ async fn test_user_model_create_user_code() {
         ..Default::default()
     });
 
-    let model = UserModelBuilder::new()
+    let model = UserModelBuilderForTest::new()
     .mount_generate_code(|| FAKE_CODE.to_string())
     .mount_code_repository(mock_users_code_repository)
     .build();

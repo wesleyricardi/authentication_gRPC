@@ -2,10 +2,10 @@ use authentication_gRPC::{
     repositories::{
         user::user_repository::MockUserRepository, 
         users_code::users_code_repository::MockUsersCodeRepository}, 
-        models::authentication::authentication_model::UserModel, utils::hash::password::{
+        models::authentication::authentication_model::{UserModel, MockAuthenticationModel}, utils::hash::password::{
             PasswordHasher, 
             PasswordVerify
-        }
+        }, controllers::authentication::authentication_controller::UserController, services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication, security::jwt::{JWTAuthenticateToken, UserToken}, error::AppError
 };
 
 use crate::mocks::{
@@ -20,7 +20,7 @@ use crate::mocks::{
 };
 
 
-pub struct UserModelBuilder {
+pub struct UserModelBuilderForTest {
     user_repository: MockUserRepository,
     user_code_repository: MockUsersCodeRepository,
     password_hasher: PasswordHasher,
@@ -30,15 +30,15 @@ pub struct UserModelBuilder {
 }
 
 
-impl UserModelBuilder {
+impl UserModelBuilderForTest {
     pub fn new() -> Self {
         Self {
             user_repository: get_mock_user_repository(MockUserRepositoryParams{..Default::default()}),
             user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams{..Default::default()}),
-            password_hasher: |_| panic!("password_hasher could not be called by method under test or was forgotten to be assembled in UserModelBuilder"),
-            password_verify: |_,_| panic!("password_verify could not be called by method under test or was forgotten to be assembled in UserModelBuilder"),
-            new_id:  || panic!("new_id could not be called by method under test or was forgotten to be assembled in UserModelBuilder"),
-            generate_code: || panic!("generate code could not be called by method under test or was forgotten to be assembled in UserModelBuilder"), 
+            password_hasher: |_| panic!("password_hasher could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"),
+            password_verify: |_,_| panic!("password_verify could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"),
+            new_id:  || panic!("new_id could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"),
+            generate_code: || panic!("generate code could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest"), 
         }
     }
 
