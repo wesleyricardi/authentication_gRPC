@@ -1,7 +1,27 @@
-use authentication_gRPC::{repositories::{user::user_repository::UserRepositoryUpdateParams, users_code::users_code_repository::UsersCode}, models::authentication::authentication_model::{UserModel, AuthenticationModel}, error::{AppError, Code}};
 use chrono::{Utc, Duration};
 
-use crate::{mocks::{user_repository_mock::{get_mock_user_repository, MockUserRepositoryStoreUpdate, MockUserRepositoryParams}, users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams, MockUsersCodeRepositoryGet}}, utils::builders::UserModelBuilder};
+use authentication_gRPC::{
+    repositories::{
+        user::user_repository::UserRepositoryUpdateParams, 
+        users_code::users_code_repository::UsersCode
+    }, 
+    models::authentication::authentication_model::AuthenticationModel, 
+    error::{AppError}};
+
+use crate::{
+    mocks::{
+        user_repository_mock::{
+            get_mock_user_repository, 
+            MockUserRepositoryStoreUpdate, 
+            MockUserRepositoryParams
+        }, 
+        users_code_repository_mock::{
+            get_mock_users_code_repository, 
+            MockUsersCodeRepositoryParams, 
+            MockUsersCodeRepositoryGet
+        }
+    }, utils::builders::UserModelBuilder
+};
 
 #[tokio::test]
 async fn test_active_user() {
