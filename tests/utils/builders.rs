@@ -83,3 +83,58 @@ impl UserModelBuilderForTest {
         }
     }
 }
+
+pub struct UserControllerBuilderForTest {
+    jwt_decode: fn(&str) -> Result<JWTAuthenticateToken, AppError>,
+    jwt_encode: fn(UserToken) -> Result<String, AppError>,
+    model: MockAuthenticationModel,
+    sanitize_user: MockSanitizeAuthentication,
+    send_email: fn(to:String, subject:String, body:String) -> Result<String, AppError>,
+}
+
+impl UserControllerBuilderForTest {
+    pub fn new() -> Self {
+        Self {
+            model: MockAuthenticationModel::new(),
+            sanitize_user: MockSanitizeAuthentication::new(),
+            jwt_decode: |_| panic!("jwt_decode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest"),
+            jwt_encode: |_| panic!("jwt_encode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest"),
+            send_email: |_,_,_| panic!("send_email could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest"),
+        }
+    }
+
+    pub fn mount_model(mut self, model: MockAuthenticationModel) -> Self {
+        self.model = model;
+        self
+    }
+
+    pub fn mount_sanitize_user(mut self, sanitize_user: MockSanitizeAuthentication) -> Self {
+        self.sanitize_user = sanitize_user;
+        self
+    }
+
+    pub fn mount_jwt_decode(mut self, jwt_decode: fn(&str) -> Result<JWTAuthenticateToken, AppError>) -> Self {
+        self.jwt_decode = jwt_decode;
+        self
+    }
+
+    pub fn mount_jwt_encode(mut self, jwt_encode: fn(UserToken) -> Result<String, AppError>) -> Self {
+        self.jwt_encode = jwt_encode;
+        self
+    }
+
+    pub fn mount_send_email(mut self, send_email: fn(to:String, subject:String, body:String) -> Result<String, AppError>) -> Self {
+        self.send_email = send_email;
+        self
+    }
+
+    pub fn build(self) -> UserController<MockAuthenticationModel, MockSanitizeAuthentication> {
+        UserController {
+            model: self.model,
+            sanitize_user: self.sanitize_user,
+            jwt_decode: self.jwt_decode,
+            jwt_encode: self.jwt_encode,
+            send_email: self.send_email,
+        }
+    }
+}
