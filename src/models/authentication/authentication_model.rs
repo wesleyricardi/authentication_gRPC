@@ -33,6 +33,7 @@ pub trait AuthenticationModel: Sync + Send {
         user: UserModelUpdateParams,
     ) -> Result<String, AppError>;
     async fn create_user_code(&self, user_id: String, code_type: CodeType) -> Result<String, AppError>;
+    async fn active_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
 }
 
 pub struct UserModel<R, C> {
@@ -144,5 +145,30 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
             Ok(_) => Ok(String::from(code_key)),
             Err(error) => Err(error)
         }
+    }
+
+    async fn active_user(&self, user_id: String, code_key: String) -> Result<String, AppError> {
+        let code = self.user_code_repository.get(user_id.clone(), code_key).await.map_err(|error| match error.code {
+            Code::NotFound => AppError::new(Code::NotFound, "Code not found"),
+            _ => AppError::new(Code::Internal, "internal error")
+        })?;
+
+        if code.expire_at < Utc::now().naive_utc() {
+            return Err(AppError::new(Code::InvalidArgument, "Code expired"))
+        }
+
+        let user_to_be_updated = UserRepositoryUpdateParams {
+            username: None,
+            email: None,
+            password: None,
+            activated: Some(true),
+            blocked: None,
+        };
+
+        self.user_repository
+            .store_update(user_id, user_to_be_updated)
+            .await?;
+
+        Ok(String::from("User activated"))
     }
 }
