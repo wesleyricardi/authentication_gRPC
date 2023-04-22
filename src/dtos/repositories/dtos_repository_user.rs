@@ -23,7 +23,7 @@ pub struct UserRepositoryConsultReturn {
     pub blocked: bool
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct UserRepositoryUpdateParams {
     pub username: Option<String>,
     pub email: Option<String>,
