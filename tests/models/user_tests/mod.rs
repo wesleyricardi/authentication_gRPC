@@ -3,3 +3,4 @@ mod user_model_login_verification;
 mod user_model_recover_user_data_test;
 mod user_model_update_test;
 mod user_model_create_user_code;
+mod user_model_active_user;
