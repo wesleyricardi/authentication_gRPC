@@ -10,7 +10,7 @@ pub use crate::{
 use crate::{
     error::{AppError, Code},
     models::authentication::authentication_model::{UserModelUpdateParams, CodeType, UserModelRecoverUserDataReturn},
-    security::jwt::{JWTAuthenticateToken, JwtDecode}, services::mail::send::send_email,
+    security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
 
 
