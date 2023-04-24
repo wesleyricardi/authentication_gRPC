@@ -6,7 +6,6 @@ use async_trait::async_trait;
 
 pub use crate::{
     dtos::controllers::dtos_controller_user::*,
-    dtos::views::dtos_view_user::*,
     models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
     security::jwt::JwtEncode,
     services::sanitizer::authentication_input::sanitize_authentication_input::{
