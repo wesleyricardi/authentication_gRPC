@@ -26,7 +26,7 @@ where
 
     drop_database(pool, &db_name).await;
 
-    return result;
+    result
 }
 
 async fn drop_database(pool: &Pool<Postgres>, db_name: &str) {
@@ -50,7 +50,7 @@ async fn drop_database(pool: &Pool<Postgres>, db_name: &str) {
 async fn setup_database(pool: &Pool<Postgres>, pg_url: &str, db_name: &str) {
     let database_exists: bool =
         sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1)")
-            .bind(&db_name)
+            .bind(db_name)
             .fetch_one(pool)
             .await
             .unwrap();
@@ -63,7 +63,7 @@ async fn setup_database(pool: &Pool<Postgres>, pg_url: &str, db_name: &str) {
     }
 
     let output = Command::new("sqlx")
-        .args(&[
+        .args([
             "migrate",
             "run",
             "--database-url",
