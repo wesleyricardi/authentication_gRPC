@@ -39,9 +39,7 @@ async fn test_activate_user() {
         .build();
 
     let response = controller_user
-        .activate_user(TOKEN_FAKE.to_string(), CODE_FAKE.to_string(), |message| {
-            message
-        })
+        .activate_user(TOKEN_FAKE.to_string(), CODE_FAKE.to_string())
         .await
         .unwrap();
 

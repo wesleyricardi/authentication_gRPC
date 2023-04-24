@@ -13,17 +13,19 @@ use crate::controllers::authentication::authentication_controller::{
     AuthenticationController, LoginParams, RegisterParams, SanitizeUser, UpdateParams,
     UserController,
 };
-
 use crate::models::authentication::authentication_model::UserModel;
 use crate::repositories::user::user_repository::UserRepositoryPostgres;
 use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryPostgres;
 use crate::security::jwt::{jwt_decode, jwt_encode};
 use crate::services::mail::send::send_email;
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
+use crate::utils::adapters::user_controller_to_grpc_response::{
+    map_user_auth_to_grpc_response, map_user_login_to_grpc_response,
+    map_user_register_to_grpc_response, map_user_update_to_grpc_response,
+};
 use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
 use crate::utils::hash::password::{PASSWORD_HASHER, PASSWORD_VERIFY};
-use crate::views::rpc;
 use crate::AppState;
 
 pub struct AuthenticationService {
@@ -75,21 +77,17 @@ impl Authentication for AuthenticationService {
         } = request.into_inner();
         let app_state = &self.app_state;
 
-        let view = rpc::user_view::render_res_register;
         let controller = create_user_controller(app_state);
 
         match controller
-            .register(
-                RegisterParams {
-                    username,
-                    email,
-                    password,
-                },
-                view,
-            )
+            .register(RegisterParams {
+                username,
+                email,
+                password,
+            })
             .await
         {
-            Ok(response) => Ok(response),
+            Ok(response) => Ok(map_user_register_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
@@ -98,14 +96,10 @@ impl Authentication for AuthenticationService {
         let ReqLogin { username, password } = request.into_inner();
         let app_state = &self.app_state;
 
-        let view = rpc::user_view::render_res_login;
         let controller = create_user_controller(app_state);
 
-        match controller
-            .login(LoginParams { username, password }, view)
-            .await
-        {
-            Ok(response) => Ok(response),
+        match controller.login(LoginParams { username, password }).await {
+            Ok(response) => Ok(map_user_login_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
@@ -121,11 +115,10 @@ impl Authentication for AuthenticationService {
             None => return Err(Status::unauthenticated("Token JWT not found")),
         };
 
-        let view = rpc::user_view::render_res_authentication;
         let controller = create_user_controller(app_state);
 
-        match controller.authenticate(token.to_string(), view).await {
-            Ok(response) => Ok(response),
+        match controller.authenticate(token.to_string()).await {
+            Ok(response) => Ok(map_user_auth_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
@@ -143,14 +136,13 @@ impl Authentication for AuthenticationService {
 
         let ReqUpdateUser { username, email } = request.into_inner();
 
-        let view = rpc::user_view::render_res_update;
         let controller = create_user_controller(app_state);
 
         match controller
-            .update(token.to_string(), UpdateParams { username, email }, view)
+            .update(token.to_string(), UpdateParams { username, email })
             .await
         {
-            Ok(response) => Ok(response),
+            Ok(response) => Ok(map_user_update_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }

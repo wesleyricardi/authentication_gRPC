@@ -65,15 +65,11 @@ async fn test_update() {
     };
 
     let response = controller
-        .update(FAKE_JWT_TOKEN.to_string(), req, view_mock)
+        .update(FAKE_JWT_TOKEN.to_string(), req)
         .await
         .unwrap();
 
     assert_eq!(response, "User updated successfully");
-}
-
-fn view_mock(message: String) -> String {
-    message
 }
 
 fn mock_user_model_update(id: String, _user: UserModelUpdateParams) -> Result<String, AppError> {

@@ -59,15 +59,11 @@ async fn test_authentication() {
     };
 
     let response = controller
-        .send_activation_code(FAKE_JWT_TOKEN.to_string(), view_mock)
+        .send_activation_code(FAKE_JWT_TOKEN.to_string())
         .await
         .unwrap();
 
     assert_eq!(response, "Code send successufully");
-}
-
-fn view_mock(message: String) -> String {
-    message
 }
 
 fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn, AppError> {

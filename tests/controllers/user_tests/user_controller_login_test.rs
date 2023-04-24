@@ -7,7 +7,7 @@ use crate::mocks::{
 };
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::{
-        AuthenticationController, LoginParams, UserController, UserViewArg,
+        AuthenticationController, LoginParams, UserController,
     },
     error::*,
     models::authentication::authentication_model::UserModelLoginVerificationReturn,
@@ -64,22 +64,14 @@ async fn test_login() {
         password: FAKE_PASSWORD.to_string(),
     };
 
-    let MockViewReturn { user, token } = controller.login(req, view_mock).await.unwrap();
+    let response = controller.login(req).await.unwrap();
 
-    assert_eq!(user.id, FAKE_USER_ID);
-    assert_eq!(user.username, SANITIZED_USERNAME);
-    assert_eq!(user.email, FAKE_EMAIL);
-    assert_eq!(user.activated, false);
-    assert_eq!(user.blocked, false);
-    assert_eq!(token, FAKE_JWT_TOKEN);
-}
-struct MockViewReturn {
-    user: UserViewArg,
-    token: String,
-}
-
-fn view_mock(user: UserViewArg, token: String) -> MockViewReturn {
-    MockViewReturn { user, token }
+    assert_eq!(response.user.id, FAKE_USER_ID);
+    assert_eq!(response.user.username, SANITIZED_USERNAME);
+    assert_eq!(response.user.email, FAKE_EMAIL);
+    assert_eq!(response.user.activated, false);
+    assert_eq!(response.user.blocked, false);
+    assert_eq!(response.token, FAKE_JWT_TOKEN);
 }
 
 fn mock_user_model_login_verification(

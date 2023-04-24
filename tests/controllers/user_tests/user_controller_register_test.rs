@@ -4,7 +4,7 @@ use crate::mocks::{
 };
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::{
-        AuthenticationController, RegisterParams, UserController, UserViewArg,
+        AuthenticationController, RegisterParams, UserController,
     },
     error::*,
     models::authentication::authentication_model::{UserModelCreateParams, UserModelInsertReturn},
@@ -74,23 +74,14 @@ async fn test_register() {
         password: FAKE_PASSWORD.to_string(),
     };
 
-    let MockViewReturn { user, token } = controller.register(req, view_mock).await.unwrap();
+    let response = controller.register(req).await.unwrap();
 
-    assert_eq!(user.id, FAKE_USER_ID);
-    assert_eq!(user.username, SANITIZED_USERNAME);
-    assert_eq!(user.email, SANITIZED_EMAIL);
-    assert_eq!(user.activated, false);
-    assert_eq!(user.blocked, false);
-    assert_eq!(token, FAKE_JWT_TOKEN);
-}
-
-struct MockViewReturn {
-    user: UserViewArg,
-    token: String,
-}
-
-fn view_mock(user: UserViewArg, token: String) -> MockViewReturn {
-    MockViewReturn { user, token }
+    assert_eq!(response.user.id, FAKE_USER_ID);
+    assert_eq!(response.user.username, SANITIZED_USERNAME);
+    assert_eq!(response.user.email, SANITIZED_EMAIL);
+    assert_eq!(response.user.activated, false);
+    assert_eq!(response.user.blocked, false);
+    assert_eq!(response.token, FAKE_JWT_TOKEN);
 }
 
 fn mock_user_model_create(user: UserModelCreateParams) -> Result<UserModelInsertReturn, AppError> {

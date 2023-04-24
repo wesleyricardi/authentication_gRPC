@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::{
-        AuthenticationController, UserController, UserViewArg,
+        AuthenticationController, UserController,
     },
     error::*,
     models::authentication::authentication_model::UserModelRecoverUserDataReturn,
@@ -38,23 +38,15 @@ async fn test_authentication() {
         jwt_decode: mock_jwt_decode,
     };
 
-    let MockViewReturn { user, .. } = controller
-        .authenticate(FAKE_JWT_TOKEN.to_string(), view_mock)
+    let response = controller
+        .authenticate(FAKE_JWT_TOKEN.to_string())
         .await
         .unwrap();
 
-    assert_eq!(user.username, FAKE_USERNAME);
-    assert_eq!(user.email, FAKE_EMAIL);
-    assert_eq!(user.activated, false);
-    assert_eq!(user.blocked, false);
-}
-
-struct MockViewReturn {
-    user: UserViewArg,
-}
-
-fn view_mock(user: UserViewArg) -> MockViewReturn {
-    MockViewReturn { user }
+    assert_eq!(response.user.username, FAKE_USERNAME);
+    assert_eq!(response.user.email, FAKE_EMAIL);
+    assert_eq!(response.user.activated, false);
+    assert_eq!(response.user.blocked, false);
 }
 
 fn mock_user_model_recover(id: String) -> Result<UserModelRecoverUserDataReturn, AppError> {
