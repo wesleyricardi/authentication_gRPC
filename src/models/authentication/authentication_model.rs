@@ -110,23 +110,17 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
     }
 
     async fn update(&self, id: String, user: UserModelUpdateParams) -> Result<String, AppError> {
-        let password = match user.password {
-            Some(password) => Some((self.password_hasher)(password)?),
-            None => None,
-        };
-
         let user_to_be_updated = UserRepositoryUpdateParams {
             username: user.username,
             email: user.email,
-            password,
-            activated: None,
-            blocked: None,
+            ..Default::default()
         };
 
         self.user_repository
             .store_update(id, user_to_be_updated)
             .await
     }
+
     async fn create_user_code(
         &self,
         user_id: String,

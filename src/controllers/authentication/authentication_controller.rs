@@ -175,14 +175,6 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             None => None,
         };
 
-        let password_sanitized = match req.password {
-            Some(password) => match self.sanitize_user.sanitize_password_input(password) {
-                Ok(password) => Some(password),
-                Err(_) => None,
-            },
-            None => None,
-        };
-
         let jwt_decoded = (self.jwt_decode)(&token)?;
 
         let UserToken { id, .. } = jwt_decoded.user;
@@ -194,7 +186,6 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                 UserModelUpdateParams {
                     username: username_sanitized,
                     email: email_sanitized,
-                    password: password_sanitized,
                 },
             )
             .await?;

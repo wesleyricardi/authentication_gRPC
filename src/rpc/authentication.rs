@@ -10,11 +10,12 @@ use authentication::{
 use tonic::{Request, Response, Status};
 
 use crate::controllers::authentication::authentication_controller::{
-    LoginParams, RegisterParams, SanitizeUser, UpdateParams, AuthenticationController, UserController,
+    AuthenticationController, LoginParams, RegisterParams, SanitizeUser, UpdateParams,
+    UserController,
 };
 
 use crate::models::authentication::authentication_model::UserModel;
-use crate::repositories::user::user_repository::{UserRepositoryPostgres};
+use crate::repositories::user::user_repository::UserRepositoryPostgres;
 use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryPostgres;
 use crate::security::jwt::{JWT_DECODE, JWT_ENCODE};
 use crate::services::mail::send::send_email;
@@ -35,13 +36,12 @@ impl AuthenticationService {
     }
 }
 
-pub type DefaultAuthenticationModel<'a> = UserModel<UserRepositoryPostgres<'a>, UsersCodeRepositoryPostgres<'a>>;
+pub type DefaultAuthenticationModel<'a> =
+    UserModel<UserRepositoryPostgres<'a>, UsersCodeRepositoryPostgres<'a>>;
 pub fn create_user_model(app_state: &AppState) -> DefaultAuthenticationModel {
     let pool = &app_state.db_pg_pool;
     UserModel {
-        user_repository: UserRepositoryPostgres {
-            pool,
-        },
+        user_repository: UserRepositoryPostgres { pool },
         user_code_repository: UsersCodeRepositoryPostgres { pool },
         password_hasher: PASSWORD_HASHER,
         password_verify: PASSWORD_VERIFY,
@@ -50,7 +50,8 @@ pub fn create_user_model(app_state: &AppState) -> DefaultAuthenticationModel {
     }
 }
 
-type DefaultAuthenticationController<'a> = UserController<DefaultAuthenticationModel<'a>, SanitizeUser>;
+type DefaultAuthenticationController<'a> =
+    UserController<DefaultAuthenticationModel<'a>, SanitizeUser>;
 pub fn create_user_controller(app_state: &AppState) -> DefaultAuthenticationController {
     UserController {
         model: create_user_model(app_state),
@@ -140,25 +141,13 @@ impl Authentication for AuthenticationService {
             None => return Err(Status::unauthenticated("Token JWT not found")),
         };
 
-        let ReqUpdateUser {
-            username,
-            email,
-            password,
-        } = request.into_inner();
+        let ReqUpdateUser { username, email } = request.into_inner();
 
         let view = rpc::user_view::render_res_update;
         let controller = create_user_controller(app_state);
 
         match controller
-            .update(
-                token.to_string(),
-                UpdateParams {
-                    username,
-                    email,
-                    password,
-                },
-                view,
-            )
+            .update(token.to_string(), UpdateParams { username, email }, view)
             .await
         {
             Ok(response) => Ok(response),

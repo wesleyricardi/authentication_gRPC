@@ -33,5 +33,4 @@ pub struct UserModelRecoverUserDataReturn {
 pub struct UserModelUpdateParams {
     pub username: Option<String>,
     pub email: Option<String>,
-    pub password: Option<String>,
 }

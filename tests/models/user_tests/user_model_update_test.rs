@@ -1,3 +1,5 @@
+use core::panic;
+
 use authentication_gRPC::{
     error::*,
     models::authentication::authentication_model::{
@@ -14,20 +16,16 @@ use crate::mocks::{
 };
 
 const FAKE_ID: &str = "userFakeId";
-const FAKE_HASH_PASSWORD: &str = "hash_password";
 
 #[tokio::test]
 async fn test_update() {
     const FAKE_UPDATE_USERNAME: &str = "updatedUsername";
-    const FAKE_UPDATE_PASSWORD: &str = "password";
     const FAKE_UPDATE_EMAIL: &str = "updated_email@model.com";
 
     let user_store_update_params = UserRepositoryUpdateParams {
         username: Some(FAKE_UPDATE_USERNAME.to_string()),
         email: Some(FAKE_UPDATE_EMAIL.to_string()),
-        password: Some(FAKE_HASH_PASSWORD.to_string()),
-        activated: None,
-        blocked: None,
+        ..Default::default()
     };
 
     let mock_repository = get_mock_user_repository(MockUserRepositoryParams {
@@ -41,7 +39,7 @@ async fn test_update() {
     });
     let model = UserModel {
         user_repository: mock_repository,
-        password_hasher: |_| Ok(FAKE_HASH_PASSWORD.to_string()),
+        password_hasher: |_| panic!("cannot be called on this test"),
         password_verify: mock_password_verify_with_returning_error_if_called,
         new_id: mock_new_id_with_panic_if_called,
         user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
@@ -56,7 +54,6 @@ async fn test_update() {
             UserModelUpdateParams {
                 username: Some(FAKE_UPDATE_USERNAME.to_string()),
                 email: Some(FAKE_UPDATE_EMAIL.to_string()),
-                password: Some(FAKE_UPDATE_PASSWORD.to_string()),
             },
         )
         .await

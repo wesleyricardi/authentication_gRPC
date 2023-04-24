@@ -14,12 +14,10 @@ use authentication_gRPC::{
 const FAKE_USER_ID: &str = "user_id";
 const FAKE_USERNAME: &str = "username";
 const FAKE_EMAIL: &str = "test@controller.com";
-const FAKE_PASSWORD: &str = "password";
 const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
 
 const SANITIZED_USERNAME: &str = "username_sanitized";
 const SANITIZED_EMAIL: &str = "sanitized@email.com";
-const SANITIZED_PASSWORD: &str = "password_sanitized";
 
 #[tokio::test]
 async fn test_update() {
@@ -35,16 +33,9 @@ async fn test_update() {
         fn_returning: |_| Ok(SANITIZED_EMAIL.to_string()),
     };
 
-    let expectation_of_sanitize_password = MockUserInputSanitizePassword {
-        calls: 1,
-        param_password_with: FAKE_PASSWORD.to_string(),
-        fn_returning: |_| Ok(SANITIZED_PASSWORD.to_string()),
-    };
-
     let user_model_params = UserModelUpdateParams {
         username: Some(SANITIZED_USERNAME.to_string()),
         email: Some(SANITIZED_EMAIL.to_string()),
-        password: Some(SANITIZED_PASSWORD.to_string()),
     };
 
     let expectations_of_the_methods_that_will_be_used = MockUserModelParams {
@@ -62,7 +53,7 @@ async fn test_update() {
         sanitize_user: get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
             username: Some(expectation_of_sanitize_username),
             email: Some(expectation_of_sanitize_email),
-            password: Some(expectation_of_sanitize_password),
+            ..Default::default()
         }),
         send_email: mock_send_email_with_returning_error_if_called,
         jwt_encode: mock_jwt_encode,
@@ -71,7 +62,6 @@ async fn test_update() {
     let req = UpdateParams {
         username: Some(FAKE_USERNAME.to_string()),
         email: Some(FAKE_EMAIL.to_string()),
-        password: Some(FAKE_PASSWORD.to_string()),
     };
 
     let response = controller
