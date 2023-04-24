@@ -119,3 +119,46 @@ async fn test_update_user_blocked() {
         Err(error) => assert_eq!(error.message, "User are blocked"),
     }
 }
+
+#[tokio::test]
+async fn test_update_user_not_activated() {
+    let mock_sanitize_user = get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
+        username: Some(MockUserInputSanitizeUsername {
+            calls: 1,
+            param_username_with: FAKE_USERNAME.to_string(),
+            fn_returning: |_| Ok(SANITIZED_USERNAME.to_string()),
+        }),
+        email: Some(MockUserInputSanitizeEmail {
+            calls: 1,
+            param_email_with: FAKE_EMAIL.to_string(),
+            fn_returning: |_| Ok(SANITIZED_EMAIL.to_string()),
+        }),
+        ..Default::default()
+    });
+
+    let controller_user = UserControllerBuilderForTest::new()
+        .mount_sanitize_user(mock_sanitize_user)
+        .mount_jwt_decode(|_| {
+            Ok(JWTAuthenticateToken {
+                sub: FAKE_USER_ID.to_string(),
+                activated: false,
+                blocked: false,
+                exp: 99999999,
+            })
+        })
+        .build();
+
+    match controller_user
+        .update(
+            FAKE_JWT_TOKEN.to_string(),
+            UpdateParams {
+                username: Some(FAKE_USERNAME.to_string()),
+                email: Some(FAKE_EMAIL.to_string()),
+            },
+        )
+        .await
+    {
+        Ok(_) => panic!("Expected error"),
+        Err(error) => assert_eq!(error.message, "User not activated"),
+    }
+}
