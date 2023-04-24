@@ -11,11 +11,6 @@ use authentication_gRPC::{
     utils::hash::password::{PasswordHasher, PasswordVerify},
 };
 
-use crate::mocks::{
-    user_repository_mock::{get_mock_user_repository, MockUserRepositoryParams},
-    users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams},
-};
-
 pub struct UserModelBuilderForTest {
     user_repository: MockUserRepository,
     user_code_repository: MockUsersCodeRepository,
@@ -28,12 +23,8 @@ pub struct UserModelBuilderForTest {
 impl UserModelBuilderForTest {
     pub fn new() -> Self {
         Self {
-            user_repository: get_mock_user_repository(MockUserRepositoryParams {
-                ..Default::default()
-            }),
-            user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
-                ..Default::default()
-            }),
+            user_repository: MockUserRepository::new(),
+            user_code_repository: MockUsersCodeRepository::new(),
             password_hasher: |_| {
                 panic!("password_hasher could not be called by method under test or was forgotten to be assembled in UserModelBuilderForTest")
             },
