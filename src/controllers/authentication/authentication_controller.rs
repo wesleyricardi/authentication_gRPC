@@ -45,6 +45,12 @@ pub trait AuthenticationController: Sync + Send {
         token: String,
         view: fn(message: String) -> T,
     ) -> Result<T, AppError>;
+    async fn activate_user<T>(
+        &self,
+        token: String,
+        code_key: String,
+        view: fn(message: String) -> T,
+    ) -> Result<T, AppError>;
 }
 
 pub struct UserController<M, S> {
@@ -222,5 +228,18 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                 message: String::from("send email failed"),
             }),
         }
+    }
+
+    async fn activate_user<T>(
+        &self,
+        token: String,
+        code_key: String,
+        view: fn(message: String) -> T,
+    ) -> Result<T, AppError> {
+        let JWTAuthenticateToken { sub: user_id, .. } = (self.jwt_decode)(&token)?;
+
+        self.model.active_user(user_id, code_key).await?;
+
+        Ok(view(String::from("User activated successfully")))
     }
 }
