@@ -13,16 +13,16 @@ use authentication_gRPC::{
     security::jwt::JWTAuthenticateToken,
 };
 
+const FAKE_USER_ID: &str = "user_id";
+const FAKE_USERNAME: &str = "username";
+const FAKE_EMAIL: &str = "test@controller.com";
+const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
+
+const SANITIZED_USERNAME: &str = "username_sanitized";
+const SANITIZED_EMAIL: &str = "sanitized@email.com";
+
 #[tokio::test]
 async fn test_update() {
-    const FAKE_USER_ID: &str = "user_id";
-    const FAKE_USERNAME: &str = "username";
-    const FAKE_EMAIL: &str = "test@controller.com";
-    const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
-
-    const SANITIZED_USERNAME: &str = "username_sanitized";
-    const SANITIZED_EMAIL: &str = "sanitized@email.com";
-
     let mock_sanitize_user = get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
         username: Some(MockUserInputSanitizeUsername {
             calls: 1,
@@ -75,4 +75,47 @@ async fn test_update() {
         .unwrap();
 
     assert_eq!(response, "User updated successfully");
+}
+
+#[tokio::test]
+async fn test_update_user_blocked() {
+    let mock_sanitize_user = get_mock_user_input_sanitizer(MockUserInputSanitizeParams {
+        username: Some(MockUserInputSanitizeUsername {
+            calls: 1,
+            param_username_with: FAKE_USERNAME.to_string(),
+            fn_returning: |_| Ok(SANITIZED_USERNAME.to_string()),
+        }),
+        email: Some(MockUserInputSanitizeEmail {
+            calls: 1,
+            param_email_with: FAKE_EMAIL.to_string(),
+            fn_returning: |_| Ok(SANITIZED_EMAIL.to_string()),
+        }),
+        ..Default::default()
+    });
+
+    let controller_user = UserControllerBuilderForTest::new()
+        .mount_sanitize_user(mock_sanitize_user)
+        .mount_jwt_decode(|_| {
+            Ok(JWTAuthenticateToken {
+                sub: FAKE_USER_ID.to_string(),
+                activated: true,
+                blocked: true,
+                exp: 99999999,
+            })
+        })
+        .build();
+
+    match controller_user
+        .update(
+            FAKE_JWT_TOKEN.to_string(),
+            UpdateParams {
+                username: Some(FAKE_USERNAME.to_string()),
+                email: Some(FAKE_EMAIL.to_string()),
+            },
+        )
+        .await
+    {
+        Ok(_) => panic!("Expected error"),
+        Err(error) => assert_eq!(error.message, "User are blocked"),
+    }
 }
