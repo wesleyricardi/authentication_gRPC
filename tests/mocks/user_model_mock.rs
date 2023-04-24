@@ -151,7 +151,7 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
     }) = expectations.activate_user
     {
         mock_user_model
-            .expect_active_user()
+            .expect_activate_user()
             .with(
                 predicate::eq(param_user_id_with),
                 predicate::eq(param_code_key_with),

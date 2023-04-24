@@ -39,7 +39,7 @@ pub trait AuthenticationModel: Sync + Send {
         user_id: String,
         code_type: CodeType,
     ) -> Result<String, AppError>;
-    async fn active_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
+    async fn activate_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
 }
 
 pub struct UserModel<R, C> {
@@ -153,7 +153,7 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
         }
     }
 
-    async fn active_user(&self, user_id: String, code_key: String) -> Result<String, AppError> {
+    async fn activate_user(&self, user_id: String, code_key: String) -> Result<String, AppError> {
         let code = self
             .user_code_repository
             .get(user_id.clone(), code_key)

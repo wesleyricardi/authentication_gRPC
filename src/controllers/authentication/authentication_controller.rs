@@ -238,7 +238,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
     ) -> Result<T, AppError> {
         let JWTAuthenticateToken { sub: user_id, .. } = (self.jwt_decode)(&token)?;
 
-        self.model.active_user(user_id, code_key).await?;
+        self.model.activate_user(user_id, code_key).await?;
 
         Ok(view(String::from("User activated successfully")))
     }

@@ -62,7 +62,7 @@ async fn test_active_user() {
         .build();
 
     let response = model
-        .active_user(FAKE_ID.to_string(), FAKE_CODE.to_string())
+        .activate_user(FAKE_ID.to_string(), FAKE_CODE.to_string())
         .await
         .unwrap();
 
