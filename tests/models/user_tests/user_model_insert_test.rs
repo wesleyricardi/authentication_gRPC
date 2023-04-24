@@ -1,18 +1,13 @@
 use authentication_gRPC::{
-    error::*,
     models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
-    repositories::user::user_repository::{
-        UserRepositoryStoreParams, UserRepositoryStoreReturn,
-    },
+    repositories::user::user_repository::{UserRepositoryStoreParams, UserRepositoryStoreReturn},
 };
 
 use crate::{
     mocks::user_repository_mock::{
-        get_mock_user_repository, 
-        MockUserRepositoryParams, 
-        MockUserRepositoryStore,
-    }, 
-    utils::builders::UserModelBuilderForTest
+        get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStore,
+    },
+    utils::builders::UserModelBuilderForTest,
 };
 
 #[tokio::test]
@@ -34,16 +29,24 @@ async fn test_user_model_create() {
         store: Some(MockUserRepositoryStore {
             calls: 1,
             param_user_with: user_store_params,
-            fn_returning: mock_user_repository_store,
+            fn_returning: |user| {
+                Ok(UserRepositoryStoreReturn {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    activated: false,
+                    blocked: false,
+                })
+            },
         }),
         ..Default::default()
     });
 
     let model = UserModelBuilderForTest::new()
-    .mount_password_hasher(|_| Ok(FAKE_HASH_PASSWORD.to_string()))
-    .mount_new_id(|| FAKE_ID.to_string())
-    .mount_user_repository(mock_user_repository)
-    .build();
+        .mount_password_hasher(|_| Ok(FAKE_HASH_PASSWORD.to_string()))
+        .mount_new_id(|| FAKE_ID.to_string())
+        .mount_user_repository(mock_user_repository)
+        .build();
 
     let response = model
         .create(UserModelCreateParams {
@@ -57,16 +60,4 @@ async fn test_user_model_create() {
     assert_eq!(response.id, FAKE_ID);
     assert_eq!(response.username, FAKE_USERNAME);
     assert_eq!(response.email, FAKE_EMAIL)
-}
-
-fn mock_user_repository_store(
-    user: UserRepositoryStoreParams,
-) -> Result<UserRepositoryStoreReturn, AppError> {
-    Ok(UserRepositoryStoreReturn {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        activated: false,
-        blocked: false
-    })
 }

@@ -1,24 +1,18 @@
-use core::panic;
-
 use authentication_gRPC::{
-    error::*,
-    models::authentication::authentication_model::{
-        AuthenticationModel, UserModel, UserModelUpdateParams,
-    },
+    models::authentication::authentication_model::{AuthenticationModel, UserModelUpdateParams},
     repositories::user::user_repository::UserRepositoryUpdateParams,
 };
 
-use crate::mocks::{
-    user_repository_mock::{
+use crate::{
+    mocks::user_repository_mock::{
         get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStoreUpdate,
     },
-    users_code_repository_mock::{get_mock_users_code_repository, MockUsersCodeRepositoryParams},
+    utils::builders::UserModelBuilderForTest,
 };
-
-const FAKE_ID: &str = "userFakeId";
 
 #[tokio::test]
 async fn test_update() {
+    const FAKE_ID: &str = "userFakeId";
     const FAKE_UPDATE_USERNAME: &str = "updatedUsername";
     const FAKE_UPDATE_EMAIL: &str = "updated_email@model.com";
 
@@ -28,27 +22,21 @@ async fn test_update() {
         ..Default::default()
     };
 
-    let mock_repository = get_mock_user_repository(MockUserRepositoryParams {
+    let mock_user_repository = get_mock_user_repository(MockUserRepositoryParams {
         store_update: Some(MockUserRepositoryStoreUpdate {
             calls: 1,
             param_id_with: FAKE_ID.to_string(),
             param_user_with: user_store_update_params,
-            fn_returning: mock_user_repository_store_update,
+            fn_returning: |_, _| Ok(String::from("User updated successfully")),
         }),
         ..Default::default()
     });
-    let model = UserModel {
-        user_repository: mock_repository,
-        password_hasher: |_| panic!("cannot be called on this test"),
-        password_verify: mock_password_verify_with_returning_error_if_called,
-        new_id: mock_new_id_with_panic_if_called,
-        user_code_repository: get_mock_users_code_repository(MockUsersCodeRepositoryParams {
-            ..Default::default()
-        }),
-        generate_code: || panic!("cannot be called on this test"),
-    };
 
-    let response = model
+    let model_user = UserModelBuilderForTest::new()
+        .mount_user_repository(mock_user_repository)
+        .build();
+
+    let response = model_user
         .update(
             FAKE_ID.to_string(),
             UserModelUpdateParams {
@@ -60,31 +48,4 @@ async fn test_update() {
         .unwrap();
 
     assert_eq!(response, "User updated successfully");
-}
-
-fn mock_user_repository_store_update(
-    id: String,
-    _user: UserRepositoryUpdateParams,
-) -> Result<String, AppError> {
-    if FAKE_ID != id {
-        return Err(AppError::new(
-            Code::NotFound,
-            "not found the user with the given id",
-        ));
-    }
-    Ok(String::from("User updated successfully"))
-}
-
-fn mock_new_id_with_panic_if_called() -> String {
-    panic!("cannot be called on this test")
-}
-
-fn mock_password_verify_with_returning_error_if_called(
-    _: String,
-    _: String,
-) -> Result<bool, AppError> {
-    Err(AppError::new(
-        Code::Internal,
-        "cannot be called on this test",
-    ))
 }
