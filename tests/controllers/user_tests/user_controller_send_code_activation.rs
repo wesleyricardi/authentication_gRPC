@@ -13,7 +13,7 @@ use crate::{
 };
 
 #[tokio::test]
-async fn test_authentication() {
+async fn test_send_activation_code() {
     const FAKE_USER_ID: &str = "user_id";
     const FAKE_EMAIL: &str = "test@controller.com";
     const FAKE_USERNAME: &str = "username";
