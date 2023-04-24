@@ -8,7 +8,7 @@ use authentication_gRPC::{
     },
     error::*,
     models::authentication::authentication_model::UserModelUpdateParams,
-    security::jwt::{JWTAuthenticateToken, UserToken},
+    security::jwt::JWTAuthenticateToken,
 };
 
 const FAKE_USER_ID: &str = "user_id";
@@ -56,7 +56,7 @@ async fn test_update() {
             ..Default::default()
         }),
         send_email: mock_send_email_with_returning_error_if_called,
-        jwt_encode: mock_jwt_encode,
+        jwt_encode: |_, _, _| panic!("should not be called"),
         jwt_decode: mock_jwt_decode,
     };
     let req = UpdateParams {
@@ -87,19 +87,6 @@ fn mock_user_model_update(id: String, _user: UserModelUpdateParams) -> Result<St
     Ok(String::from("User updated successfully"))
 }
 
-fn mock_jwt_encode(user: UserToken) -> Result<String, AppError> {
-    let UserToken {
-        id,
-        username,
-        email,
-    } = user;
-    if id != FAKE_USER_ID || username != SANITIZED_USERNAME || email != SANITIZED_EMAIL {
-        panic!("received invalid wrong expected params")
-    }
-
-    Ok(FAKE_JWT_TOKEN.to_string())
-}
-
 fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
     if token != FAKE_JWT_TOKEN {
         return Err(AppError::new(Code::PermissionDenied, "Invalid token"));
@@ -107,11 +94,8 @@ fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
 
     Ok(JWTAuthenticateToken {
         sub: FAKE_USER_ID.to_string(),
-        user: UserToken {
-            id: FAKE_USER_ID.to_string(),
-            username: FAKE_USERNAME.to_string(),
-            email: FAKE_EMAIL.to_string(),
-        },
+        activated: true,
+        blocked: false,
         exp: 99999999,
     })
 }

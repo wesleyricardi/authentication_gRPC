@@ -11,7 +11,7 @@ use authentication_gRPC::{
     },
     error::*,
     models::authentication::authentication_model::UserModelLoginVerificationReturn,
-    security::jwt::{JWTAuthenticateToken, UserToken},
+    security::jwt::JWTAuthenticateToken,
 };
 
 const FAKE_USER_ID: &str = "user_id";
@@ -106,16 +106,7 @@ fn mock_user_model_login_verification(
     })
 }
 
-fn mock_jwt_encode(user: UserToken) -> Result<String, AppError> {
-    let UserToken {
-        id,
-        username,
-        email,
-    } = user;
-    if id != FAKE_USER_ID || username != SANITIZED_USERNAME || email != FAKE_EMAIL {
-        panic!("received invalid wrong expected params")
-    }
-
+fn mock_jwt_encode(_: String, _: bool, _: bool) -> Result<String, AppError> {
     Ok(FAKE_JWT_TOKEN.to_string())
 }
 

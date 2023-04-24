@@ -4,7 +4,7 @@ pub use crate::{
     dtos::controllers::dtos_controller_user::*,
     dtos::views::dtos_view_user::*,
     models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
-    security::jwt::{JwtEncode, UserToken, JWT_ENCODE},
+    security::jwt::JwtEncode,
     services::sanitizer::authentication_input::sanitize_authentication_input::{
         SanitizeAuthentication, SanitizeUser,
     },
@@ -84,11 +84,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             })
             .await?;
 
-        let token = (self.jwt_encode)(UserToken {
-            id: user.id.clone(),
-            username: user.username.clone(),
-            email: user.email.clone(),
-        })?;
+        let token = (self.jwt_encode)(user.id.clone(), user.activated, user.blocked)?;
 
         Ok(view(
             UserViewArg {
@@ -115,11 +111,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             .login_verification(username_sanitized, password_sanitized)
             .await?;
 
-        let token = (self.jwt_encode)(UserToken {
-            id: user.id.clone(),
-            username: user.username.clone(),
-            email: user.email.clone(),
-        })?;
+        let token = (self.jwt_encode)(user.id.clone(), user.activated, user.blocked)?;
 
         Ok(view(
             UserViewArg {
@@ -138,14 +130,12 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         token: String,
         view: fn(user: UserViewArg) -> T,
     ) -> Result<T, AppError> {
-        let JWTAuthenticateToken {
-            user: user_token, ..
-        } = (self.jwt_decode)(&token)?;
+        let JWTAuthenticateToken { sub: user_id, .. } = (self.jwt_decode)(&token)?;
 
-        let user = self.model.recover_user_data(user_token.id.clone()).await?;
+        let user = self.model.recover_user_data(user_id.clone()).await?;
 
         Ok(view(UserViewArg {
-            id: user_token.id,
+            id: user_id,
             username: user.username,
             email: user.email,
             activated: user.activated,
@@ -175,14 +165,25 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             None => None,
         };
 
-        let jwt_decoded = (self.jwt_decode)(&token)?;
+        let JWTAuthenticateToken {
+            sub: user_id,
+            activated,
+            blocked,
+            ..
+        } = (self.jwt_decode)(&token)?;
 
-        let UserToken { id, .. } = jwt_decoded.user;
+        if blocked {
+            return Err(AppError::new(Code::PermissionDenied, "You are blocked"));
+        }
+
+        if !activated {
+            return Err(AppError::new(Code::PermissionDenied, "User not activated"));
+        }
 
         let message = self
             .model
             .update(
-                id,
+                user_id,
                 UserModelUpdateParams {
                     username: username_sanitized,
                     email: email_sanitized,
@@ -198,16 +199,25 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         token: String,
         view: fn(message: String) -> T,
     ) -> Result<T, AppError> {
-        let jwt_decoded = (self.jwt_decode)(&token)?;
+        let JWTAuthenticateToken {
+            sub: user_id,
+            activated,
+            ..
+        } = (self.jwt_decode)(&token)?;
 
-        let UserToken { id, .. } = jwt_decoded.user;
+        if activated {
+            return Err(AppError::new(
+                Code::PermissionDenied,
+                "User already activated",
+            ));
+        }
 
         let UserModelRecoverUserDataReturn { email, .. } =
-            self.model.recover_user_data(id.clone()).await?;
+            self.model.recover_user_data(user_id.clone()).await?;
 
         let code = self
             .model
-            .create_user_code(id, CodeType::Activation)
+            .create_user_code(user_id, CodeType::Activation)
             .await?;
 
         let body = format!("<div>The activation code is {}</div>", code);
@@ -227,7 +237,18 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         code_key: String,
         view: fn(message: String) -> T,
     ) -> Result<T, AppError> {
-        let JWTAuthenticateToken { sub: user_id, .. } = (self.jwt_decode)(&token)?;
+        let JWTAuthenticateToken {
+            sub: user_id,
+            activated,
+            ..
+        } = (self.jwt_decode)(&token)?;
+
+        if activated {
+            return Err(AppError::new(
+                Code::PermissionDenied,
+                "User already activated",
+            ));
+        }
 
         self.model.activate_user(user_id, code_key).await?;
 

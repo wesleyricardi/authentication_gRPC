@@ -6,7 +6,7 @@ use authentication_gRPC::{
         user::user_repository::MockUserRepository,
         users_code::users_code_repository::MockUsersCodeRepository,
     },
-    security::jwt::{JWTAuthenticateToken, UserToken},
+    security::jwt::{JwtDecode, JwtEncode},
     services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication,
     utils::hash::password::{PasswordHasher, PasswordVerify},
 };
@@ -92,8 +92,8 @@ impl UserModelBuilderForTest {
 }
 
 pub struct UserControllerBuilderForTest {
-    jwt_decode: fn(&str) -> Result<JWTAuthenticateToken, AppError>,
-    jwt_encode: fn(UserToken) -> Result<String, AppError>,
+    jwt_decode: JwtDecode,
+    jwt_encode: JwtEncode,
     model: MockAuthenticationModel,
     sanitize_user: MockSanitizeAuthentication,
     send_email: fn(to: String, subject: String, body: String) -> Result<String, AppError>,
@@ -107,7 +107,7 @@ impl UserControllerBuilderForTest {
             jwt_decode: |_| {
                 panic!("jwt_decode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
             },
-            jwt_encode: |_| {
+            jwt_encode: |_, _, _| {
                 panic!("jwt_encode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
             },
             send_email: |_, _, _| {
@@ -126,18 +126,12 @@ impl UserControllerBuilderForTest {
         self
     }
 
-    pub fn mount_jwt_decode(
-        mut self,
-        jwt_decode: fn(&str) -> Result<JWTAuthenticateToken, AppError>,
-    ) -> Self {
+    pub fn mount_jwt_decode(mut self, jwt_decode: JwtDecode) -> Self {
         self.jwt_decode = jwt_decode;
         self
     }
 
-    pub fn mount_jwt_encode(
-        mut self,
-        jwt_encode: fn(UserToken) -> Result<String, AppError>,
-    ) -> Self {
+    pub fn mount_jwt_encode(mut self, jwt_encode: JwtEncode) -> Self {
         self.jwt_encode = jwt_encode;
         self
     }

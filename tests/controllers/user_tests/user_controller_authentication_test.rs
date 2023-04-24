@@ -4,7 +4,7 @@ use authentication_gRPC::{
     },
     error::*,
     models::authentication::authentication_model::UserModelRecoverUserDataReturn,
-    security::jwt::{JWTAuthenticateToken, UserToken},
+    security::jwt::JWTAuthenticateToken,
 };
 
 use crate::mocks::{
@@ -34,7 +34,7 @@ async fn test_authentication() {
             ..Default::default()
         }),
         send_email: mock_send_email_with_returning_error_if_called,
-        jwt_encode: mock_jwt_encode_with_returning_error_if_called,
+        jwt_encode: |_, _, _| panic!("should not be called"),
         jwt_decode: mock_jwt_decode,
     };
 
@@ -79,20 +79,10 @@ fn mock_jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
 
     Ok(JWTAuthenticateToken {
         sub: FAKE_USER_ID.to_string(),
-        user: UserToken {
-            id: FAKE_USER_ID.to_string(),
-            username: FAKE_USERNAME.to_string(),
-            email: FAKE_EMAIL.to_string(),
-        },
+        activated: true,
+        blocked: false,
         exp: 99999999,
     })
-}
-
-fn mock_jwt_encode_with_returning_error_if_called(_: UserToken) -> Result<String, AppError> {
-    Err(AppError::new(
-        Code::Internal,
-        "cannot be called on this test",
-    ))
 }
 
 fn mock_send_email_with_returning_error_if_called(

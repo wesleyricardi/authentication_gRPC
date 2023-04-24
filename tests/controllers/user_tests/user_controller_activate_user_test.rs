@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::AuthenticationController,
-    security::jwt::{JWTAuthenticateToken, UserToken},
+    security::jwt::JWTAuthenticateToken,
 };
 
 use crate::{
@@ -30,11 +30,8 @@ async fn test_activate_user() {
         .mount_jwt_decode(|_| {
             Ok(JWTAuthenticateToken {
                 sub: USER_ID_FAKE.to_string(),
-                user: UserToken {
-                    id: USER_ID_FAKE.to_string(),
-                    email: USER_EMAIL_FAKE.to_string(),
-                    username: USERNAME_FAKE.to_string(),
-                },
+                activated: false,
+                blocked: false,
                 exp: 999999,
             })
         })
