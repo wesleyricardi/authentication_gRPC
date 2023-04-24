@@ -12,14 +12,14 @@ use crate::{
     utils::builders::UserControllerBuilderForTest,
 };
 
+const FAKE_USER_ID: &str = "user_id";
+const FAKE_EMAIL: &str = "test@controller.com";
+const FAKE_USERNAME: &str = "username";
+const FAKE_USER_CODE: &str = "000001";
+const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
+
 #[tokio::test]
 async fn test_send_activation_code() {
-    const FAKE_USER_ID: &str = "user_id";
-    const FAKE_EMAIL: &str = "test@controller.com";
-    const FAKE_USERNAME: &str = "username";
-    const FAKE_USER_CODE: &str = "000001";
-    const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
-
     let mock_user_model = get_mock_user_model(MockUserModelParams {
         recover_user_data: Some(MockUserModelRecoverUserData {
             calls: 1,
@@ -70,4 +70,26 @@ async fn test_send_activation_code() {
         .unwrap();
 
     assert_eq!(response, "Code send successufully");
+}
+
+#[tokio::test]
+async fn test_send_activation_code_for_user_already_active() {
+    let controller_user = UserControllerBuilderForTest::new()
+        .mount_jwt_decode(|_| {
+            Ok(JWTAuthenticateToken {
+                sub: FAKE_USER_ID.to_string(),
+                activated: true,
+                blocked: false,
+                exp: 99999999,
+            })
+        })
+        .build();
+
+    match controller_user
+        .send_activation_code(FAKE_JWT_TOKEN.to_string())
+        .await
+    {
+        Ok(_) => panic!("Expected error"),
+        Err(error) => assert_eq!(error.message, "User already activated"),
+    }
 }
