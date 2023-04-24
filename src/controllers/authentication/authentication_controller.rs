@@ -160,7 +160,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         } = (self.jwt_decode)(&token)?;
 
         if blocked {
-            return Err(AppError::new(Code::PermissionDenied, "You are blocked"));
+            return Err(AppError::new(Code::PermissionDenied, "User are blocked"));
         }
 
         if !activated {
