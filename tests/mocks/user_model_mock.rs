@@ -35,6 +35,15 @@ pub struct MockUserModelUpdate {
     pub fn_returning: fn(String, UserModelUpdateParams) -> Result<String, AppError>,
 }
 
+pub struct MockUserModelUpdatePassword {
+    pub calls: usize,
+    pub param_id_with: String,
+    pub param_new_password_with: String,
+    pub param_old_password_with: String,
+    pub fn_returning:
+        fn(user_id: String, new_password: String, old_password: String) -> Result<String, AppError>,
+}
+
 pub struct MockUserModelCreateUserCode {
     pub calls: usize,
     pub param_user_id_with: String,
@@ -57,6 +66,7 @@ pub struct MockUserModelParams {
     pub update: Option<MockUserModelUpdate>,
     pub create_user_code: Option<MockUserModelCreateUserCode>,
     pub activate_user: Option<MockUserModelActivateUser>,
+    pub update_password: Option<MockUserModelUpdatePassword>,
 }
 
 pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticationModel {
@@ -159,6 +169,27 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .times(calls)
             .returning(move |user_id, code_key| {
                 Box::pin(async move { fn_returning(user_id, code_key) })
+            });
+    }
+
+    if let Some(MockUserModelUpdatePassword {
+        calls,
+        param_id_with,
+        param_new_password_with,
+        param_old_password_with,
+        fn_returning,
+    }) = expectations.update_password
+    {
+        mock_user_model
+            .expect_update_password()
+            .with(
+                predicate::eq(param_id_with),
+                predicate::eq(param_new_password_with),
+                predicate::eq(param_old_password_with),
+            )
+            .times(calls)
+            .returning(move |user_id, new_password, old_password| {
+                Box::pin(async move { fn_returning(user_id, new_password, old_password) })
             });
     }
 
