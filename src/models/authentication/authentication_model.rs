@@ -34,6 +34,12 @@ pub trait AuthenticationModel: Sync + Send {
         id: String,
     ) -> Result<UserModelRecoverUserDataReturn, AppError>;
     async fn update(&self, id: String, user: UserModelUpdateParams) -> Result<String, AppError>;
+    async fn update_password(
+        &self,
+        id: String,
+        new_password: String,
+        old_password: String,
+    ) -> Result<String, AppError>;
     async fn create_user_code(
         &self,
         user_id: String,
@@ -119,6 +125,33 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
         let user_to_be_updated = UserRepositoryUpdateParams {
             username: user.username,
             email: user.email,
+            ..Default::default()
+        };
+
+        self.user_repository
+            .store_update(id, user_to_be_updated)
+            .await
+    }
+
+    async fn update_password(
+        &self,
+        id: String,
+        new_password: String,
+        old_password: String,
+    ) -> Result<String, AppError> {
+        let user = self.user_repository.consult_by_id(id.clone()).await?;
+
+        if !(self.password_verify)(user.password, old_password)? {
+            return Err(AppError::new(
+                Code::InvalidArgument,
+                "Old password is invalid",
+            ));
+        }
+
+        let hashed_password = (self.password_hasher)(new_password)?;
+
+        let user_to_be_updated = UserRepositoryUpdateParams {
+            password: Some(hashed_password),
             ..Default::default()
         };
 
