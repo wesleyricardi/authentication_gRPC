@@ -1,4 +1,5 @@
 mod user_model_activate_user;
+mod user_model_create_recover_code;
 mod user_model_create_user_code;
 mod user_model_insert_test;
 mod user_model_login_verification;
