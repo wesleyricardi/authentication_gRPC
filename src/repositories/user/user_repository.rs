@@ -18,6 +18,7 @@ pub trait UserRepository: Sync + Send {
         username: String,
     ) -> Result<UserRepositoryConsultReturn, AppError>;
     async fn consult_by_id(&self, id: String) -> Result<UserRepositoryConsultReturn, AppError>;
+    async fn consult_by_email(&self, email: String) -> Result<UserRepositoryConsultReturn, AppError>;
     async fn store_update(
         &self,
         id: String,
@@ -70,6 +71,13 @@ impl UserRepository for UserRepositoryPostgres<'_> {
         match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password, activated, blocked FROM users WHERE id = $1", id).fetch_one(self.pool).await {
             Ok(user) => Ok(user),
             Err(error) => Err(sqlx_error_to_app_error(error)), 
+        }
+    }
+
+    async fn consult_by_email(&self, email: String) -> Result<UserRepositoryConsultReturn, AppError> {
+        match sqlx::query_as!(UserRepositoryConsultReturn, "SELECT id, username, email, password, activated, blocked FROM users WHERE email = $1", email).fetch_one(self.pool).await {
+            Ok(user) => Ok(user),
+            Err(error) => Err(sqlx_error_to_app_error(error)),
         }
     }
 
@@ -228,6 +236,40 @@ mod tests {
         }
 
         let response = test_with_database("test_consult_by_id", repository_consult_by_id)
+            .await
+            .unwrap();
+
+        assert_eq!(response.id, FAKE_ID);
+        assert_eq!(response.username, FAKE_USERNAME);
+        assert_eq!(response.email, FAKE_EMAIL);
+        assert_eq!(response.password, FAKE_PASSWORD);
+    }
+
+
+    #[tokio::test]
+    async fn test_consult_user_by_email() {
+        async fn repository_consult_by_email(
+            pool: Pool<Postgres>,
+        ) -> Result<UserRepositoryConsultReturn, AppError> {
+            sqlx::query_as!(
+                User,
+                "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
+                FAKE_ID,
+                FAKE_USERNAME,
+                FAKE_EMAIL,
+                FAKE_PASSWORD,
+            )
+            .execute(&pool)
+            .await.unwrap();
+
+            let repository = UserRepositoryPostgres { pool: &pool };
+
+            repository
+                .consult_by_email(FAKE_EMAIL.to_string())
+                .await
+        }
+
+        let response = test_with_database("test_consult_by_email", repository_consult_by_email)
             .await
             .unwrap();
 
