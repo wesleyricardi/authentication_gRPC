@@ -25,6 +25,12 @@ pub struct MockUserRepositoryConsultById {
     pub fn_returning: fn(id: String) -> Result<UserRepositoryConsultReturn, AppError>,
 }
 
+pub struct MockUserRepositoryConsultByEmail {
+    pub calls: usize,
+    pub param_email_with: String,
+    pub fn_returning: fn(id: String) -> Result<UserRepositoryConsultReturn, AppError>,
+}
+
 pub struct MockUserRepositoryStoreUpdate {
     pub calls: usize,
     pub param_id_with: String,
@@ -37,6 +43,7 @@ pub struct MockUserRepositoryParams {
     pub store: Option<MockUserRepositoryStore>,
     pub consult_by_username: Option<MockUserRepositoryConsultByUsername>,
     pub consult_by_id: Option<MockUserRepositoryConsultById>,
+    pub consult_by_email: Option<MockUserRepositoryConsultByEmail>,
     pub store_update: Option<MockUserRepositoryStoreUpdate>,
 }
 
@@ -83,6 +90,21 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .with(predicate::eq(param_id_with))
             .times(calls)
             .returning(move |id| Box::pin(async move { fn_returning(id) }));
+    }
+
+    if let Some(MockUserRepositoryConsultByEmail {
+        calls,
+        param_email_with,
+        fn_returning,
+    }) = expectations.consult_by_email
+    {
+        mock_user_repository
+            .expect_consult_by_email()
+            .with(predicate::eq(param_email_with))
+            .times(calls)
+            .returning(move |MockUserInputSanitizeEmail| {
+                Box::pin(async move { fn_returning(MockUserInputSanitizeEmail) })
+            });
     }
 
     if expectations.store_update.is_some() {
