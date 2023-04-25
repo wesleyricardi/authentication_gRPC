@@ -1,4 +1,4 @@
-use crate::error::*;
+use crate::{error::*, utils::env_var::load_env_var::load_env_var};
 use jsonwebtoken::{get_current_timestamp, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -24,7 +24,7 @@ pub fn jwt_encode(id: String, activated: bool, blocked: bool) -> Result<String, 
     match jsonwebtoken::encode(
         &Header::default(),
         &user_token,
-        &EncodingKey::from_secret("JWT_SECRET".as_ref()),
+        &EncodingKey::from_secret(load_env_var("JWT_SECRET")?.as_ref()),
     ) {
         Ok(token) => Ok(token),
         Err(error) => Err(AppError::new(
@@ -37,7 +37,7 @@ pub fn jwt_encode(id: String, activated: bool, blocked: bool) -> Result<String, 
 pub fn jwt_decode(token: &str) -> Result<JWTAuthenticateToken, AppError> {
     match jsonwebtoken::decode::<JWTAuthenticateToken>(
         token,
-        &DecodingKey::from_secret("JWT_SECRET".as_ref()),
+        &DecodingKey::from_secret(load_env_var("JWT_SECRET")?.as_ref()),
         &Validation::default(),
     ) {
         Ok(user_token) => Ok(user_token.claims),
