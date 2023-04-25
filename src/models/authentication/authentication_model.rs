@@ -141,10 +141,9 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
             user_id,
         };
 
-        match self.user_code_repository.store(code).await {
-            Ok(_) => Ok(String::from(code_key)),
-            Err(error) => Err(error),
-        }
+        self.user_code_repository.store(code).await?;
+
+        Ok(code_key)
     }
 
     async fn activate_user(&self, user_id: String, code_key: String) -> Result<String, AppError> {
