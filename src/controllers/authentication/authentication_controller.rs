@@ -1,6 +1,7 @@
 use crate::dtos::controllers::dtos_controller_user::{
     UserControllerActivateReturn, UserControllerAuthenticationReturn, UserControllerLoginReturn,
-    UserControllerRegisterReturn, UserControllerSendCodeReturn, UserControllerUpdateReturn,
+    UserControllerRegisterReturn, UserControllerSendCodeReturn, UserControllerUpdatePasswordReq,
+    UserControllerUpdatePasswordReturn, UserControllerUpdateReturn,
 };
 use async_trait::async_trait;
 
@@ -34,6 +35,11 @@ pub trait AuthenticationController: Sync + Send {
         token: String,
         req: UpdateParams,
     ) -> Result<UserControllerUpdateReturn, AppError>;
+    async fn update_password(
+        &self,
+        token: String,
+        req: UserControllerUpdatePasswordReq,
+    ) -> Result<UserControllerUpdatePasswordReturn, AppError>;
     async fn send_activation_code(
         &self,
         token: String,
@@ -176,6 +182,41 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                     email: email_sanitized,
                 },
             )
+            .await?;
+
+        Ok(message)
+    }
+
+    async fn update_password(
+        &self,
+        token: String,
+        req: UserControllerUpdatePasswordReq,
+    ) -> Result<UserControllerUpdatePasswordReturn, AppError> {
+        let password_sanitized = self
+            .sanitize_user
+            .sanitize_password_input(req.new_password)?;
+        let old_password_sanitized = self
+            .sanitize_user
+            .sanitize_password_input(req.old_password)?;
+
+        let JWTAuthenticateToken {
+            sub: user_id,
+            activated,
+            blocked,
+            ..
+        } = (self.jwt_decode)(&token)?;
+
+        if blocked {
+            return Err(AppError::new(Code::PermissionDenied, "User are blocked"));
+        }
+
+        if !activated {
+            return Err(AppError::new(Code::PermissionDenied, "User not activated"));
+        }
+
+        let message = self
+            .model
+            .update_password(user_id, password_sanitized, old_password_sanitized)
             .await?;
 
         Ok(message)

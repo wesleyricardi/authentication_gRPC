@@ -38,6 +38,13 @@ pub struct UpdateParams {
 
 pub type UserControllerUpdateReturn = String;
 
+pub struct UserControllerUpdatePasswordReq {
+    pub new_password: String,
+    pub old_password: String,
+}
+
+pub type UserControllerUpdatePasswordReturn = String;
+
 pub type UserControllerSendCodeReturn = String;
 
 pub type UserControllerActivateReturn = String;
