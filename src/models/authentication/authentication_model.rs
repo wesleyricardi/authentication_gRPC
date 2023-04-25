@@ -161,11 +161,8 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
         }
 
         let user_to_be_updated = UserRepositoryUpdateParams {
-            username: None,
-            email: None,
-            password: None,
             activated: Some(true),
-            blocked: None,
+            ..Default::default()
         };
 
         self.user_repository
