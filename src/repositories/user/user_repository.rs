@@ -23,6 +23,7 @@ pub trait UserRepository: Sync + Send {
         id: String,
         user_to_be_updated: UserRepositoryUpdateParams,
     ) -> Result<String, AppError>;
+    async fn delete(&self, id: String) -> Result<String, AppError>;
 }
 pub struct UserRepositoryPostgres<'a> {
     pub pool: &'a Pool<Postgres>,
@@ -116,6 +117,16 @@ impl UserRepository for UserRepositoryPostgres<'_> {
             .await
         {
             Ok(_) => Ok(String::from("User updated successfully")),
+            Err(error) => Err(sqlx_error_to_app_error(error)),
+        }
+    }
+
+    async fn delete(&self, id: String) -> Result<String, AppError> {
+        match sqlx::query!("DELETE FROM users WHERE id = $1", id)
+            .execute(self.pool)
+            .await
+        {
+            Ok(_) => Ok(String::from("User deleted successfully")),
             Err(error) => Err(sqlx_error_to_app_error(error)),
         }
     }
@@ -280,4 +291,43 @@ mod tests {
         assert_eq!(response, "User updated successfully");
     }
 
+    #[tokio::test]
+    async fn test_delete() {
+        async fn repository_delete_user(
+            pool: Pool<Postgres>,
+        ) -> Result<String, AppError> {
+            sqlx::query_as!(
+                User,
+                "INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)",
+                FAKE_ID,
+                FAKE_USERNAME,
+                FAKE_EMAIL,
+                FAKE_PASSWORD,
+            )
+            .execute(&pool)
+            .await.unwrap();
+
+            let repository = UserRepositoryPostgres { pool: &pool };
+
+            let response = repository
+                .delete(FAKE_ID.to_string())
+                .await?;
+
+            match sqlx::query!(
+                "SELECT username FROM users WHERE id = $1", FAKE_ID)
+                .fetch_one(&pool)
+                .await {
+                    Ok(_) => panic!("User should not exist"),
+                    Err(_) => (),
+            }
+
+            Ok(response)
+        }
+
+        let response = test_with_database("test_delete_user", repository_delete_user)
+            .await
+            .unwrap();
+
+        assert_eq!(response, "User deleted successfully");
+    }
 }
