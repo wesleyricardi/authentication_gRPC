@@ -4,7 +4,7 @@ use authentication_gRPC::{
     error::{AppError, Code},
     models::authentication::authentication_model::AuthenticationModel,
     repositories::{
-        user::user_repository::UserRepositoryUpdateParams,
+        user::user_repository::{UserRepositoryConsultReturn, UserRepositoryUpdateParams},
         users_code::users_code_repository::UsersCode,
     },
 };
@@ -12,7 +12,8 @@ use authentication_gRPC::{
 use crate::{
     mocks::{
         user_repository_mock::{
-            get_mock_user_repository, MockUserRepositoryParams, MockUserRepositoryStoreUpdate,
+            get_mock_user_repository, MockUserRepositoryConsultByEmail, MockUserRepositoryParams,
+            MockUserRepositoryStoreUpdate,
         },
         users_code_repository_mock::{
             get_mock_users_code_repository, MockUsersCodeRepositoryGet,
@@ -24,6 +25,8 @@ use crate::{
 
 const FAKE_NEW_PASSWORD: &str = "newPassword";
 const FAKE_ID: &str = "userFakeId";
+const FAKE_USERNAME: &str = "userFakeUsername";
+const FAKE_EMAIL: &str = "test@email.com";
 const FAKE_CODE: &str = "000001";
 
 #[tokio::test]
@@ -34,6 +37,20 @@ async fn test_recover_user_password() {
     };
 
     let mock_repository = get_mock_user_repository(MockUserRepositoryParams {
+        consult_by_email: Some(MockUserRepositoryConsultByEmail {
+            calls: 1,
+            param_email_with: FAKE_EMAIL.to_string(),
+            fn_returning: |_| {
+                Ok(UserRepositoryConsultReturn {
+                    id: FAKE_ID.to_string(),
+                    username: FAKE_USERNAME.to_string(),
+                    email: FAKE_EMAIL.to_string(),
+                    password: FAKE_NEW_PASSWORD.to_string(),
+                    activated: true,
+                    blocked: false,
+                })
+            },
+        }),
         store_update: Some(MockUserRepositoryStoreUpdate {
             calls: 1,
             param_id_with: FAKE_ID.to_string(),
@@ -67,7 +84,7 @@ async fn test_recover_user_password() {
 
     let response = model_user
         .recover_user_password(
-            FAKE_ID.to_string(),
+            FAKE_EMAIL.to_string(),
             FAKE_NEW_PASSWORD.to_string(),
             FAKE_CODE.to_string(),
         )
@@ -79,6 +96,24 @@ async fn test_recover_user_password() {
 
 #[tokio::test]
 async fn test_recover_user_password_with_expire_code() {
+    let mock_repository = get_mock_user_repository(MockUserRepositoryParams {
+        consult_by_email: Some(MockUserRepositoryConsultByEmail {
+            calls: 1,
+            param_email_with: FAKE_EMAIL.to_string(),
+            fn_returning: |_| {
+                Ok(UserRepositoryConsultReturn {
+                    id: FAKE_ID.to_string(),
+                    username: FAKE_USERNAME.to_string(),
+                    email: FAKE_EMAIL.to_string(),
+                    password: FAKE_NEW_PASSWORD.to_string(),
+                    activated: true,
+                    blocked: false,
+                })
+            },
+        }),
+        ..Default::default()
+    });
+
     let mock_users_code_repository =
         get_mock_users_code_repository(MockUsersCodeRepositoryParams {
             get: Some(MockUsersCodeRepositoryGet {
@@ -98,11 +133,12 @@ async fn test_recover_user_password_with_expire_code() {
 
     let model_user = UserModelBuilderForTest::new()
         .mount_code_repository(mock_users_code_repository)
+        .mount_user_repository(mock_repository)
         .build();
 
     match model_user
         .recover_user_password(
-            FAKE_ID.to_string(),
+            FAKE_EMAIL.to_string(),
             FAKE_NEW_PASSWORD.to_string(),
             FAKE_CODE.to_string(),
         )
@@ -115,6 +151,24 @@ async fn test_recover_user_password_with_expire_code() {
 
 #[tokio::test]
 async fn test_recover_user_password_with_invalid_code() {
+    let mock_repository = get_mock_user_repository(MockUserRepositoryParams {
+        consult_by_email: Some(MockUserRepositoryConsultByEmail {
+            calls: 1,
+            param_email_with: FAKE_EMAIL.to_string(),
+            fn_returning: |_| {
+                Ok(UserRepositoryConsultReturn {
+                    id: FAKE_ID.to_string(),
+                    username: FAKE_USERNAME.to_string(),
+                    email: FAKE_EMAIL.to_string(),
+                    password: FAKE_NEW_PASSWORD.to_string(),
+                    activated: true,
+                    blocked: false,
+                })
+            },
+        }),
+        ..Default::default()
+    });
+
     let mock_users_code_repository =
         get_mock_users_code_repository(MockUsersCodeRepositoryParams {
             get: Some(MockUsersCodeRepositoryGet {
@@ -130,11 +184,12 @@ async fn test_recover_user_password_with_invalid_code() {
 
     let model_user = UserModelBuilderForTest::new()
         .mount_code_repository(mock_users_code_repository)
+        .mount_user_repository(mock_repository)
         .build();
 
     match model_user
         .recover_user_password(
-            FAKE_ID.to_string(),
+            FAKE_EMAIL.to_string(),
             FAKE_NEW_PASSWORD.to_string(),
             FAKE_CODE.to_string(),
         )
