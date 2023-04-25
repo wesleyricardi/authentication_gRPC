@@ -40,6 +40,12 @@ pub trait AuthenticationModel: Sync + Send {
         code_type: CodeType,
     ) -> Result<String, AppError>;
     async fn activate_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
+    async fn recover_user_password(
+        &self,
+        user_id: String,
+        new_password: String,
+        code_key: String,
+    ) -> Result<String, AppError>;
 }
 
 pub struct UserModel<R, C> {
@@ -170,5 +176,35 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
             .await?;
 
         Ok(String::from("User activated"))
+    }
+    async fn recover_user_password(
+        &self,
+        user_id: String,
+        new_password: String,
+        code_key: String,
+    ) -> Result<String, AppError> {
+        let code = self
+            .user_code_repository
+            .get(user_id.clone(), code_key)
+            .await
+            .map_err(|error| match error.code {
+                Code::NotFound => AppError::new(Code::NotFound, "Code not found"),
+                _ => AppError::new(Code::Internal, "internal error"),
+            })?;
+
+        if code.expire_at < Utc::now().naive_utc() {
+            return Err(AppError::new(Code::InvalidArgument, "Code expired"));
+        }
+
+        let user_to_be_updated = UserRepositoryUpdateParams {
+            password: Some(new_password),
+            ..Default::default()
+        };
+
+        self.user_repository
+            .store_update(user_id, user_to_be_updated)
+            .await?;
+
+        Ok(String::from("Password updated"))
     }
 }
