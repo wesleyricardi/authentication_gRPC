@@ -1,6 +1,7 @@
 use crate::dtos::controllers::dtos_controller_user::{
     UserControllerActivateReturn, UserControllerAuthenticationReturn, UserControllerLoginReturn,
-    UserControllerRegisterReturn, UserControllerSendCodeReturn, UserControllerUpdatePasswordReq,
+    UserControllerRegisterReturn, UserControllerSendCodeReturn, UserControllerSendRecoverCodeReq,
+    UserControllerSendRecoverCodeReturn, UserControllerUpdatePasswordReq,
     UserControllerUpdatePasswordReturn, UserControllerUpdateReturn,
 };
 use async_trait::async_trait;
@@ -49,6 +50,10 @@ pub trait AuthenticationController: Sync + Send {
         token: String,
         code_key: String,
     ) -> Result<UserControllerActivateReturn, AppError>;
+    async fn send_recover_code(
+        &self,
+        email: UserControllerSendRecoverCodeReq,
+    ) -> Result<UserControllerSendRecoverCodeReturn, AppError>;
 }
 
 pub struct UserController<M, S> {
@@ -279,5 +284,27 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         self.model.activate_user(user_id, code_key).await?;
 
         Ok(String::from("User activated successfully"))
+    }
+
+    async fn send_recover_code(
+        &self,
+        email: UserControllerSendRecoverCodeReq,
+    ) -> Result<UserControllerSendRecoverCodeReturn, AppError> {
+        let email_sanitized = self.sanitize_user.sanitize_email_input(email)?;
+
+        let code = self
+            .model
+            .create_user_recover_code(email_sanitized.clone())
+            .await?;
+
+        let body = format!("<div>The recover code is {}</div>", code);
+
+        match (self.send_email)(email_sanitized, String::from("recover code"), body) {
+            Ok(_) => Ok(String::from("Code send successufully")),
+            Err(_) => Err(AppError {
+                code: Code::Internal,
+                message: String::from("send email failed"),
+            }),
+        }
     }
 }

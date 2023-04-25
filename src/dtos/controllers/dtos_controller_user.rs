@@ -48,3 +48,7 @@ pub type UserControllerUpdatePasswordReturn = String;
 pub type UserControllerSendCodeReturn = String;
 
 pub type UserControllerActivateReturn = String;
+
+pub type UserControllerSendRecoverCodeReq = String;
+
+pub type UserControllerSendRecoverCodeReturn = String;
