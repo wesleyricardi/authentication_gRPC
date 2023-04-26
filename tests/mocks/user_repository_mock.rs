@@ -102,9 +102,7 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .expect_consult_by_email()
             .with(predicate::eq(param_email_with))
             .times(calls)
-            .returning(move |MockUserInputSanitizeEmail| {
-                Box::pin(async move { fn_returning(MockUserInputSanitizeEmail) })
-            });
+            .returning(move |email| Box::pin(async move { fn_returning(email) }));
     }
 
     if expectations.store_update.is_some() {
