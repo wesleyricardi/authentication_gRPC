@@ -63,6 +63,15 @@ pub struct MockUserModelActivateUser {
     pub fn_returning: fn(user_id: String, code_key: String) -> Result<String, AppError>,
 }
 
+pub struct MockUserModelRecoverPassword {
+    pub calls: usize,
+    pub param_user_email_with: String,
+    pub param_new_password_with: String,
+    pub param_code_key_with: String,
+    pub fn_returning:
+        fn(email: String, new_password: String, code_key: String) -> Result<String, AppError>,
+}
+
 #[derive(Default)]
 pub struct MockUserModelParams {
     pub create: Option<MockUserModelCreate>,
@@ -73,6 +82,7 @@ pub struct MockUserModelParams {
     pub create_recover_code: Option<MockUserModelCreateRecoverCode>,
     pub activate_user: Option<MockUserModelActivateUser>,
     pub update_password: Option<MockUserModelUpdatePassword>,
+    pub recover_password: Option<MockUserModelRecoverPassword>,
 }
 
 pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticationModel {
@@ -204,6 +214,27 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .times(calls)
             .returning(move |user_id, new_password, old_password| {
                 Box::pin(async move { fn_returning(user_id, new_password, old_password) })
+            });
+    }
+
+    if let Some(MockUserModelRecoverPassword {
+        calls,
+        param_user_email_with,
+        param_new_password_with,
+        param_code_key_with,
+        fn_returning,
+    }) = expectations.recover_password
+    {
+        mock_user_model
+            .expect_recover_user_password()
+            .with(
+                predicate::eq(param_user_email_with),
+                predicate::eq(param_new_password_with),
+                predicate::eq(param_code_key_with),
+            )
+            .times(calls)
+            .returning(move |email, new_password, code_key| {
+                Box::pin(async move { fn_returning(email, new_password, code_key) })
             });
     }
 
