@@ -2,11 +2,16 @@ use tonic::Response;
 
 use crate::{
     dtos::controllers::dtos_controller_user::{
-        UserControllerAuthenticationReturn, UserControllerLoginReturn,
-        UserControllerRegisterReturn, UserControllerUpdateReturn,
+        UserControllerActivateReturn, UserControllerAuthenticationReturn,
+        UserControllerLoginReturn, UserControllerRecoverPasswordReturn,
+        UserControllerRegisterReturn, UserControllerSendCodeReturn,
+        UserControllerSendRecoverCodeReturn, UserControllerUpdatePasswordReturn,
+        UserControllerUpdateReturn,
     },
     rpc::authentication::authentication::{
-        ResAuthentication, ResLogin, ResRegister, ResUpdateUser, User as UserResponse,
+        ResActivateUser, ResAuthentication, ResLogin, ResRecoverUserPassword, ResRegister,
+        ResSendActivationCode, ResSendRecoveryCode, ResUpdatePassword, ResUpdateUser,
+        User as UserResponse,
     },
 };
 
@@ -56,4 +61,34 @@ pub fn map_user_update_to_grpc_response(
     response: UserControllerUpdateReturn,
 ) -> Response<ResUpdateUser> {
     Response::new(ResUpdateUser { message: response })
+}
+
+pub fn map_user_update_password_to_grpc_response(
+    response: UserControllerUpdatePasswordReturn,
+) -> Response<ResUpdatePassword> {
+    Response::new(ResUpdatePassword { message: response })
+}
+
+pub fn map_user_send_activation_code_to_grpc_response(
+    response: UserControllerSendCodeReturn,
+) -> Response<ResSendActivationCode> {
+    Response::new(ResSendActivationCode { message: response })
+}
+
+pub fn map_user_activate_to_grpc_response(
+    response: UserControllerActivateReturn,
+) -> Response<ResActivateUser> {
+    Response::new(ResActivateUser { message: response })
+}
+
+pub fn map_send_recovery_code_to_grpc_response(
+    response: UserControllerSendRecoverCodeReturn,
+) -> Response<ResSendRecoveryCode> {
+    Response::new(ResSendRecoveryCode { message: response })
+}
+
+pub fn map_recover_password_to_grpc_response(
+    response: UserControllerRecoverPasswordReturn,
+) -> Response<ResRecoverUserPassword> {
+    Response::new(ResRecoverUserPassword { message: response })
 }
