@@ -1,12 +1,12 @@
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::AuthenticationController,
-    models::authentication::authentication_model::{CodeType, UserModelRecoverUserDataReturn},
+    models::authentication::authentication_model::UserModelRecoverUserDataReturn,
     security::jwt::JWTAuthenticateToken,
 };
 
 use crate::{
     mocks::user_model_mock::{
-        get_mock_user_model, MockUserModelCreateUserCode, MockUserModelParams,
+        get_mock_user_model, MockUserModelCreateUserActivationCode, MockUserModelParams,
         MockUserModelRecoverUserData,
     },
     utils::builders::UserControllerBuilderForTest,
@@ -33,11 +33,10 @@ async fn test_send_activation_code() {
                 })
             },
         }),
-        create_user_code: Some(MockUserModelCreateUserCode {
+        create_user_activation_code: Some(MockUserModelCreateUserActivationCode {
             calls: 1,
             param_user_id_with: FAKE_USER_ID.to_string(),
-            param_code_type_with: CodeType::Activation,
-            fn_returning: |_, _| Ok(FAKE_USER_CODE.to_string()),
+            fn_returning: |_| Ok(FAKE_USER_CODE.to_string()),
         }),
         ..Default::default()
     });

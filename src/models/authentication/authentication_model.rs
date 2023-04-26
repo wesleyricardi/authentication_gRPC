@@ -14,12 +14,6 @@ use async_trait::async_trait;
 use chrono::{Duration, Utc};
 use mockall::automock;
 
-#[derive(Debug, PartialEq)]
-pub enum CodeType {
-    Activation,
-    Recovery,
-}
-
 #[async_trait]
 #[automock]
 pub trait AuthenticationModel: Sync + Send {
@@ -40,11 +34,7 @@ pub trait AuthenticationModel: Sync + Send {
         new_password: String,
         old_password: String,
     ) -> Result<String, AppError>;
-    async fn create_user_code(
-        &self,
-        user_id: String,
-        code_type: CodeType,
-    ) -> Result<String, AppError>;
+    async fn create_user_activation_code(&self, user_id: String) -> Result<String, AppError>;
     async fn create_user_recover_code(&self, email: String) -> Result<String, AppError>;
     async fn activate_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
     async fn recover_user_password(
@@ -178,15 +168,8 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
 
         Ok(code_key)
     }
-    async fn create_user_code(
-        &self,
-        user_id: String,
-        code_type: CodeType,
-    ) -> Result<String, AppError> {
-        let expire_minutes = match code_type {
-            CodeType::Activation => 30, //minutes
-            CodeType::Recovery => 30,   //minutes
-        };
+    async fn create_user_activation_code(&self, user_id: String) -> Result<String, AppError> {
+        let expire_minutes = 30;
 
         let expire_at = Utc::now().naive_utc() + Duration::minutes(expire_minutes.into());
 

@@ -17,7 +17,7 @@ pub use crate::{
 use crate::{
     error::{AppError, Code},
     models::authentication::authentication_model::{
-        CodeType, UserModelRecoverUserDataReturn, UserModelUpdateParams,
+        UserModelRecoverUserDataReturn, UserModelUpdateParams,
     },
     security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
@@ -247,10 +247,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         let UserModelRecoverUserDataReturn { email, .. } =
             self.model.recover_user_data(user_id.clone()).await?;
 
-        let code = self
-            .model
-            .create_user_code(user_id, CodeType::Activation)
-            .await?;
+        let code = self.model.create_user_activation_code(user_id).await?;
 
         let body = format!("<div>The activation code is {}</div>", code);
 

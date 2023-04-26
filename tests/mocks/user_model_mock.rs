@@ -1,7 +1,7 @@
 use authentication_gRPC::{
     error::*,
     models::authentication::authentication_model::{
-        CodeType, MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
+        MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
         UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams,
     },
 };
@@ -44,11 +44,10 @@ pub struct MockUserModelUpdatePassword {
         fn(user_id: String, new_password: String, old_password: String) -> Result<String, AppError>,
 }
 
-pub struct MockUserModelCreateUserCode {
+pub struct MockUserModelCreateUserActivationCode {
     pub calls: usize,
     pub param_user_id_with: String,
-    pub param_code_type_with: CodeType,
-    pub fn_returning: fn(user_id: String, code: CodeType) -> Result<String, AppError>,
+    pub fn_returning: fn(user_id: String) -> Result<String, AppError>,
 }
 
 pub struct MockUserModelCreateRecoverCode {
@@ -70,7 +69,7 @@ pub struct MockUserModelParams {
     pub login_verification: Option<MockUserModelLoginVerification>,
     pub recover_user_data: Option<MockUserModelRecoverUserData>,
     pub update: Option<MockUserModelUpdate>,
-    pub create_user_code: Option<MockUserModelCreateUserCode>,
+    pub create_user_activation_code: Option<MockUserModelCreateUserActivationCode>,
     pub create_recover_code: Option<MockUserModelCreateRecoverCode>,
     pub activate_user: Option<MockUserModelActivateUser>,
     pub update_password: Option<MockUserModelUpdatePassword>,
@@ -142,22 +141,17 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
     }
 
-    if let Some(create_user_code) = expectations.create_user_code {
-        let MockUserModelCreateUserCode {
-            calls,
-            fn_returning,
-            param_user_id_with,
-            param_code_type_with,
-        } = create_user_code;
-
+    if let Some(MockUserModelCreateUserActivationCode {
+        calls,
+        fn_returning,
+        param_user_id_with,
+    }) = expectations.create_user_activation_code
+    {
         mock_user_model
-            .expect_create_user_code()
-            .with(
-                predicate::eq(param_user_id_with),
-                predicate::eq(param_code_type_with),
-            )
+            .expect_create_user_activation_code()
+            .with(predicate::eq(param_user_id_with))
             .times(calls)
-            .returning(move |user_id, code| Box::pin(async move { fn_returning(user_id, code) }));
+            .returning(move |user_id| Box::pin(async move { fn_returning(user_id) }));
     }
 
     if let Some(MockUserModelCreateRecoverCode {

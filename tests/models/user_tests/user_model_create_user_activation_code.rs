@@ -1,5 +1,5 @@
 use authentication_gRPC::{
-    models::authentication::authentication_model::{AuthenticationModel, CodeType},
+    models::authentication::authentication_model::AuthenticationModel,
     repositories::users_code::users_code_repository::UsersCode,
 };
 use chrono::Utc;
@@ -38,7 +38,7 @@ async fn test_user_model_create_user_code() {
         .build();
 
     let code = model_user
-        .create_user_code(FAKE_ID.to_string(), CodeType::Activation)
+        .create_user_activation_code(FAKE_ID.to_string())
         .await
         .unwrap();
 

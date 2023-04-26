@@ -1,5 +1,5 @@
 use authentication_gRPC::{
-    models::authentication::authentication_model::{AuthenticationModel, CodeType},
+    models::authentication::authentication_model::AuthenticationModel,
     repositories::{
         user::user_repository::UserRepositoryConsultReturn,
         users_code::users_code_repository::UsersCode,
