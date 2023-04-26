@@ -52,3 +52,11 @@ pub type UserControllerActivateReturn = String;
 pub type UserControllerSendRecoverCodeReq = String;
 
 pub type UserControllerSendRecoverCodeReturn = String;
+
+pub struct UserControllerRecoverPasswordReq {
+    pub new_password: String,
+    pub email: String,
+    pub code_key: String,
+}
+
+pub type UserControllerRecoverPasswordReturn = String;

@@ -54,6 +54,10 @@ pub trait AuthenticationController: Sync + Send {
         &self,
         email: UserControllerSendRecoverCodeReq,
     ) -> Result<UserControllerSendRecoverCodeReturn, AppError>;
+    async fn recover_user_password(
+        &self,
+        req: UserControllerRecoverPasswordReq,
+    ) -> Result<UserControllerRecoverPasswordReturn, AppError>;
 }
 
 pub struct UserController<M, S> {
@@ -303,5 +307,21 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                 message: String::from("send email failed"),
             }),
         }
+    }
+
+    async fn recover_user_password(
+        &self,
+        req: UserControllerRecoverPasswordReq,
+    ) -> Result<UserControllerRecoverPasswordReturn, AppError> {
+        let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
+        let password_sanitized = self
+            .sanitize_user
+            .sanitize_password_input(req.new_password)?;
+
+        self.model
+            .recover_user_password(email_sanitized, password_sanitized, req.code_key)
+            .await?;
+
+        Ok(String::from("Password recovered successfully"))
     }
 }
