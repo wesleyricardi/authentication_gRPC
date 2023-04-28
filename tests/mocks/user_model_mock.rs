@@ -44,7 +44,7 @@ pub struct MockUserModelUpdatePassword {
         fn(user_id: String, new_password: String, old_password: String) -> Result<String, AppError>,
 }
 
-pub struct MockUserModelCreateUserActivationCode {
+pub struct MockUserModelCreateCodeByUserID {
     pub calls: usize,
     pub param_user_id_with: String,
     pub fn_returning: fn(user_id: String) -> Result<String, AppError>,
@@ -78,7 +78,7 @@ pub struct MockUserModelParams {
     pub login_verification: Option<MockUserModelLoginVerification>,
     pub recover_user_data: Option<MockUserModelRecoverUserData>,
     pub update: Option<MockUserModelUpdate>,
-    pub create_user_activation_code: Option<MockUserModelCreateUserActivationCode>,
+    pub create_code_by_user_id: Option<MockUserModelCreateCodeByUserID>,
     pub create_code_by_email: Option<MockUserModelCreateCodeByEmail>,
     pub activate_user: Option<MockUserModelActivateUser>,
     pub update_password: Option<MockUserModelUpdatePassword>,
@@ -151,14 +151,14 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
     }
 
-    if let Some(MockUserModelCreateUserActivationCode {
+    if let Some(MockUserModelCreateCodeByUserID {
         calls,
         fn_returning,
         param_user_id_with,
-    }) = expectations.create_user_activation_code
+    }) = expectations.create_code_by_user_id
     {
         mock_user_model
-            .expect_create_user_activation_code()
+            .expect_create_code_by_user_id()
             .with(predicate::eq(param_user_id_with))
             .times(calls)
             .returning(move |user_id| Box::pin(async move { fn_returning(user_id) }));

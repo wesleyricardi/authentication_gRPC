@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[tokio::test]
-async fn test_user_model_create_user_code() {
+async fn test_user_model_create_code_by_user_id() {
     const FAKE_ID: &str = "userFakeId";
     const FAKE_CODE: &str = "0000001";
 
@@ -38,7 +38,7 @@ async fn test_user_model_create_user_code() {
         .build();
 
     let code = model_user
-        .create_user_activation_code(FAKE_ID.to_string())
+        .create_code_by_user_id(FAKE_ID.to_string())
         .await
         .unwrap();
 

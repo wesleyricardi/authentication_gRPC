@@ -243,7 +243,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             ));
         }
 
-        let code_key = self.model.create_user_activation_code(user_id).await?;
+        let code_key = self.model.create_code_by_user_id(user_id).await?;
 
         Ok(code_key)
     }

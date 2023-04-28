@@ -5,7 +5,7 @@ use authentication_gRPC::{
 
 use crate::{
     mocks::user_model_mock::{
-        get_mock_user_model, MockUserModelCreateUserActivationCode, MockUserModelParams,
+        get_mock_user_model, MockUserModelCreateCodeByUserID, MockUserModelParams,
     },
     utils::builders::UserControllerBuilderForTest,
 };
@@ -17,7 +17,7 @@ const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
 #[tokio::test]
 async fn test_create_activation_code() {
     let mock_user_model = get_mock_user_model(MockUserModelParams {
-        create_user_activation_code: Some(MockUserModelCreateUserActivationCode {
+        create_code_by_user_id: Some(MockUserModelCreateCodeByUserID {
             calls: 1,
             param_user_id_with: FAKE_USER_ID.to_string(),
             fn_returning: |_| Ok(FAKE_USER_CODE.to_string()),
