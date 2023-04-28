@@ -36,27 +36,13 @@ pub struct UpdateParams {
     pub email: Option<String>,
 }
 
-pub type UserControllerUpdateReturn = String;
-
 pub struct UserControllerUpdatePasswordReq {
     pub new_password: String,
     pub old_password: String,
 }
-
-pub type UserControllerUpdatePasswordReturn = String;
-
-pub type UserControllerSendCodeReturn = String;
-
-pub type UserControllerActivateReturn = String;
-
-pub type UserControllerSendRecoverCodeReq = String;
-
-pub type UserControllerSendRecoverCodeReturn = String;
 
 pub struct UserControllerRecoverPasswordReq {
     pub new_password: String,
     pub email: String,
     pub code_key: String,
 }
-
-pub type UserControllerRecoverPasswordReturn = String;

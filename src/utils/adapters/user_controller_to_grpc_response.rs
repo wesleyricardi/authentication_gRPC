@@ -2,11 +2,7 @@ use tonic::Response;
 
 use crate::{
     dtos::controllers::dtos_controller_user::{
-        UserControllerActivateReturn, UserControllerAuthenticationReturn,
-        UserControllerLoginReturn, UserControllerRecoverPasswordReturn,
-        UserControllerRegisterReturn, UserControllerSendCodeReturn,
-        UserControllerSendRecoverCodeReturn, UserControllerUpdatePasswordReturn,
-        UserControllerUpdateReturn,
+        UserControllerAuthenticationReturn, UserControllerLoginReturn, UserControllerRegisterReturn,
     },
     rpc::authentication::authentication::{
         ResActivateUser, ResAuthentication, ResLogin, ResRecoverUserPassword, ResRegister,
@@ -57,38 +53,28 @@ pub fn map_user_auth_to_grpc_response(
     })
 }
 
-pub fn map_user_update_to_grpc_response(
-    response: UserControllerUpdateReturn,
-) -> Response<ResUpdateUser> {
+pub fn map_user_update_to_grpc_response(response: String) -> Response<ResUpdateUser> {
     Response::new(ResUpdateUser { message: response })
 }
 
-pub fn map_user_update_password_to_grpc_response(
-    response: UserControllerUpdatePasswordReturn,
-) -> Response<ResUpdatePassword> {
+pub fn map_user_update_password_to_grpc_response(response: String) -> Response<ResUpdatePassword> {
     Response::new(ResUpdatePassword { message: response })
 }
 
 pub fn map_user_send_activation_code_to_grpc_response(
-    response: UserControllerSendCodeReturn,
+    response: String,
 ) -> Response<ResSendActivationCode> {
     Response::new(ResSendActivationCode { message: response })
 }
 
-pub fn map_user_activate_to_grpc_response(
-    response: UserControllerActivateReturn,
-) -> Response<ResActivateUser> {
+pub fn map_user_activate_to_grpc_response(response: String) -> Response<ResActivateUser> {
     Response::new(ResActivateUser { message: response })
 }
 
-pub fn map_send_recovery_code_to_grpc_response(
-    response: UserControllerSendRecoverCodeReturn,
-) -> Response<ResSendRecoveryCode> {
+pub fn map_send_recovery_code_to_grpc_response(response: String) -> Response<ResSendRecoveryCode> {
     Response::new(ResSendRecoveryCode { message: response })
 }
 
-pub fn map_recover_password_to_grpc_response(
-    response: UserControllerRecoverPasswordReturn,
-) -> Response<ResRecoverUserPassword> {
+pub fn map_recover_password_to_grpc_response(response: String) -> Response<ResRecoverUserPassword> {
     Response::new(ResRecoverUserPassword { message: response })
 }

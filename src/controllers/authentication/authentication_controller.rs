@@ -1,8 +1,6 @@
 use crate::dtos::controllers::dtos_controller_user::{
-    UserControllerActivateReturn, UserControllerAuthenticationReturn, UserControllerLoginReturn,
-    UserControllerRegisterReturn, UserControllerSendCodeReturn, UserControllerSendRecoverCodeReq,
-    UserControllerSendRecoverCodeReturn, UserControllerUpdatePasswordReq,
-    UserControllerUpdatePasswordReturn, UserControllerUpdateReturn,
+    UserControllerAuthenticationReturn, UserControllerLoginReturn, UserControllerRegisterReturn,
+    UserControllerUpdatePasswordReq,
 };
 use async_trait::async_trait;
 
@@ -31,33 +29,19 @@ pub trait AuthenticationController: Sync + Send {
         &self,
         token: String,
     ) -> Result<UserControllerAuthenticationReturn, AppError>;
-    async fn update(
-        &self,
-        token: String,
-        req: UpdateParams,
-    ) -> Result<UserControllerUpdateReturn, AppError>;
+    async fn update(&self, token: String, req: UpdateParams) -> Result<String, AppError>;
     async fn update_password(
         &self,
         token: String,
         req: UserControllerUpdatePasswordReq,
-    ) -> Result<UserControllerUpdatePasswordReturn, AppError>;
-    async fn send_activation_code(
-        &self,
-        token: String,
-    ) -> Result<UserControllerSendCodeReturn, AppError>;
-    async fn activate_user(
-        &self,
-        token: String,
-        code_key: String,
-    ) -> Result<UserControllerActivateReturn, AppError>;
-    async fn send_recover_code(
-        &self,
-        email: UserControllerSendRecoverCodeReq,
-    ) -> Result<UserControllerSendRecoverCodeReturn, AppError>;
+    ) -> Result<String, AppError>;
+    async fn send_activation_code(&self, token: String) -> Result<String, AppError>;
+    async fn activate_user(&self, token: String, code_key: String) -> Result<String, AppError>;
+    async fn send_recover_code(&self, email: String) -> Result<String, AppError>;
     async fn recover_user_password(
         &self,
         req: UserControllerRecoverPasswordReq,
-    ) -> Result<UserControllerRecoverPasswordReturn, AppError>;
+    ) -> Result<String, AppError>;
 }
 
 pub struct UserController<M, S> {
@@ -146,11 +130,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         })
     }
 
-    async fn update(
-        &self,
-        token: String,
-        req: UpdateParams,
-    ) -> Result<UserControllerUpdateReturn, AppError> {
+    async fn update(&self, token: String, req: UpdateParams) -> Result<String, AppError> {
         let username_sanitized = match req.username {
             Some(username) => match self.sanitize_user.sanitize_username_input(username) {
                 Ok(username) => Some(username),
@@ -200,7 +180,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         &self,
         token: String,
         req: UserControllerUpdatePasswordReq,
-    ) -> Result<UserControllerUpdatePasswordReturn, AppError> {
+    ) -> Result<String, AppError> {
         let password_sanitized = self
             .sanitize_user
             .sanitize_password_input(req.new_password)?;
@@ -231,10 +211,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         Ok(message)
     }
 
-    async fn send_activation_code(
-        &self,
-        token: String,
-    ) -> Result<UserControllerSendCodeReturn, AppError> {
+    async fn send_activation_code(&self, token: String) -> Result<String, AppError> {
         let JWTAuthenticateToken {
             sub: user_id,
             activated,
@@ -264,11 +241,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         }
     }
 
-    async fn activate_user(
-        &self,
-        token: String,
-        code_key: String,
-    ) -> Result<UserControllerActivateReturn, AppError> {
+    async fn activate_user(&self, token: String, code_key: String) -> Result<String, AppError> {
         let JWTAuthenticateToken {
             sub: user_id,
             activated,
@@ -287,10 +260,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         Ok(String::from("User activated successfully"))
     }
 
-    async fn send_recover_code(
-        &self,
-        email: UserControllerSendRecoverCodeReq,
-    ) -> Result<UserControllerSendRecoverCodeReturn, AppError> {
+    async fn send_recover_code(&self, email: String) -> Result<String, AppError> {
         let email_sanitized = self.sanitize_user.sanitize_email_input(email)?;
 
         let code = self
@@ -312,7 +282,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
     async fn recover_user_password(
         &self,
         req: UserControllerRecoverPasswordReq,
-    ) -> Result<UserControllerRecoverPasswordReturn, AppError> {
+    ) -> Result<String, AppError> {
         let email_sanitized = self.sanitize_user.sanitize_email_input(req.email)?;
         let password_sanitized = self
             .sanitize_user
