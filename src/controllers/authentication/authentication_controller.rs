@@ -30,6 +30,7 @@ pub trait AuthenticationController: Sync + Send {
         token: String,
     ) -> Result<UserControllerAuthenticationReturn, AppError>;
     async fn update(&self, token: String, req: UpdateParams) -> Result<String, AppError>;
+    async fn update_email(&self, token: String, email: String) -> Result<String, AppError>;
     async fn update_password(
         &self,
         token: String,
@@ -169,6 +170,25 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
                 UserModelUpdateParams {
                     username: username_sanitized,
                     email: email_sanitized,
+                },
+            )
+            .await?;
+
+        Ok(message)
+    }
+
+    async fn update_email(&self, token: String, email: String) -> Result<String, AppError> {
+        let email_sanitized = self.sanitize_user.sanitize_email_input(email)?;
+
+        let JWTAuthenticateToken { sub: user_id, .. } = (self.jwt_decode)(&token)?;
+
+        let message = self
+            .model
+            .update(
+                user_id,
+                UserModelUpdateParams {
+                    username: None,
+                    email: Some(email_sanitized),
                 },
             )
             .await?;
