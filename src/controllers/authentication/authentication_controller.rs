@@ -38,7 +38,7 @@ pub trait AuthenticationController: Sync + Send {
     ) -> Result<String, AppError>;
     async fn create_activation_code(&self, token: String) -> Result<String, AppError>;
     async fn activate_user(&self, token: String, code_key: String) -> Result<String, AppError>;
-    async fn send_recover_code(&self, email: String) -> Result<String, AppError>;
+    async fn create_recovery_code(&self, email: String) -> Result<String, AppError>;
     async fn recover_user_password(
         &self,
         req: UserControllerRecoverPasswordReq,
@@ -269,23 +269,12 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         Ok(String::from("User activated successfully"))
     }
 
-    async fn send_recover_code(&self, email: String) -> Result<String, AppError> {
+    async fn create_recovery_code(&self, email: String) -> Result<String, AppError> {
         let email_sanitized = self.sanitize_user.sanitize_email_input(email)?;
 
-        let code = self
-            .model
-            .create_user_recover_code(email_sanitized.clone())
-            .await?;
+        let code = self.model.create_user_recover_code(email_sanitized).await?;
 
-        let body = format!("<div>The recover code is {}</div>", code);
-
-        match (self.send_email)(email_sanitized, String::from("recover code"), body) {
-            Ok(_) => Ok(String::from("Code send successufully")),
-            Err(_) => Err(AppError {
-                code: Code::Internal,
-                message: String::from("send email failed"),
-            }),
-        }
+        Ok(code)
     }
 
     async fn recover_user_password(

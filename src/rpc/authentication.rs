@@ -4,10 +4,10 @@ pub mod authentication {
 
 use authentication::authentication_server::Authentication;
 use authentication::{
-    ReqActivateUser, ReqAuthentication, ReqCreateActivationCode, ReqLogin, ReqRecoverUserPassword,
-    ReqRegister, ReqSendRecoveryCode, ReqUpdatePassword, ReqUpdateUser, ResActivateUser,
-    ResAuthentication, ResCreateActivationCode, ResLogin, ResRecoverUserPassword, ResRegister,
-    ResSendRecoveryCode, ResUpdatePassword, ResUpdateUser,
+    ReqActivateUser, ReqAuthentication, ReqCreateActivationCode, ReqCreateRecoveryCode, ReqLogin,
+    ReqRecoverUserPassword, ReqRegister, ReqUpdatePassword, ReqUpdateUser, ResActivateUser,
+    ResAuthentication, ResCreateActivationCode, ResCreateRecoveryCode, ResLogin,
+    ResRecoverUserPassword, ResRegister, ResUpdatePassword, ResUpdateUser,
 };
 use tonic::{Request, Response, Status};
 
@@ -23,7 +23,7 @@ use crate::security::jwt::{jwt_decode, jwt_encode};
 use crate::services::mail::send::send_email;
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::adapters::user_controller_to_grpc_response::{
-    map_recover_password_to_grpc_response, map_send_recovery_code_to_grpc_response,
+    map_create_recovery_code_to_grpc_response, map_recovery_password_to_grpc_response,
     map_user_activate_to_grpc_response, map_user_auth_to_grpc_response,
     map_user_create_activation_code_to_grpc_response, map_user_login_to_grpc_response,
     map_user_register_to_grpc_response, map_user_update_password_to_grpc_response,
@@ -225,17 +225,17 @@ impl Authentication for AuthenticationService {
         }
     }
 
-    async fn send_recovery_code(
+    async fn create_recovery_code(
         &self,
-        request: Request<ReqSendRecoveryCode>,
-    ) -> Result<Response<ResSendRecoveryCode>, Status> {
+        request: Request<ReqCreateRecoveryCode>,
+    ) -> Result<Response<ResCreateRecoveryCode>, Status> {
         let app_state = &self.app_state;
-        let ReqSendRecoveryCode { email } = request.into_inner();
+        let ReqCreateRecoveryCode { email } = request.into_inner();
 
         let controller = create_user_controller(app_state);
 
-        match controller.send_recover_code(email.to_string()).await {
-            Ok(response) => Ok(map_send_recovery_code_to_grpc_response(response)),
+        match controller.create_recovery_code(email.to_string()).await {
+            Ok(response) => Ok(map_create_recovery_code_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }
@@ -261,7 +261,7 @@ impl Authentication for AuthenticationService {
             })
             .await
         {
-            Ok(response) => Ok(map_recover_password_to_grpc_response(response)),
+            Ok(response) => Ok(map_recovery_password_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }

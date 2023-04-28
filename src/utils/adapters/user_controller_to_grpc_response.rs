@@ -5,8 +5,8 @@ use crate::{
         UserControllerAuthenticationReturn, UserControllerLoginReturn, UserControllerRegisterReturn,
     },
     rpc::authentication::authentication::{
-        ResActivateUser, ResAuthentication, ResCreateActivationCode, ResLogin,
-        ResRecoverUserPassword, ResRegister, ResSendRecoveryCode, ResUpdatePassword, ResUpdateUser,
+        ResActivateUser, ResAuthentication, ResCreateActivationCode, ResCreateRecoveryCode,
+        ResLogin, ResRecoverUserPassword, ResRegister, ResUpdatePassword, ResUpdateUser,
         User as UserResponse,
     },
 };
@@ -71,10 +71,14 @@ pub fn map_user_activate_to_grpc_response(response: String) -> Response<ResActiv
     Response::new(ResActivateUser { message: response })
 }
 
-pub fn map_send_recovery_code_to_grpc_response(response: String) -> Response<ResSendRecoveryCode> {
-    Response::new(ResSendRecoveryCode { message: response })
+pub fn map_create_recovery_code_to_grpc_response(
+    response: String,
+) -> Response<ResCreateRecoveryCode> {
+    Response::new(ResCreateRecoveryCode { code: response })
 }
 
-pub fn map_recover_password_to_grpc_response(response: String) -> Response<ResRecoverUserPassword> {
+pub fn map_recovery_password_to_grpc_response(
+    response: String,
+) -> Response<ResRecoverUserPassword> {
     Response::new(ResRecoverUserPassword { message: response })
 }
