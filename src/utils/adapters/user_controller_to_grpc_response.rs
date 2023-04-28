@@ -7,7 +7,7 @@ use crate::{
     rpc::authentication::authentication::{
         ResActivateUser, ResCreateActivationCode, ResCreateRecoveryCode, ResLogin,
         ResRecoverUserData, ResRecoverUserPassword, ResRegister, ResUpdateEmail, ResUpdatePassword,
-        ResUpdateUser, User as UserResponse,
+        ResUpdateUser, User as UserResponse, ResDeleteUser,
     },
 };
 
@@ -85,4 +85,10 @@ pub fn map_recovery_password_to_grpc_response(
     response: String,
 ) -> Response<ResRecoverUserPassword> {
     Response::new(ResRecoverUserPassword { message: response })
+}
+
+pub fn map_delete_user_to_grpc_response(
+    response: String
+) -> Response<ResDeleteUser> {
+        Response::new(ResDeleteUser { message: response })
 }

@@ -27,12 +27,14 @@ use crate::utils::adapters::user_controller_to_grpc_response::{
     map_user_activate_to_grpc_response, map_user_auth_to_grpc_response,
     map_user_create_activation_code_to_grpc_response, map_user_login_to_grpc_response,
     map_user_register_to_grpc_response, map_user_update_email_to_grpc_response,
-    map_user_update_password_to_grpc_response, map_user_update_to_grpc_response,
+    map_user_update_password_to_grpc_response, map_user_update_to_grpc_response, map_delete_user_to_grpc_response,
 };
 use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
 use crate::utils::hash::password::{PASSWORD_HASHER, PASSWORD_VERIFY};
 use crate::AppState;
+
+use self::authentication::{ReqDeleteUser, ResDeleteUser};
 
 pub struct AuthenticationService {
     app_state: AppState,
@@ -283,6 +285,22 @@ impl Authentication for AuthenticationService {
             .await
         {
             Ok(response) => Ok(map_recovery_password_to_grpc_response(response)),
+            Err(error) => Err(app_error_to_grpc_error(error)),
+        }
+    }
+
+    async fn delete_user(&self, request: Request<ReqDeleteUser>) -> Result<Response<ResDeleteUser>, Status> {
+        let app_state = &self.app_state;
+        let metadata = request.metadata().to_owned();
+        let token = match metadata.get("authorization") {
+            Some(t) => t.to_str().unwrap(),
+            None => return Err(Status::unauthenticated("Token JWT not found")),
+        };
+
+        let controller = create_user_controller(app_state); 
+
+        match controller.delete_user(token.to_string()).await {
+            Ok(response) => Ok(map_delete_user_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }

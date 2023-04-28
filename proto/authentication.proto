@@ -12,6 +12,7 @@ service Authentication {
     rpc ActivateUser(ReqActivateUser) returns (ResActivateUser);
     rpc CreateRecoveryCode(ReqCreateRecoveryCode) returns (ResCreateRecoveryCode);
     rpc RecoverUserPassword(ReqRecoverUserPassword) returns (ResRecoverUserPassword);
+    rpc DeleteUser(ReqDeleteUser) returns (ResDeleteUser);
 }
 
 message User {
@@ -87,5 +88,10 @@ message ReqRecoverUserPassword {
     string code_key = 3;
 }
 message ResRecoverUserPassword {
+    string message = 1;
+}
+message ReqDeleteUser {
+}
+message ResDeleteUser {
     string message = 1;
 }
