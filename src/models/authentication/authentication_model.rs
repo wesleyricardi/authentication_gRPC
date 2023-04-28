@@ -35,7 +35,7 @@ pub trait AuthenticationModel: Sync + Send {
         old_password: String,
     ) -> Result<String, AppError>;
     async fn create_user_activation_code(&self, user_id: String) -> Result<String, AppError>;
-    async fn create_user_recover_code(&self, email: String) -> Result<String, AppError>;
+    async fn create_code_by_email(&self, email: String) -> Result<String, AppError>;
     async fn activate_user(&self, user_id: String, code_key: String) -> Result<String, AppError>;
     async fn recover_user_password(
         &self,
@@ -150,7 +150,7 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
             .store_update(id, user_to_be_updated)
             .await
     }
-    async fn create_user_recover_code(&self, email: String) -> Result<String, AppError> {
+    async fn create_code_by_email(&self, email: String) -> Result<String, AppError> {
         let expire_minutes = 30;
         let expire_at = Utc::now().naive_utc() + Duration::minutes(expire_minutes.into());
 

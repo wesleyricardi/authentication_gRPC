@@ -6,7 +6,7 @@ use crate::{
             get_mock_user_input_sanitizer, MockUserInputSanitizeEmail, MockUserInputSanitizeParams,
         },
         user_model_mock::{
-            get_mock_user_model, MockUserModelCreateRecoverCode, MockUserModelParams,
+            get_mock_user_model, MockUserModelCreateCodeByEmail, MockUserModelParams,
         },
     },
     utils::builders::UserControllerBuilderForTest,
@@ -28,7 +28,7 @@ async fn test_create_recovery_code() {
     });
 
     let mock_user_model = get_mock_user_model(MockUserModelParams {
-        create_recover_code: Some(MockUserModelCreateRecoverCode {
+        create_code_by_email: Some(MockUserModelCreateCodeByEmail {
             calls: 1,
             param_user_email_with: SANITIZED_EMAIL.to_string(),
             fn_returning: |_| Ok(FAKE_USER_CODE.to_string()),

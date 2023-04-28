@@ -50,7 +50,7 @@ pub struct MockUserModelCreateUserActivationCode {
     pub fn_returning: fn(user_id: String) -> Result<String, AppError>,
 }
 
-pub struct MockUserModelCreateRecoverCode {
+pub struct MockUserModelCreateCodeByEmail {
     pub calls: usize,
     pub param_user_email_with: String,
     pub fn_returning: fn(email: String) -> Result<String, AppError>,
@@ -79,7 +79,7 @@ pub struct MockUserModelParams {
     pub recover_user_data: Option<MockUserModelRecoverUserData>,
     pub update: Option<MockUserModelUpdate>,
     pub create_user_activation_code: Option<MockUserModelCreateUserActivationCode>,
-    pub create_recover_code: Option<MockUserModelCreateRecoverCode>,
+    pub create_code_by_email: Option<MockUserModelCreateCodeByEmail>,
     pub activate_user: Option<MockUserModelActivateUser>,
     pub update_password: Option<MockUserModelUpdatePassword>,
     pub recover_password: Option<MockUserModelRecoverPassword>,
@@ -164,14 +164,14 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .returning(move |user_id| Box::pin(async move { fn_returning(user_id) }));
     }
 
-    if let Some(MockUserModelCreateRecoverCode {
+    if let Some(MockUserModelCreateCodeByEmail {
         calls,
         fn_returning,
         param_user_email_with,
-    }) = expectations.create_recover_code
+    }) = expectations.create_code_by_email
     {
         mock_user_model
-            .expect_create_user_recover_code()
+            .expect_create_code_by_email()
             .with(predicate::eq(param_user_email_with))
             .times(calls)
             .returning(move |user_email| Box::pin(async move { fn_returning(user_email) }));

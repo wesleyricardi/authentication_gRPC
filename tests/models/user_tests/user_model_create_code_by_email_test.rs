@@ -21,7 +21,7 @@ use crate::{
 };
 
 #[tokio::test]
-async fn test_user_model_create_recover_code() {
+async fn test_user_model_code_by_email() {
     const FAKE_NEW_PASSWORD: &str = "newPassword";
     const FAKE_ID: &str = "userFakeId";
     const FAKE_USERNAME: &str = "userFakeUsername";
@@ -69,7 +69,7 @@ async fn test_user_model_create_recover_code() {
         .build();
 
     let code = model_user
-        .create_user_recover_code(FAKE_EMAIL.to_string())
+        .create_code_by_email(FAKE_EMAIL.to_string())
         .await
         .unwrap();
 

@@ -270,7 +270,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
     async fn create_recovery_code(&self, email: String) -> Result<String, AppError> {
         let email_sanitized = self.sanitize_user.sanitize_email_input(email)?;
 
-        let code = self.model.create_user_recover_code(email_sanitized).await?;
+        let code = self.model.create_code_by_email(email_sanitized).await?;
 
         Ok(code)
     }
