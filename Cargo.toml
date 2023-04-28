@@ -22,7 +22,6 @@ dotenv = "0.15.0"
 async-trait = "0.1.68"
 chrono = "0.4.24"
 rand = "0.8.5"
-lettre = "0.10.4"
 
 [build-dependencies]
 tonic-build = "0.7"

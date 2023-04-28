@@ -1,6 +1,5 @@
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::UserController,
-    error::AppError,
     models::authentication::authentication_model::{MockAuthenticationModel, UserModel},
     repositories::{
         user::user_repository::MockUserRepository,
@@ -87,7 +86,6 @@ pub struct UserControllerBuilderForTest {
     jwt_encode: JwtEncode,
     model: MockAuthenticationModel,
     sanitize_user: MockSanitizeAuthentication,
-    send_email: fn(to: String, subject: String, body: String) -> Result<String, AppError>,
 }
 
 impl UserControllerBuilderForTest {
@@ -100,9 +98,6 @@ impl UserControllerBuilderForTest {
             },
             jwt_encode: |_, _, _| {
                 panic!("jwt_encode could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
-            },
-            send_email: |_, _, _| {
-                panic!("send_email could not be called by method under test or was forgotten to be assembled in UserControllerBuilderForTest")
             },
         }
     }
@@ -133,7 +128,6 @@ impl UserControllerBuilderForTest {
             sanitize_user: self.sanitize_user,
             jwt_decode: self.jwt_decode,
             jwt_encode: self.jwt_encode,
-            send_email: self.send_email,
         }
     }
 }

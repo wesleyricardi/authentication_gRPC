@@ -47,8 +47,6 @@ pub trait AuthenticationController: Sync + Send {
 pub struct UserController<M, S> {
     pub model: M,
     pub sanitize_user: S,
-    pub send_email:
-        fn(to_adress: String, subject: String, body: String) -> Result<String, AppError>,
     pub jwt_encode: JwtEncode,
     pub jwt_decode: JwtDecode,
 }

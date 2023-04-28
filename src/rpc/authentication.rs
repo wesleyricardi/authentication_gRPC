@@ -20,7 +20,6 @@ use crate::models::authentication::authentication_model::UserModel;
 use crate::repositories::user::user_repository::UserRepositoryPostgres;
 use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryPostgres;
 use crate::security::jwt::{jwt_decode, jwt_encode};
-use crate::services::mail::send::send_email;
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::adapters::user_controller_to_grpc_response::{
     map_create_recovery_code_to_grpc_response, map_recovery_password_to_grpc_response,
@@ -66,7 +65,6 @@ pub fn create_user_controller(app_state: &AppState) -> DefaultAuthenticationCont
     UserController {
         model: create_user_model(app_state),
         sanitize_user: SanitizeUser,
-        send_email,
         jwt_encode,
         jwt_decode,
     }
