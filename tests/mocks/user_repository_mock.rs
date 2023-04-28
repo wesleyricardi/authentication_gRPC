@@ -38,6 +38,12 @@ pub struct MockUserRepositoryStoreUpdate {
     pub fn_returning: fn(id: String, UserRepositoryUpdateParams) -> Result<String, AppError>,
 }
 
+pub struct MockUserRepositoryDelete {
+    pub calls: usize,
+    pub param_id_with: String,
+    pub fn_returning: fn(id: String) -> Result<String, AppError>,
+}
+
 #[derive(Default)]
 pub struct MockUserRepositoryParams {
     pub store: Option<MockUserRepositoryStore>,
@@ -45,6 +51,7 @@ pub struct MockUserRepositoryParams {
     pub consult_by_id: Option<MockUserRepositoryConsultById>,
     pub consult_by_email: Option<MockUserRepositoryConsultByEmail>,
     pub store_update: Option<MockUserRepositoryStoreUpdate>,
+    pub delete: Option<MockUserRepositoryDelete>,
 }
 
 pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockUserRepository {
@@ -118,6 +125,14 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .with(predicate::eq(param_id_with), predicate::eq(param_user_with))
             .times(calls)
             .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
+    }
+
+    if let Some(MockUserRepositoryDelete { calls, param_id_with, fn_returning}) = expectations.delete {
+        mock_user_repository
+            .expect_delete()
+            .with(predicate::eq(param_id_with))
+            .times(calls)
+            .returning(move |id| Box::pin(async move { fn_returning(id) }));
     }
 
     mock_user_repository
