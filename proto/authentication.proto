@@ -6,6 +6,7 @@ service Authentication {
     rpc Login (ReqLogin) returns (ResLogin);
     rpc Authentication (ReqAuthentication) returns (ResAuthentication);
     rpc Update (ReqUpdateUser) returns (ResUpdateUser);
+    rpc UpdateEmail (ReqUpdateEmail) returns (ResUpdateEmail);
     rpc UpdatePassword (ReqUpdatePassword) returns (ResUpdatePassword);
     rpc CreateActivationCode(ReqCreateActivationCode) returns (ResCreateActivationCode);
     rpc ActivateUser(ReqActivateUser) returns (ResActivateUser);
@@ -44,6 +45,15 @@ message ReqUpdateUser {
 message ResUpdateUser {
     string message = 1;
 }
+
+message ReqUpdateEmail {
+    string email = 1;
+}
+
+message ResUpdateEmail {
+    string message = 1;
+}
+
 message ReqAuthentication {}
 message ResAuthentication {
     User user = 1;

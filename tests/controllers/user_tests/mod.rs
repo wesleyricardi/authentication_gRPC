@@ -7,3 +7,5 @@ mod user_controller_recover_password_test;
 mod user_controller_register_test;
 mod user_controller_update_password_test;
 mod user_controller_update_test;
+
+mod user_controller_update_email_test;

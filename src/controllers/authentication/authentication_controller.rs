@@ -14,9 +14,7 @@ pub use crate::{
 };
 use crate::{
     error::{AppError, Code},
-    models::authentication::authentication_model::{
-        UserModelRecoverUserDataReturn, UserModelUpdateParams,
-    },
+    models::authentication::authentication_model::UserModelUpdateParams,
     security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
 
