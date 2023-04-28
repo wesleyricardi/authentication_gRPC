@@ -36,7 +36,7 @@ pub trait AuthenticationController: Sync + Send {
         token: String,
         req: UserControllerUpdatePasswordReq,
     ) -> Result<String, AppError>;
-    async fn send_activation_code(&self, token: String) -> Result<String, AppError>;
+    async fn create_activation_code(&self, token: String) -> Result<String, AppError>;
     async fn activate_user(&self, token: String, code_key: String) -> Result<String, AppError>;
     async fn send_recover_code(&self, email: String) -> Result<String, AppError>;
     async fn recover_user_password(
@@ -231,7 +231,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         Ok(message)
     }
 
-    async fn send_activation_code(&self, token: String) -> Result<String, AppError> {
+    async fn create_activation_code(&self, token: String) -> Result<String, AppError> {
         let JWTAuthenticateToken {
             sub: user_id,
             activated,
@@ -245,20 +245,9 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             ));
         }
 
-        let UserModelRecoverUserDataReturn { email, .. } =
-            self.model.recover_user_data(user_id.clone()).await?;
+        let code_key = self.model.create_user_activation_code(user_id).await?;
 
-        let code = self.model.create_user_activation_code(user_id).await?;
-
-        let body = format!("<div>The activation code is {}</div>", code);
-
-        match (self.send_email)(email, String::from("activation code"), body) {
-            Ok(_) => Ok(String::from("Code send successufully")),
-            Err(_) => Err(AppError {
-                code: Code::Internal,
-                message: String::from("send email failed"),
-            }),
-        }
+        Ok(code_key)
     }
 
     async fn activate_user(&self, token: String, code_key: String) -> Result<String, AppError> {

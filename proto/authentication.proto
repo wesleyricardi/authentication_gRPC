@@ -7,7 +7,7 @@ service Authentication {
     rpc Authentication (ReqAuthentication) returns (ResAuthentication);
     rpc Update (ReqUpdateUser) returns (ResUpdateUser);
     rpc UpdatePassword (ReqUpdatePassword) returns (ResUpdatePassword);
-    rpc SendActivationCode(ReqSendActivationCode) returns (ResSendActivationCode);
+    rpc CreateActivationCode(ReqCreateActivationCode) returns (ResCreateActivationCode);
     rpc ActivateUser(ReqActivateUser) returns (ResActivateUser);
     rpc SendRecoveryCode(ReqSendRecoveryCode) returns (ResSendRecoveryCode);
     rpc RecoverUserPassword(ReqRecoverUserPassword) returns (ResRecoverUserPassword);
@@ -55,9 +55,9 @@ message ReqUpdatePassword {
 message ResUpdatePassword {
     string message = 1;
 }
-message ReqSendActivationCode {}
-message ResSendActivationCode {
-    string message = 1;
+message ReqCreateActivationCode {}
+message ResCreateActivationCode {
+    string code = 1;
 }
 message ReqActivateUser {
     string code_key = 1;

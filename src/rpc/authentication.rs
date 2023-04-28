@@ -4,9 +4,9 @@ pub mod authentication {
 
 use authentication::authentication_server::Authentication;
 use authentication::{
-    ReqActivateUser, ReqAuthentication, ReqLogin, ReqRecoverUserPassword, ReqRegister,
-    ReqSendActivationCode, ReqSendRecoveryCode, ReqUpdatePassword, ReqUpdateUser, ResActivateUser,
-    ResAuthentication, ResLogin, ResRecoverUserPassword, ResRegister, ResSendActivationCode,
+    ReqActivateUser, ReqAuthentication, ReqCreateActivationCode, ReqLogin, ReqRecoverUserPassword,
+    ReqRegister, ReqSendRecoveryCode, ReqUpdatePassword, ReqUpdateUser, ResActivateUser,
+    ResAuthentication, ResCreateActivationCode, ResLogin, ResRecoverUserPassword, ResRegister,
     ResSendRecoveryCode, ResUpdatePassword, ResUpdateUser,
 };
 use tonic::{Request, Response, Status};
@@ -25,8 +25,8 @@ use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::adapters::user_controller_to_grpc_response::{
     map_recover_password_to_grpc_response, map_send_recovery_code_to_grpc_response,
     map_user_activate_to_grpc_response, map_user_auth_to_grpc_response,
-    map_user_login_to_grpc_response, map_user_register_to_grpc_response,
-    map_user_send_activation_code_to_grpc_response, map_user_update_password_to_grpc_response,
+    map_user_create_activation_code_to_grpc_response, map_user_login_to_grpc_response,
+    map_user_register_to_grpc_response, map_user_update_password_to_grpc_response,
     map_user_update_to_grpc_response,
 };
 use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
@@ -186,10 +186,10 @@ impl Authentication for AuthenticationService {
         }
     }
 
-    async fn send_activation_code(
+    async fn create_activation_code(
         &self,
-        request: Request<ReqSendActivationCode>,
-    ) -> Result<Response<ResSendActivationCode>, Status> {
+        request: Request<ReqCreateActivationCode>,
+    ) -> Result<Response<ResCreateActivationCode>, Status> {
         let app_state = &self.app_state;
         let metadata = request.metadata().to_owned();
         let token = match metadata.get("authorization") {
@@ -199,8 +199,8 @@ impl Authentication for AuthenticationService {
 
         let controller = create_user_controller(app_state);
 
-        match controller.send_activation_code(token.to_string()).await {
-            Ok(response) => Ok(map_user_send_activation_code_to_grpc_response(response)),
+        match controller.create_activation_code(token.to_string()).await {
+            Ok(response) => Ok(map_user_create_activation_code_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }

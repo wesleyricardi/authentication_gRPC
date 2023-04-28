@@ -1,38 +1,22 @@
 use authentication_gRPC::{
     controllers::authentication::authentication_controller::AuthenticationController,
-    models::authentication::authentication_model::UserModelRecoverUserDataReturn,
     security::jwt::JWTAuthenticateToken,
 };
 
 use crate::{
     mocks::user_model_mock::{
         get_mock_user_model, MockUserModelCreateUserActivationCode, MockUserModelParams,
-        MockUserModelRecoverUserData,
     },
     utils::builders::UserControllerBuilderForTest,
 };
 
 const FAKE_USER_ID: &str = "user_id";
-const FAKE_EMAIL: &str = "test@controller.com";
-const FAKE_USERNAME: &str = "username";
 const FAKE_USER_CODE: &str = "000001";
 const FAKE_JWT_TOKEN: &str = "fake_jwt_token";
 
 #[tokio::test]
-async fn test_send_activation_code() {
+async fn test_create_activation_code() {
     let mock_user_model = get_mock_user_model(MockUserModelParams {
-        recover_user_data: Some(MockUserModelRecoverUserData {
-            calls: 1,
-            param_id_with: FAKE_USER_ID.to_string(),
-            fn_returning: |_| {
-                Ok(UserModelRecoverUserDataReturn {
-                    username: FAKE_USERNAME.to_string(),
-                    email: FAKE_EMAIL.to_string(),
-                    activated: false,
-                    blocked: false,
-                })
-            },
-        }),
         create_user_activation_code: Some(MockUserModelCreateUserActivationCode {
             calls: 1,
             param_user_id_with: FAKE_USER_ID.to_string(),
@@ -43,16 +27,6 @@ async fn test_send_activation_code() {
 
     let controller_user = UserControllerBuilderForTest::new()
         .mount_model(mock_user_model)
-        .mount_send_email(|to, subject, body| {
-            assert_eq!(to, FAKE_EMAIL);
-            assert_eq!(subject, "activation code");
-            assert_eq!(
-                body,
-                format!("<div>The activation code is {}</div>", FAKE_USER_CODE)
-            );
-
-            Ok(String::from("Send email successfully"))
-        })
         .mount_jwt_decode(|_| {
             Ok(JWTAuthenticateToken {
                 sub: FAKE_USER_ID.to_string(),
@@ -64,15 +38,15 @@ async fn test_send_activation_code() {
         .build();
 
     let response = controller_user
-        .send_activation_code(FAKE_JWT_TOKEN.to_string())
+        .create_activation_code(FAKE_JWT_TOKEN.to_string())
         .await
         .unwrap();
 
-    assert_eq!(response, "Code send successufully");
+    assert_eq!(response, FAKE_USER_CODE);
 }
 
 #[tokio::test]
-async fn test_send_activation_code_for_user_already_active() {
+async fn test_create_activation_code_for_user_already_active() {
     let controller_user = UserControllerBuilderForTest::new()
         .mount_jwt_decode(|_| {
             Ok(JWTAuthenticateToken {
@@ -85,7 +59,7 @@ async fn test_send_activation_code_for_user_already_active() {
         .build();
 
     match controller_user
-        .send_activation_code(FAKE_JWT_TOKEN.to_string())
+        .create_activation_code(FAKE_JWT_TOKEN.to_string())
         .await
     {
         Ok(_) => panic!("Expected error"),
