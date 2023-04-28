@@ -9,3 +9,4 @@ mod user_controller_update_password_test;
 mod user_controller_update_test;
 
 mod user_controller_update_email_test;
+mod user_delete_user_test;

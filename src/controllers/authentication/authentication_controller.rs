@@ -41,6 +41,7 @@ pub trait AuthenticationController: Sync + Send {
         &self,
         req: UserControllerRecoverPasswordReq,
     ) -> Result<String, AppError>;
+    async fn delete_user(&self, token: String) -> Result<String, AppError>;
 }
 
 pub struct UserController<M, S> {
@@ -289,5 +290,14 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
             .await?;
 
         Ok(String::from("Password recovered successfully"))
+    }
+
+    async fn delete_user(&self, token: String) -> Result<String, AppError> {
+        let JWTAuthenticateToken {
+            sub: user_id,
+            ..
+        } = (self.jwt_decode)(&token)?;
+
+        Ok(self.model.delete_user(user_id).await?)
     }
 }
