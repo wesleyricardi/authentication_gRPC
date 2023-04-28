@@ -5,8 +5,8 @@ use crate::{
         UserControllerAuthenticationReturn, UserControllerLoginReturn, UserControllerRegisterReturn,
     },
     rpc::authentication::authentication::{
-        ResActivateUser, ResAuthentication, ResCreateActivationCode, ResCreateRecoveryCode,
-        ResLogin, ResRecoverUserPassword, ResRegister, ResUpdateEmail, ResUpdatePassword,
+        ResActivateUser, ResCreateActivationCode, ResCreateRecoveryCode, ResLogin,
+        ResRecoverUserData, ResRecoverUserPassword, ResRegister, ResUpdateEmail, ResUpdatePassword,
         ResUpdateUser, User as UserResponse,
     },
 };
@@ -41,8 +41,8 @@ pub fn map_user_login_to_grpc_response(response: UserControllerLoginReturn) -> R
 
 pub fn map_user_auth_to_grpc_response(
     response: UserControllerAuthenticationReturn,
-) -> Response<ResAuthentication> {
-    Response::new(ResAuthentication {
+) -> Response<ResRecoverUserData> {
+    Response::new(ResRecoverUserData {
         user: Some(UserResponse {
             id: response.user.id,
             username: response.user.username,

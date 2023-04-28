@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[tokio::test]
-async fn test_authentication() {
+async fn test_recover_user_data() {
     const FAKE_USER_ID: &str = "user_id";
     const FAKE_USERNAME: &str = "username";
     const FAKE_EMAIL: &str = "test@controller.com";
@@ -47,7 +47,7 @@ async fn test_authentication() {
         .build();
 
     let response = controller_user
-        .authenticate(FAKE_JWT_TOKEN.to_string())
+        .recover_user_data(FAKE_JWT_TOKEN.to_string())
         .await
         .unwrap();
 

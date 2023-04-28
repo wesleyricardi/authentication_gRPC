@@ -4,7 +4,7 @@ package authentication;
 service Authentication {
     rpc Register (ReqRegister) returns (ResRegister);
     rpc Login (ReqLogin) returns (ResLogin);
-    rpc Authentication (ReqAuthentication) returns (ResAuthentication);
+    rpc RecoverUserData (ReqRecoverUserData) returns (ResRecoverUserData);
     rpc Update (ReqUpdateUser) returns (ResUpdateUser);
     rpc UpdateEmail (ReqUpdateEmail) returns (ResUpdateEmail);
     rpc UpdatePassword (ReqUpdatePassword) returns (ResUpdatePassword);
@@ -54,8 +54,8 @@ message ResUpdateEmail {
     string message = 1;
 }
 
-message ReqAuthentication {}
-message ResAuthentication {
+message ReqRecoverUserData {}
+message ResRecoverUserData {
     User user = 1;
 }
 message ReqUpdatePassword {

@@ -4,10 +4,10 @@ pub mod authentication {
 
 use authentication::authentication_server::Authentication;
 use authentication::{
-    ReqActivateUser, ReqAuthentication, ReqCreateActivationCode, ReqCreateRecoveryCode, ReqLogin,
-    ReqRecoverUserPassword, ReqRegister, ReqUpdatePassword, ReqUpdateUser, ResActivateUser,
-    ResAuthentication, ResCreateActivationCode, ResCreateRecoveryCode, ResLogin,
-    ResRecoverUserPassword, ResRegister, ResUpdatePassword, ResUpdateUser,
+    ReqActivateUser, ReqCreateActivationCode, ReqCreateRecoveryCode, ReqLogin, ReqRecoverUserData,
+    ReqRecoverUserPassword, ReqRegister, ReqUpdateEmail, ReqUpdatePassword, ReqUpdateUser,
+    ResActivateUser, ResCreateActivationCode, ResCreateRecoveryCode, ResLogin, ResRecoverUserData,
+    ResRecoverUserPassword, ResRegister, ResUpdateEmail, ResUpdatePassword, ResUpdateUser,
 };
 use tonic::{Request, Response, Status};
 
@@ -26,8 +26,8 @@ use crate::utils::adapters::user_controller_to_grpc_response::{
     map_create_recovery_code_to_grpc_response, map_recovery_password_to_grpc_response,
     map_user_activate_to_grpc_response, map_user_auth_to_grpc_response,
     map_user_create_activation_code_to_grpc_response, map_user_login_to_grpc_response,
-    map_user_register_to_grpc_response, map_user_update_password_to_grpc_response,
-    map_user_update_to_grpc_response,
+    map_user_register_to_grpc_response, map_user_update_email_to_grpc_response,
+    map_user_update_password_to_grpc_response, map_user_update_to_grpc_response,
 };
 use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
@@ -110,10 +110,10 @@ impl Authentication for AuthenticationService {
         }
     }
 
-    async fn authentication(
+    async fn recover_user_data(
         &self,
-        request: Request<ReqAuthentication>,
-    ) -> Result<Response<ResAuthentication>, Status> {
+        request: Request<ReqRecoverUserData>,
+    ) -> Result<Response<ResRecoverUserData>, Status> {
         let app_state = &self.app_state;
         let metadata = request.metadata();
         let token = match metadata.get("authorization") {
@@ -123,7 +123,7 @@ impl Authentication for AuthenticationService {
 
         let controller = create_user_controller(app_state);
 
-        match controller.authenticate(token.to_string()).await {
+        match controller.recover_user_data(token.to_string()).await {
             Ok(response) => Ok(map_user_auth_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
@@ -149,6 +149,27 @@ impl Authentication for AuthenticationService {
             .await
         {
             Ok(response) => Ok(map_user_update_to_grpc_response(response)),
+            Err(error) => Err(app_error_to_grpc_error(error)),
+        }
+    }
+
+    async fn update_email(
+        &self,
+        request: Request<ReqUpdateEmail>,
+    ) -> Result<Response<ResUpdateEmail>, Status> {
+        let app_state = &self.app_state;
+        let metadata = request.metadata().to_owned();
+        let token = match metadata.get("authorization") {
+            Some(t) => t.to_str().unwrap(),
+            None => return Err(Status::unauthenticated("Token JWT not found")),
+        };
+
+        let ReqUpdateEmail { email } = request.into_inner();
+
+        let controller = create_user_controller(app_state);
+
+        match controller.update_email(token.to_string(), email).await {
+            Ok(response) => Ok(map_user_update_email_to_grpc_response(response)),
             Err(error) => Err(app_error_to_grpc_error(error)),
         }
     }

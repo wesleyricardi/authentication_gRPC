@@ -23,7 +23,7 @@ pub trait AuthenticationController: Sync + Send {
     async fn register(&self, req: RegisterParams)
         -> Result<UserControllerRegisterReturn, AppError>;
     async fn login(&self, req: LoginParams) -> Result<UserControllerLoginReturn, AppError>;
-    async fn authenticate(
+    async fn recover_user_data(
         &self,
         token: String,
     ) -> Result<UserControllerAuthenticationReturn, AppError>;
@@ -110,7 +110,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
         })
     }
 
-    async fn authenticate(
+    async fn recover_user_data(
         &self,
         token: String,
     ) -> Result<UserControllerAuthenticationReturn, AppError> {

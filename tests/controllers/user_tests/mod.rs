@@ -1,9 +1,9 @@
 mod user_controller_activate_user_test;
-mod user_controller_authentication_test;
 mod user_controller_create_activation_code;
 mod user_controller_create_recovery_code_test;
 mod user_controller_login_test;
 mod user_controller_recover_password_test;
+mod user_controller_recover_user_data_test;
 mod user_controller_register_test;
 mod user_controller_update_password_test;
 mod user_controller_update_test;
