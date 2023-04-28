@@ -72,6 +72,12 @@ pub struct MockUserModelRecoverPassword {
         fn(email: String, new_password: String, code_key: String) -> Result<String, AppError>,
 }
 
+pub struct MockUserDeleteUser {
+    pub calls: usize,
+    pub param_id_with: String,
+    pub fn_returning: fn(String) -> Result<String, AppError>,
+}
+
 #[derive(Default)]
 pub struct MockUserModelParams {
     pub create: Option<MockUserModelCreate>,
@@ -83,6 +89,7 @@ pub struct MockUserModelParams {
     pub activate_user: Option<MockUserModelActivateUser>,
     pub update_password: Option<MockUserModelUpdatePassword>,
     pub recover_password: Option<MockUserModelRecoverPassword>,
+    pub delete_user: Option<MockUserDeleteUser>,
 }
 
 pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticationModel {
@@ -236,6 +243,18 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
             .returning(move |email, new_password, code_key| {
                 Box::pin(async move { fn_returning(email, new_password, code_key) })
             });
+    }
+
+    if let Some(MockUserDeleteUser {
+        calls,
+        param_id_with,
+        fn_returning
+    }) = expectations.delete_user {
+        mock_user_model
+            .expect_delete_user()
+            .with(predicate::eq(param_id_with))
+            .times(calls)
+            .returning(move |id| Box::pin(async move { fn_returning(id) }));
     }
 
     mock_user_model
