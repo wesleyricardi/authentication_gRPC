@@ -127,14 +127,6 @@ impl UserControllerBuilderForTest {
         self
     }
 
-    pub fn mount_send_email(
-        mut self,
-        send_email: fn(to: String, subject: String, body: String) -> Result<String, AppError>,
-    ) -> Self {
-        self.send_email = send_email;
-        self
-    }
-
     pub fn build(self) -> UserController<MockAuthenticationModel, MockSanitizeAuthentication> {
         UserController {
             model: self.model,
