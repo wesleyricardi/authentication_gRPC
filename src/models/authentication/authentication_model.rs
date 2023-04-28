@@ -43,6 +43,7 @@ pub trait AuthenticationModel: Sync + Send {
         new_password: String,
         code_key: String,
     ) -> Result<String, AppError>;
+    async fn delete_user(&self, user_id: String) -> Result<String, AppError>;
 }
 
 pub struct UserModel<R, C> {
@@ -242,5 +243,10 @@ impl<R: UserRepository, C: UsersCodeRepository> AuthenticationModel for UserMode
             .await?;
 
         Ok(String::from("Password updated"))
+    }
+    async fn delete_user(&self, user_id: String) -> Result<String, AppError> {
+        self.user_repository.delete(user_id).await?;
+
+        Ok(String::from("User deleted successfully"))
     }
 }
