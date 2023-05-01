@@ -11,9 +11,8 @@ use crate::{
 use async_trait::async_trait;
 
 use crate::{
-    dtos::controllers::dtos_controller_user::*,
-    security::jwt::JwtEncode,
-    services::sanitizer::sanitize_authentication_input::{SanitizeAuthentication, SanitizeUser},
+    dtos::controllers::dtos_controller_user::*, security::jwt::JwtEncode,
+    services::sanitizer::sanitize_authentication_input::SanitizeAuthentication,
 };
 use crate::{
     error::{AppError, Code},

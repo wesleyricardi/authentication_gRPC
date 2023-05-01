@@ -1,7 +1,7 @@
 use crate::{
     dtos::models::dtos_model_user::*,
     repositories::user_repository::{UserRepository, UserRepositoryStoreParams},
-    utils::hash::password::{PasswordHasher, PasswordVerify, PASSWORD_HASHER, PASSWORD_VERIFY},
+    utils::hash::password::{PasswordHasher, PasswordVerify},
 };
 use crate::{
     error::*,
