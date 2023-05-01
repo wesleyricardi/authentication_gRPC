@@ -16,7 +16,7 @@ Whit Docker:
   -  run command: 
   -  sqlx migrate run
   -  cargo test
-    if  no error you can:
+  *if  no error you can:
   -  cargo run --bin server
 
 
