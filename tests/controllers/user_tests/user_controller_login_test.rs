@@ -1,3 +1,8 @@
+use authentication_gRPC::dtos::{
+    controllers::dtos_controller_user::LoginParams,
+    models::dtos_model_user::UserModelLoginVerificationReturn,
+};
+
 use crate::{
     mocks::{
         sanitizer_user_input_mock::{
@@ -10,12 +15,7 @@ use crate::{
     },
     utils::builders::UserControllerBuilderForTest,
 };
-use authentication_gRPC::{
-    controllers::authentication::authentication_controller::{
-        AuthenticationController, LoginParams,
-    },
-    models::authentication::authentication_model::UserModelLoginVerificationReturn,
-};
+use authentication_gRPC::controllers::authentication_controller::AuthenticationController;
 
 #[tokio::test]
 async fn test_login() {

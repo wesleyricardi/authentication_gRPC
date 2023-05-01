@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     error::AppError,
-    repositories::users_code::users_code_repository::{MockUsersCodeRepository, UsersCode},
+    repositories::users_code_repository::{MockUsersCodeRepository, UsersCode},
 };
 use mockall::predicate;
 

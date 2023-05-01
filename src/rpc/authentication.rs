@@ -11,15 +11,16 @@ use authentication::{
 };
 use tonic::{Request, Response, Status};
 
-use crate::controllers::authentication::authentication_controller::{
-    AuthenticationController, LoginParams, RegisterParams, SanitizeUser, UpdateParams,
-    UserController, UserControllerRecoverPasswordReq,
+use crate::controllers::authentication_controller::{AuthenticationController, UserController};
+use crate::dtos::controllers::dtos_controller_user::{
+    LoginParams, RegisterParams, UpdateParams, UserControllerRecoverPasswordReq,
+    UserControllerUpdatePasswordReq,
 };
-use crate::dtos::controllers::dtos_controller_user::UserControllerUpdatePasswordReq;
-use crate::models::authentication::authentication_model::UserModel;
-use crate::repositories::user::user_repository::UserRepositoryPostgres;
-use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryRedis;
+use crate::models::authentication_model::UserModel;
+use crate::repositories::user_repository::UserRepositoryPostgres;
+use crate::repositories::users_code_repository::UsersCodeRepositoryRedis;
 use crate::security::jwt::{jwt_decode, jwt_encode};
+use crate::services::sanitizer::sanitize_authentication_input::SanitizeUser;
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::adapters::user_controller_to_grpc_response::{
     map_create_recovery_code_to_grpc_response, map_delete_user_to_grpc_response,

@@ -6,10 +6,11 @@ use crate::{
     utils::builders::UserControllerBuilderForTest,
 };
 use authentication_gRPC::{
-    controllers::authentication::authentication_controller::{
-        AuthenticationController, UpdateParams,
+    controllers::authentication_controller::AuthenticationController,
+    dtos::{
+        controllers::dtos_controller_user::UpdateParams,
+        models::dtos_model_user::UserModelUpdateParams,
     },
-    models::authentication::authentication_model::UserModelUpdateParams,
     security::jwt::JWTAuthenticateToken,
 };
 

@@ -1,6 +1,12 @@
-use authentication_gRPC::{security::jwt::JWTAuthenticateToken, controllers::authentication::authentication_controller::AuthenticationController};
+use authentication_gRPC::{
+    controllers::authentication_controller::AuthenticationController,
+    security::jwt::JWTAuthenticateToken,
+};
 
-use crate::{mocks::user_model_mock::{get_mock_user_model, MockUserModelParams, MockUserDeleteUser}, utils::builders::UserControllerBuilderForTest};
+use crate::{
+    mocks::user_model_mock::{get_mock_user_model, MockUserDeleteUser, MockUserModelParams},
+    utils::builders::UserControllerBuilderForTest,
+};
 
 #[tokio::test]
 async fn test_delete_user() {

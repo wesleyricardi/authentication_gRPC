@@ -1,9 +1,10 @@
 use authentication_gRPC::{
-    error::*,
-    models::authentication::authentication_model::{
-        MockAuthenticationModel, UserModelCreateParams, UserModelInsertReturn,
-        UserModelLoginVerificationReturn, UserModelRecoverUserDataReturn, UserModelUpdateParams,
+    dtos::models::dtos_model_user::{
+        UserModelCreateParams, UserModelInsertReturn, UserModelLoginVerificationReturn,
+        UserModelRecoverUserDataReturn, UserModelUpdateParams,
     },
+    error::*,
+    models::authentication_model::MockAuthenticationModel,
 };
 use mockall::predicate;
 pub struct MockUserModelCreate {
@@ -248,8 +249,9 @@ pub fn get_mock_user_model(expectations: MockUserModelParams) -> MockAuthenticat
     if let Some(MockUserDeleteUser {
         calls,
         param_id_with,
-        fn_returning
-    }) = expectations.delete_user {
+        fn_returning,
+    }) = expectations.delete_user
+    {
         mock_user_model
             .expect_delete_user()
             .with(predicate::eq(param_id_with))

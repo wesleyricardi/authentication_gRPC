@@ -2,11 +2,8 @@ use chrono::{Duration, Utc};
 
 use authentication_gRPC::{
     error::{AppError, Code},
-    models::authentication::authentication_model::AuthenticationModel,
-    repositories::{
-        user::user_repository::UserRepositoryUpdateParams,
-        users_code::users_code_repository::UsersCode,
-    },
+    models::authentication_model::AuthenticationModel,
+    repositories::{user_repository::UserRepositoryUpdateParams, users_code_repository::UsersCode},
 };
 
 use crate::{

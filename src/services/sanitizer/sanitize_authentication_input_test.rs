@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::services::sanitizer::authentication_input::sanitize_authentication_input::*;
+    use crate::services::sanitizer::sanitize_authentication_input::*;
 
     #[test]
     fn test_santinize_username_input() {

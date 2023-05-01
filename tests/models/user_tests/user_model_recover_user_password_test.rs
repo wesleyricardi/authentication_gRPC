@@ -2,10 +2,10 @@ use chrono::{Duration, Utc};
 
 use authentication_gRPC::{
     error::{AppError, Code},
-    models::authentication::authentication_model::AuthenticationModel,
+    models::authentication_model::AuthenticationModel,
     repositories::{
-        user::user_repository::{UserRepositoryConsultReturn, UserRepositoryUpdateParams},
-        users_code::users_code_repository::UsersCode,
+        user_repository::{UserRepositoryConsultReturn, UserRepositoryUpdateParams},
+        users_code_repository::UsersCode,
     },
 };
 

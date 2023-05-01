@@ -6,9 +6,8 @@ use crate::{
     utils::builders::UserControllerBuilderForTest,
 };
 use authentication_gRPC::{
-    controllers::authentication::authentication_controller::AuthenticationController,
-    models::authentication::authentication_model::UserModelUpdateParams,
-    security::jwt::JWTAuthenticateToken,
+    controllers::authentication_controller::AuthenticationController,
+    dtos::models::dtos_model_user::UserModelUpdateParams, security::jwt::JWTAuthenticateToken,
 };
 
 const FAKE_USER_ID: &str = "user_id";

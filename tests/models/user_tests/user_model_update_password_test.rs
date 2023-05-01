@@ -1,8 +1,6 @@
 use authentication_gRPC::{
-    models::authentication::authentication_model::AuthenticationModel,
-    repositories::user::user_repository::{
-        UserRepositoryConsultReturn, UserRepositoryUpdateParams,
-    },
+    models::authentication_model::AuthenticationModel,
+    repositories::user_repository::{UserRepositoryConsultReturn, UserRepositoryUpdateParams},
 };
 
 use crate::{

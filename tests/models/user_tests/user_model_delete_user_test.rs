@@ -1,6 +1,11 @@
-use authentication_gRPC::models::authentication::authentication_model::AuthenticationModel;
+use authentication_gRPC::models::authentication_model::AuthenticationModel;
 
-use crate::{mocks::user_repository_mock::{MockUserRepositoryDelete, MockUserRepositoryParams, get_mock_user_repository}, utils::builders::UserModelBuilderForTest};
+use crate::{
+    mocks::user_repository_mock::{
+        get_mock_user_repository, MockUserRepositoryDelete, MockUserRepositoryParams,
+    },
+    utils::builders::UserModelBuilderForTest,
+};
 
 #[tokio::test]
 async fn test_delete_user() {
@@ -19,12 +24,7 @@ async fn test_delete_user() {
         .mount_user_repository(mock_user_repository)
         .build();
 
-    let response = model_user
-        .delete_user(
-            FAKE_ID.to_string(),
-        )
-        .await
-        .unwrap();
+    let response = model_user.delete_user(FAKE_ID.to_string()).await.unwrap();
 
     assert_eq!(response, "User deleted successfully");
 }

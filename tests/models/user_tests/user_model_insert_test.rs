@@ -1,6 +1,7 @@
 use authentication_gRPC::{
-    models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
-    repositories::user::user_repository::{UserRepositoryStoreParams, UserRepositoryStoreReturn},
+    dtos::models::dtos_model_user::UserModelCreateParams,
+    models::authentication_model::AuthenticationModel,
+    repositories::user_repository::{UserRepositoryStoreParams, UserRepositoryStoreReturn},
 };
 
 use crate::{

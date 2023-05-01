@@ -1,4 +1,4 @@
-use authentication_gRPC::controllers::authentication::authentication_controller::AuthenticationController;
+use authentication_gRPC::controllers::authentication_controller::AuthenticationController;
 
 use crate::{
     mocks::{

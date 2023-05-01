@@ -1,6 +1,5 @@
 use authentication_gRPC::{
-    error::AppError,
-    services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication,
+    error::AppError, services::sanitizer::sanitize_authentication_input::MockSanitizeAuthentication,
 };
 use mockall::predicate;
 

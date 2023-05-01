@@ -1,5 +1,5 @@
 use authentication_gRPC::{
-    controllers::authentication::authentication_controller::AuthenticationController,
+    controllers::authentication_controller::AuthenticationController,
     dtos::controllers::dtos_controller_user::UserControllerRecoverPasswordReq,
 };
 

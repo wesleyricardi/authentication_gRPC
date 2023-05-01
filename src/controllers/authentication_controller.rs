@@ -1,20 +1,22 @@
-use crate::dtos::controllers::dtos_controller_user::{
-    UserControllerAuthenticationReturn, UserControllerLoginReturn, UserControllerRegisterReturn,
-    UserControllerUpdatePasswordReq,
+use crate::{
+    dtos::{
+        controllers::dtos_controller_user::{
+            UserControllerAuthenticationReturn, UserControllerLoginReturn,
+            UserControllerRegisterReturn, UserControllerUpdatePasswordReq,
+        },
+        models::dtos_model_user::{UserModelCreateParams, UserModelUpdateParams},
+    },
+    models::authentication_model::AuthenticationModel,
 };
 use async_trait::async_trait;
 
-pub use crate::{
+use crate::{
     dtos::controllers::dtos_controller_user::*,
-    models::authentication::authentication_model::{AuthenticationModel, UserModelCreateParams},
     security::jwt::JwtEncode,
-    services::sanitizer::authentication_input::sanitize_authentication_input::{
-        SanitizeAuthentication, SanitizeUser,
-    },
+    services::sanitizer::sanitize_authentication_input::{SanitizeAuthentication, SanitizeUser},
 };
 use crate::{
     error::{AppError, Code},
-    models::authentication::authentication_model::UserModelUpdateParams,
     security::jwt::{JWTAuthenticateToken, JwtDecode},
 };
 
@@ -291,10 +293,7 @@ impl<M: AuthenticationModel, S: SanitizeAuthentication> AuthenticationController
     }
 
     async fn delete_user(&self, token: String) -> Result<String, AppError> {
-        let JWTAuthenticateToken {
-            sub: user_id,
-            ..
-        } = (self.jwt_decode)(&token)?;
+        let JWTAuthenticateToken { sub: user_id, .. } = (self.jwt_decode)(&token)?;
 
         Ok(self.model.delete_user(user_id).await?)
     }

@@ -1,6 +1,6 @@
 use authentication_gRPC::{
-    controllers::authentication::authentication_controller::AuthenticationController,
-    models::authentication::authentication_model::UserModelRecoverUserDataReturn,
+    controllers::authentication_controller::AuthenticationController,
+    dtos::models::dtos_model_user::UserModelRecoverUserDataReturn,
     security::jwt::JWTAuthenticateToken,
 };
 

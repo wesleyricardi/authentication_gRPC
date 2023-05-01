@@ -1,12 +1,11 @@
 use authentication_gRPC::{
-    controllers::authentication::authentication_controller::UserController,
-    models::authentication::authentication_model::{MockAuthenticationModel, UserModel},
+    controllers::authentication_controller::UserController,
+    models::authentication_model::{MockAuthenticationModel, UserModel},
     repositories::{
-        user::user_repository::MockUserRepository,
-        users_code::users_code_repository::MockUsersCodeRepository,
+        user_repository::MockUserRepository, users_code_repository::MockUsersCodeRepository,
     },
     security::jwt::{JwtDecode, JwtEncode},
-    services::sanitizer::authentication_input::sanitize_authentication_input::MockSanitizeAuthentication,
+    services::sanitizer::sanitize_authentication_input::MockSanitizeAuthentication,
     utils::hash::password::{PasswordHasher, PasswordVerify},
 };
 

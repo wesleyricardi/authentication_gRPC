@@ -1,6 +1,6 @@
 use authentication_gRPC::{
-    models::authentication::authentication_model::AuthenticationModel,
-    repositories::users_code::users_code_repository::UsersCode,
+    models::authentication_model::AuthenticationModel,
+    repositories::users_code_repository::UsersCode,
 };
 use chrono::Utc;
 

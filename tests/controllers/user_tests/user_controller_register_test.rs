@@ -6,10 +6,11 @@ use crate::{
     utils::builders::UserControllerBuilderForTest,
 };
 use authentication_gRPC::{
-    controllers::authentication::authentication_controller::{
-        AuthenticationController, RegisterParams,
+    controllers::authentication_controller::AuthenticationController,
+    dtos::{
+        controllers::dtos_controller_user::RegisterParams,
+        models::dtos_model_user::{UserModelCreateParams, UserModelInsertReturn},
     },
-    models::authentication::authentication_model::{UserModelCreateParams, UserModelInsertReturn},
 };
 
 #[tokio::test]

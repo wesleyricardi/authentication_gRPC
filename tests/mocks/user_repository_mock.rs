@@ -1,6 +1,6 @@
 use authentication_gRPC::{
     error::*,
-    repositories::user::user_repository::{
+    repositories::user_repository::{
         MockUserRepository, UserRepositoryConsultReturn, UserRepositoryStoreParams,
         UserRepositoryStoreReturn, UserRepositoryUpdateParams,
     },
@@ -127,7 +127,12 @@ pub fn get_mock_user_repository(expectations: MockUserRepositoryParams) -> MockU
             .returning(move |id, user| Box::pin(async move { fn_returning(id, user) }));
     }
 
-    if let Some(MockUserRepositoryDelete { calls, param_id_with, fn_returning}) = expectations.delete {
+    if let Some(MockUserRepositoryDelete {
+        calls,
+        param_id_with,
+        fn_returning,
+    }) = expectations.delete
+    {
         mock_user_repository
             .expect_delete()
             .with(predicate::eq(param_id_with))
