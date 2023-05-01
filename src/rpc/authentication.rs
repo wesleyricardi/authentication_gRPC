@@ -18,15 +18,16 @@ use crate::controllers::authentication::authentication_controller::{
 use crate::dtos::controllers::dtos_controller_user::UserControllerUpdatePasswordReq;
 use crate::models::authentication::authentication_model::UserModel;
 use crate::repositories::user::user_repository::UserRepositoryPostgres;
-use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryPostgres;
+use crate::repositories::users_code::users_code_repository::UsersCodeRepositoryRedis;
 use crate::security::jwt::{jwt_decode, jwt_encode};
 use crate::utils::adapters::app_error_to_grpc_error::app_error_to_grpc_error;
 use crate::utils::adapters::user_controller_to_grpc_response::{
-    map_create_recovery_code_to_grpc_response, map_recovery_password_to_grpc_response,
-    map_user_activate_to_grpc_response, map_user_auth_to_grpc_response,
-    map_user_create_activation_code_to_grpc_response, map_user_login_to_grpc_response,
-    map_user_register_to_grpc_response, map_user_update_email_to_grpc_response,
-    map_user_update_password_to_grpc_response, map_user_update_to_grpc_response, map_delete_user_to_grpc_response,
+    map_create_recovery_code_to_grpc_response, map_delete_user_to_grpc_response,
+    map_recovery_password_to_grpc_response, map_user_activate_to_grpc_response,
+    map_user_auth_to_grpc_response, map_user_create_activation_code_to_grpc_response,
+    map_user_login_to_grpc_response, map_user_register_to_grpc_response,
+    map_user_update_email_to_grpc_response, map_user_update_password_to_grpc_response,
+    map_user_update_to_grpc_response,
 };
 use crate::utils::generate_code::six_number_code_generator::six_number_code_generator;
 use crate::utils::generate_id::uuidv4::new_uuidv4;
@@ -46,12 +47,15 @@ impl AuthenticationService {
 }
 
 pub type DefaultAuthenticationModel<'a> =
-    UserModel<UserRepositoryPostgres<'a>, UsersCodeRepositoryPostgres<'a>>;
+    UserModel<UserRepositoryPostgres<'a>, UsersCodeRepositoryRedis<'a>>;
 pub fn create_user_model(app_state: &AppState) -> DefaultAuthenticationModel {
     let pool = &app_state.db_pg_pool;
+    let redis_client = &app_state.redis_client;
     UserModel {
         user_repository: UserRepositoryPostgres { pool },
-        user_code_repository: UsersCodeRepositoryPostgres { pool },
+        user_code_repository: UsersCodeRepositoryRedis {
+            client: redis_client,
+        },
         password_hasher: PASSWORD_HASHER,
         password_verify: PASSWORD_VERIFY,
         new_id: new_uuidv4,
@@ -287,7 +291,10 @@ impl Authentication for AuthenticationService {
         }
     }
 
-    async fn delete_user(&self, request: Request<ReqDeleteUser>) -> Result<Response<ResDeleteUser>, Status> {
+    async fn delete_user(
+        &self,
+        request: Request<ReqDeleteUser>,
+    ) -> Result<Response<ResDeleteUser>, Status> {
         let app_state = &self.app_state;
         let metadata = request.metadata().to_owned();
         let token = match metadata.get("authorization") {
@@ -295,7 +302,7 @@ impl Authentication for AuthenticationService {
             None => return Err(Status::unauthenticated("Token JWT not found")),
         };
 
-        let controller = create_user_controller(app_state); 
+        let controller = create_user_controller(app_state);
 
         match controller.delete_user(token.to_string()).await {
             Ok(response) => Ok(map_delete_user_to_grpc_response(response)),
