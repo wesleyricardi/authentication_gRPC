@@ -344,23 +344,23 @@ mod tests {
 
         let result: Result<(), RedisError> = redis::pipe()
             .atomic()
-            .set(FAKE_USER_ID, FAKE_CODE)
+            .set("FAKE_USER_ID", "FAKE_CODE")
             .ignore()
             .cmd("EXPIREAT")
-            .arg(FAKE_USER_ID)
+            .arg("FAKE_USER_ID")
             .arg(expire.timestamp())
             .query_async(&mut connection)
             .await;
         let _ = result.unwrap();
 
         let response = repository
-            .get(FAKE_USER_ID.to_string(), FAKE_CODE.to_string())
+            .get("FAKE_USER_ID".to_string(), "FAKE_CODE".to_string())
             .await
             .unwrap();
 
         assert!(response.expire_at > Utc::now().naive_utc());
-        assert_eq!(response.user_id, FAKE_USER_ID);
-        assert_eq!(response.code, FAKE_CODE);
+        assert_eq!(response.user_id, "FAKE_USER_ID");
+        assert_eq!(response.code, "FAKE_CODE");
     }
 
     #[tokio::test]
