@@ -1,7 +1,14 @@
-use crate::{error::AppError, utils::adapters::sqlx_error_to_app_error::sqlx_error_to_app_error};
+use crate::{
+    error::{AppError, Code},
+    utils::adapters::{
+        redis_error_to_app_error::redis_error_to_app_error,
+        sqlx_error_to_app_error::sqlx_error_to_app_error,
+    },
+};
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
+use chrono::{Duration, NaiveDateTime, Utc};
 use mockall::automock;
+use redis::AsyncCommands;
 use sqlx::{Pool, Postgres};
 
 #[async_trait]
@@ -63,12 +70,92 @@ impl UsersCodeRepository for UsersCodeRepositoryPostgres<'_> {
     }
 }
 
+pub struct UsersCodeRepositoryRedis<'a> {
+    pub client: &'a redis::Client,
+}
+
+#[async_trait]
+impl UsersCodeRepository for UsersCodeRepositoryRedis<'_> {
+    async fn store(&self, code: UsersCode) -> Result<String, AppError> {
+        let mut connection = self
+            .client
+            .get_async_connection()
+            .await
+            .map_err(redis_error_to_app_error)?;
+        let key = code.user_id;
+        let value = code.code;
+
+        redis::pipe()
+            .atomic()
+            .set(&key, &value)
+            .ignore()
+            .cmd("EXPIREAT")
+            .arg(&key)
+            .arg(code.expire_at.timestamp())
+            .query_async(&mut connection)
+            .await
+            .map_err(redis_error_to_app_error)?;
+
+        Ok(String::from("Code stored successfully"))
+    }
+
+    async fn get(&self, user_id: String, code: String) -> Result<UsersCode, AppError> {
+        let mut connection = self
+            .client
+            .get_async_connection()
+            .await
+            .map_err(redis_error_to_app_error)?;
+
+        let value: Option<String> = connection
+            .get(user_id.clone())
+            .await
+            .map_err(redis_error_to_app_error)?;
+
+        if let Some(stored_code) = value {
+            if stored_code == code {
+                let expire_at_seconds: i64 = connection
+                    .ttl(user_id.clone())
+                    .await
+                    .map_err(redis_error_to_app_error)?;
+
+                let expire_at = Utc::now().naive_utc() + Duration::seconds(expire_at_seconds);
+
+                return Ok(UsersCode {
+                    user_id,
+                    code,
+                    expire_at,
+                });
+            }
+        }
+
+        Err(AppError::new(Code::NotFound, "Code not found"))
+    }
+
+    async fn delete(&self, user_id: String) -> Result<String, AppError> {
+        let mut connection = self
+            .client
+            .get_async_connection()
+            .await
+            .map_err(redis_error_to_app_error)?;
+
+        connection
+            .del(user_id)
+            .await
+            .map_err(redis_error_to_app_error)?;
+
+        Ok(String::from("Code deleted successfully"))
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::env;
+
     use crate::{database::utils::integration_test::test_with_database, error::Code};
 
     use super::*;
     use chrono::Duration;
+    use redis::RedisError;
     use sqlx::types::chrono::Utc;
 
     const FAKE_USER_ID: &str = "UserFakeID";
@@ -225,5 +312,97 @@ mod tests {
             .unwrap();
 
         assert_eq!(response, "codes from the given user id deleted");
+    }
+
+    #[tokio::test]
+    async fn test_redis_store_code() {
+        dotenv::from_filename(".env.test").ok();
+        let repository = UsersCodeRepositoryRedis {
+            client: &redis::Client::open(env::var("REDIS_CLIENT").unwrap()).unwrap(),
+        };
+        let expire: NaiveDateTime = Utc::now().naive_utc() + Duration::minutes(30);
+        let response = repository
+            .store(UsersCode {
+                code: FAKE_CODE.to_string(),
+                expire_at: expire,
+                user_id: FAKE_USER_ID.to_string(),
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(response, "Code stored successfully");
+    }
+
+    #[tokio::test]
+    async fn test_redis_get_code() {
+        dotenv::from_filename(".env.test").ok();
+        let repository = UsersCodeRepositoryRedis {
+            client: &redis::Client::open(env::var("REDIS_CLIENT").unwrap()).unwrap(),
+        };
+        let mut connection = repository.client.get_async_connection().await.unwrap();
+        let expire: NaiveDateTime = Utc::now().naive_utc() + Duration::minutes(30);
+
+        let result: Result<(), RedisError> = redis::pipe()
+            .atomic()
+            .set(FAKE_USER_ID, FAKE_CODE)
+            .ignore()
+            .cmd("EXPIREAT")
+            .arg(FAKE_USER_ID)
+            .arg(expire.timestamp())
+            .query_async(&mut connection)
+            .await;
+        let _ = result.unwrap();
+
+        let response = repository
+            .get(FAKE_USER_ID.to_string(), FAKE_CODE.to_string())
+            .await
+            .unwrap();
+
+        assert!(response.expire_at > Utc::now().naive_utc());
+        assert_eq!(response.user_id, FAKE_USER_ID);
+        assert_eq!(response.code, FAKE_CODE);
+    }
+
+    #[tokio::test]
+    async fn test_redis_get_nonexistent_code() {
+        dotenv::from_filename(".env.test").ok();
+        let repository = UsersCodeRepositoryRedis {
+            client: &redis::Client::open(env::var("REDIS_CLIENT").unwrap()).unwrap(),
+        };
+
+        let error = match repository
+            .get("KEY_NONEXISTENT".to_string(), "CODE NOEXISTENT".to_string())
+            .await
+        {
+            Ok(_) => panic!("test should fail"),
+            Err(error) => error,
+        };
+
+        assert_eq!(error.code, Code::NotFound);
+    }
+
+    #[tokio::test]
+    async fn test_redis_delete_code() {
+        dotenv::from_filename(".env.test").ok();
+        let repository = UsersCodeRepositoryRedis {
+            client: &redis::Client::open(env::var("REDIS_CLIENT").unwrap()).unwrap(),
+        };
+        let mut connection = repository.client.get_async_connection().await.unwrap();
+        let expire: NaiveDateTime = Utc::now().naive_utc() + Duration::minutes(30);
+
+        let result: Result<(), RedisError> = redis::pipe()
+            .atomic()
+            .set(FAKE_USER_ID, FAKE_CODE)
+            .ignore()
+            .cmd("EXPIREAT")
+            .arg(FAKE_USER_ID)
+            .arg(expire.timestamp())
+            .query_async(&mut connection)
+            .await;
+        let _ = result.unwrap();
+
+        let response = repository.delete(FAKE_USER_ID.to_string()).await.unwrap();
+
+        assert_eq!(response, "Code deleted successfully");
     }
 }
