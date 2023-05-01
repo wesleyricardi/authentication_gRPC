@@ -11,17 +11,25 @@ path = "src/server.rs"
 tonic = "0.7"
 prost = "0.10"
 tokio = { version = "1.0.2", features = ["macros", "rt-multi-thread"] }
-uuid = { version = "1.3.0", features = [ "v4", "fast-rng", "macro-diagnostics"]}
+uuid = { version = "1.3.0", features = ["v4", "fast-rng", "macro-diagnostics"] }
 jsonwebtoken = "8.2.0"
 serde = "1.0.152"
 sanitizer = "0.1.6"
 bcrypt = "0.14.0"
 mockall = "0.11.3"
-sqlx = {version = "0.6.3", features = ["postgres", "migrate", "runtime-tokio-rustls", "macros", "chrono", "time"]}
+sqlx = { version = "0.6.3", features = [
+  "postgres",
+  "migrate",
+  "runtime-tokio-rustls",
+  "macros",
+  "chrono",
+  "time",
+] }
 dotenv = "0.15.0"
 async-trait = "0.1.68"
 chrono = "0.4.24"
 rand = "0.8.5"
+redis = { version = "0.23.0", features = ["tokio-rustls-comp"] }
 
 [build-dependencies]
 tonic-build = "0.7"
