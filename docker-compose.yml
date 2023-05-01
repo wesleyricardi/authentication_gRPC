@@ -18,6 +18,8 @@ services:
       - type: tmpfs
         target: /dev/shm
     restart: always
+  redis:
+    image: redis
   app:
     build:
       context: .
@@ -31,3 +33,4 @@ services:
     working_dir: /app
     depends_on:
       - database
+      - redis
