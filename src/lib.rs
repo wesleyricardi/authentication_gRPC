@@ -12,4 +12,5 @@ pub mod utils;
 
 pub struct AppState {
     db_pg_pool: Pool<Postgres>,
+    redis_client: redis::Client,
 }

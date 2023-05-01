@@ -1,5 +1,6 @@
 use crate::database::connection::get_postgres_pool;
 use sqlx::{Pool, Postgres};
+use std::env;
 use tonic::transport::Server;
 
 mod controllers;
@@ -19,6 +20,7 @@ use crate::rpc::authentication::{
 
 pub struct AppState {
     db_pg_pool: Pool<Postgres>,
+    redis_client: redis::Client,
 }
 
 #[tokio::main]
@@ -27,6 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app_state = AppState {
         db_pg_pool: get_postgres_pool(None).await,
+        redis_client: redis::Client::open(env::var("REDIS_CLIENT").unwrap()).unwrap(),
     };
 
     let addr = "0.0.0.0:50051".parse()?;
